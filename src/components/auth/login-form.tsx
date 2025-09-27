@@ -10,6 +10,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { GraduationCap, Loader2, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { FirebaseError } from 'firebase/app';
 
 export default function LoginForm({ role }: { role: UserRole }) {
   const [email, setEmail] = useState('');
@@ -27,11 +28,17 @@ export default function LoginForm({ role }: { role: UserRole }) {
       router.push(`/dashboard/${role}`);
     } catch (error) {
       console.error(error);
+      let description = "An unexpected error occurred. Please try again.";
+      if (error instanceof FirebaseError && error.code === 'auth/invalid-credential') {
+        description = "Invalid email or password. Please check your credentials and try again.";
+      }
+      
       toast({
         title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
+        description: description,
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
     }
   };
