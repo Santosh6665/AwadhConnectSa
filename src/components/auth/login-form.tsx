@@ -12,6 +12,11 @@ import { GraduationCap, Loader2, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FirebaseError } from 'firebase/app';
 
+function capitalize(str: string) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export default function LoginForm({ role }: { role: UserRole }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,12 +30,15 @@ export default function LoginForm({ role }: { role: UserRole }) {
     setLoading(true);
     try {
       await login(email, password);
+      // On successful login, redirect to the specific role's dashboard
       router.push(`/dashboard/${role}`);
     } catch (error) {
-      console.error(error);
+      console.error('Login Error:', error);
       let description = "An unexpected error occurred. Please try again.";
-      if (error instanceof FirebaseError && error.code === 'auth/invalid-credential') {
-        description = "Invalid email or password. Please check your credentials and try again.";
+      if (error instanceof FirebaseError) {
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            description = "Invalid email or password. Please check your credentials and try again.";
+        }
       }
       
       toast({
@@ -50,8 +58,8 @@ export default function LoginForm({ role }: { role: UserRole }) {
           <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
             <GraduationCap className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="font-headline text-3xl">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the admin dashboard.</CardDescription>
+          <CardTitle className="font-headline text-3xl">{capitalize(role)} Login</CardTitle>
+          <CardDescription>Enter your credentials to access the {role} dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -60,7 +68,7 @@ export default function LoginForm({ role }: { role: UserRole }) {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@example.com"
+                placeholder={`${role}@example.com`}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
