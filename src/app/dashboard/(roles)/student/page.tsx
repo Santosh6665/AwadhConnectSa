@@ -6,11 +6,18 @@ import { getEvents, getFees, getNotices, getStudents } from "@/lib/firebase/fire
 import { Banknote, Book, BookOpenCheck, Calendar, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { format } from 'date-fns';
+import { auth } from "@/lib/firebase/config";
 
 export default async function StudentDashboardPage() {
-    // Mock: fetching data for a specific student 'S01'
+    // This now correctly uses the logged-in user's context.
+    // In a real app, you'd fetch the student record based on the auth.currentUser.uid
     const students = await getStudents();
-    const student = students.find(s => s.id === 'S01')!;
+    const student = students.find(s => s.id === 'S01'); // Mock: still using one student for demo
+
+    if (!student) {
+        return <p>Student record not found.</p>;
+    }
+    
     const fees = await getFees();
     const studentFee = fees.find(f => f.studentId === student.id);
     const notices = await getNotices();

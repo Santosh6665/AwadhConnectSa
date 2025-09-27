@@ -33,7 +33,6 @@ export default function LoginForm({ role }: { role: UserRole }) {
       // On successful login, redirect to the specific role's dashboard
       router.push(`/dashboard/${role}`);
     } catch (error) {
-      console.error('Login Error:', error);
       let description = "An unexpected error occurred. Please try again.";
       if (error instanceof FirebaseError) {
         if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {

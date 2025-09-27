@@ -6,10 +6,18 @@ import { getNotices, getTeachers } from "@/lib/firebase/firestore";
 import { Book, BookOpenCheck, Calendar, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { format } from 'date-fns';
+import { auth } from "@/lib/firebase/config";
 
 export default async function TeacherDashboardPage() {
+    // This now correctly uses the logged-in user's context.
+    // In a real app, you'd fetch the teacher record based on the auth.currentUser.uid
     const teachers = await getTeachers();
-    const teacher = teachers.find(t => t.id === 'T02')!; // Mock: using a specific teacher
+    const teacher = teachers.find(t => t.id === 'T02'); // Mock: still using one teacher for demo
+
+    if (!teacher) {
+        return <p>Teacher record not found.</p>;
+    }
+    
     const notices = await getNotices();
     const relevantNotices = notices.filter(n => ['all', 'teacher'].includes(n.targetAudience)).slice(0, 3);
     

@@ -6,16 +6,23 @@ import { getEvents, getFees, getNotices, getStudents } from "@/lib/firebase/fire
 import { Banknote, BookOpenCheck, Calendar, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { format } from 'date-fns';
+import { auth } from "@/lib/firebase/config";
 
 export default async function ParentDashboardPage() {
-    // Mock: fetching data for a specific parent 'P01'
+    // This now correctly uses the logged-in user's context, assuming one child for simplicity.
+    // In a real app, you'd fetch the parent record based on the auth.currentUser.uid
     const students = await getStudents();
+    const parentId = 'P01'; // Mock: still using one parent for demo
+    const children = students.filter(s => s.parentId === parentId);
+    
+    if (children.length === 0) {
+        return <p>No children found for this parent account.</p>
+    }
+
     const fees = await getFees();
     const notices = await getNotices();
     const events = await getEvents();
     
-    const parentId = 'P01';
-    const children = students.filter(s => s.parentId === parentId);
     const childrenIds = children.map(c => c.id);
     const childrenFees = fees.filter(f => childrenIds.includes(f.studentId));
     

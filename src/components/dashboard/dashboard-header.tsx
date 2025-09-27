@@ -7,6 +7,7 @@ import {
   Settings,
   User,
 } from 'lucide-react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ import { usePathname } from 'next/navigation';
 import { UserRole } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
+import { useAuth } from '@/contexts/auth-context';
 
 function capitalize(str: string) {
     if(!str) return "";
@@ -39,18 +41,29 @@ function capitalize(str: string) {
 export default function DashboardHeader({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    // Redirect to the main login page after logout
+    window.location.href = '/login';
+  };
 
   const getRoleName = (role: UserRole) => {
+    if (user?.email) return user.email;
     switch(role) {
       case 'admin': return 'Admin';
-      case 'teacher': return 'Dr. Evelyn Reed';
-      case 'parent': return 'Mr. & Mrs. Sharma';
-      case 'student': return 'Aarav Sharma';
+      case 'teacher': return 'Teacher';
+      case 'parent': return 'Parent';
+      case 'student': return 'Student';
       default: return 'User';
     }
   }
 
   const getAvatarFallback = (name: string) => {
+    if (name.includes('@')) {
+        return name.substring(0, 2).toUpperCase();
+    }
     const parts = name.split(' ');
     if (parts.length > 1) {
       return `${parts[0][0]}${parts[parts.length - 1][0]}`;
@@ -121,8 +134,8 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
             Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/login"><LogOut className="mr-2 h-4 w-4"/>Logout</Link>
+          <DropdownMenuItem onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4"/>Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

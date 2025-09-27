@@ -40,9 +40,12 @@ const navItems: NavItem[] = [
   { href: '/dashboard/teacher/attendance', label: 'Student Attendance', icon: UserCheck, roles: ['teacher'] },
   { href: '/dashboard/teacher/results', label: 'Upload Results', icon: BookOpenCheck, roles: ['teacher'] },
   { href: '/dashboard/teacher/materials', label: 'Study Materials', icon: Book, roles: ['teacher'] },
-  { href: '/dashboard/student/results', label: 'My Results', icon: BookOpenCheck, roles: ['student', 'parent'] },
-  { href: '/dashboard/student/attendance', label: 'My Attendance', icon: UserCheck, roles: ['student', 'parent'] },
-  { href: '/dashboard/student/fees', label: 'My Fees', icon: Banknote, roles: ['student', 'parent'] },
+  { href: '/dashboard/parent/results', label: 'My Results', icon: BookOpenCheck, roles: [ 'parent'] },
+  { href: '/dashboard/parent/attendance', label: 'My Attendance', icon: UserCheck, roles: ['parent'] },
+  { href: '/dashboard/parent/fees', label: 'My Fees', icon: Banknote, roles: ['parent'] },
+  { href: '/dashboard/student/results', label: 'My Results', icon: BookOpenCheck, roles: ['student'] },
+  { href: '/dashboard/student/attendance', label: 'My Attendance', icon: UserCheck, roles: ['student'] },
+  { href: '/dashboard/student/fees', label: 'My Fees', icon: Banknote, roles: ['student'] },
   { href: '/dashboard/student/materials', label: 'Study Materials', icon: Book, roles: ['student'] },
   { href: '/dashboard/common/events', label: 'Events & Notices', icon: CalendarDays, roles: ['admin', 'teacher', 'parent', 'student'] },
   { href: '/dashboard/admin/reports', label: 'Reports', icon: Presentation, roles: ['admin'] },
@@ -52,12 +55,35 @@ const navItems: NavItem[] = [
 export default function SidebarNav({ role }: { role: UserRole }) {
   const getHref = (href: string) => {
     if (href === '/dashboard') return `/dashboard/${role}`;
+    // No replacement needed for admin and teacher as their links are specific
+    if (role === 'admin' || role === 'teacher') return href;
+
+    // For parent and student, some links might be shared.
+    // This logic ensures they point to the correct role-specific URL.
     if (href.startsWith('/dashboard/common')) return href.replace('/common', `/${role}`);
-    if (href.startsWith('/dashboard/student')) return href.replace('/student', `/${role}`);
+    
     return href;
   }
 
-  const filteredNavItems = navItems.filter(item => item.roles.includes(role));
+  const filteredNavItems = navItems.filter(item => {
+    if (item.roles.includes(role)) {
+      // Special case for parent role to not show student-only links
+      if (role === 'parent' && item.href.startsWith('/dashboard/student')) {
+          return false;
+      }
+      return true;
+    }
+    return false;
+  });
+
+  // Unique items by href to avoid duplicates for parent role
+  const uniqueNavItems = filteredNavItems.reduce((acc, current) => {
+    if (!acc.find((item) => item.href === current.href)) {
+      acc.push(current);
+    }
+    return acc;
+  }, [] as NavItem[]);
+
 
   return (
     <>
@@ -72,7 +98,7 @@ export default function SidebarNav({ role }: { role: UserRole }) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {filteredNavItems.map((item) => (
+          {uniqueNavItems.map((item) => (
             <SidebarMenuItem key={item.label}>
               <SidebarMenuButton asChild tooltip={item.label}>
                 <Link href={getHref(item.href)}>
