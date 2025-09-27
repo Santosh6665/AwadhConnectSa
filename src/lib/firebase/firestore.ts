@@ -7,6 +7,7 @@ import {
   doc,
   updateDoc,
   setDoc,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { Notice, Event, Student, Teacher, Fee } from '../types';
@@ -79,6 +80,17 @@ export async function getTeachers(): Promise<Teacher[]> {
   );
   return teacherList as Teacher[];
 }
+
+export async function getTeacherById(id: string): Promise<Teacher | null> {
+    const teacherDocRef = doc(db, 'teachers', id);
+    const teacherSnap = await getDoc(teacherDocRef);
+  
+    if (teacherSnap.exists()) {
+      return convertTimestamps({ id: teacherSnap.id, ...teacherSnap.data() }) as Teacher;
+    } else {
+      return null;
+    }
+  }
 
 export async function getFees(): Promise<Fee[]> {
   const feesCol = collection(db, 'fees');

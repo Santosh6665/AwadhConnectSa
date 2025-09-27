@@ -9,47 +9,87 @@ import { Label } from '@/components/ui/label';
 import { Loader2, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserRole } from '@/lib/types';
+import { getTeacherById } from '@/lib/firebase/firestore';
 
 export default function LoginForm({ role }: { role: UserRole }) {
-  const [email, setEmail] = useState('');
+  const [credential, setCredential] = useState(''); // Can be email or teacher ID
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleAdminLogin = async () => {
     try {
-      await login(email, password);
-      // Redirect based on role
-      const redirectPath = role === 'admin' ? '/dashboard' : `/teacher/dashboard`;
-      router.push(redirectPath);
+      await login(credential, password);
+      router.push('/dashboard');
     } catch (error: any) {
-        let errorMessage = 'An unexpected error occurred. Please try again.';
-        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-            errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-        }
+      let errorMessage = 'An unexpected error occurred. Please try again.';
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      }
       toast({
         title: 'Login Failed',
         description: errorMessage,
         variant: 'destructive',
       });
-      setLoading(false);
     }
   };
+
+  const handleTeacherLogin = async () => {
+    try {
+      const teacher = await getTeacherById(credential);
+      
+      if (!teacher) {
+        throw new Error('Teacher not found.');
+      }
+
+      const firstName = teacher.name.split(' ')[0];
+      const birthYear = new Date(teacher.dob).getFullYear();
+      const defaultPassword = `${firstName.charAt(0).toUpperCase()}${firstName.slice(1).toLowerCase()}@${birthYear}`;
+
+      if (password !== defaultPassword) {
+        throw new Error('Invalid credentials.');
+      }
+      
+      await login(teacher.email, password);
+      router.push('/teacher/dashboard');
+
+    } catch (error: any) {
+      toast({
+        title: 'Login Failed',
+        description: 'Invalid Teacher ID or password. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (role === 'admin') {
+      await handleAdminLogin();
+    } else if (role === 'teacher') {
+      await handleTeacherLogin();
+    }
+    
+    setLoading(false);
+  };
+
+  const isTeacherLogin = role === 'teacher';
 
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="credential">{isTeacherLogin ? 'Teacher ID' : 'Email'}</Label>
         <Input
-          id="email"
-          type="email"
-          placeholder={`${role}@example.com`}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="credential"
+          type="text"
+          placeholder={isTeacherLogin ? 'e.g. T01' : 'admin@example.com'}
+          value={credential}
+          onChange={(e) => setCredential(e.target.value)}
           required
         />
       </div>
