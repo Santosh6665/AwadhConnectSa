@@ -1,13 +1,17 @@
 'use client';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Teacher } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Filter } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Filter, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import AddEditTeacherDialog from './add-edit-teacher-dialog';
+import { addTeacher, updateTeacher } from '@/lib/firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+
 
 export default function TeacherList({ teachers: initialTeachers }: { teachers: Teacher[] }) {
   const [teachers, setTeachers] = useState<Teacher[]>(initialTeachers);
@@ -15,12 +19,20 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
   const [statusFilter, setStatusFilter] = useState<'all' | 'Active' | 'Archived'>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [isSaving, startTransition] = useTransition();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const filteredTeachers = teachers.filter(teacher => {
+    const name = teacher.name || '';
+    const email = teacher.email || '';
+    const id = teacher.id || '';
+
     const matchesSearch =
-      teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      teacher.id.toLowerCase().includes(searchTerm.toLowerCase());
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      id.toLowerCase().includes(searchTerm.toLowerCase());
+      
     const matchesStatus = statusFilter === 'all' || teacher.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -35,12 +47,29 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
     setIsDialogOpen(true);
   };
   
-  const handleSaveTeacher = (teacher: Teacher) => {
-    if(selectedTeacher) {
-      setTeachers(teachers.map(t => t.id === teacher.id ? teacher : t));
-    } else {
-      setTeachers([...teachers, { ...teacher, id: `T${teachers.length + 1}` }]);
-    }
+  const handleSaveTeacher = async (data: Omit<Teacher, 'id'> & { id?: string }) => {
+    startTransition(async () => {
+      try {
+        if (selectedTeacher && data.id) {
+          // Update existing teacher
+          const { id, ...updateData } = data;
+          await updateTeacher(id, updateData);
+          setTeachers(teachers.map(t => t.id === id ? { ...t, ...updateData } : t));
+          toast({ title: "Success", description: "Teacher profile updated." });
+        } else {
+          // Add new teacher
+          const { id, ...newTeacherData } = data; // remove id if it's there
+          const newTeacher = await addTeacher(newTeacherData as Omit<Teacher, 'id'>);
+          setTeachers(prev => [...prev, newTeacher]);
+           toast({ title: "Success", description: "New teacher added." });
+        }
+        setIsDialogOpen(false);
+        router.refresh(); // Re-fetch server-side props to get the latest data
+      } catch (error) {
+        console.error("Failed to save teacher:", error);
+        toast({ title: "Error", description: "Failed to save teacher data.", variant: "destructive" });
+      }
+    });
   }
 
 
@@ -68,8 +97,8 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
-        <Button onClick={handleAddTeacher}>
-          <PlusCircle className="mr-2 h-4 w-4" />
+        <Button onClick={handleAddTeacher} disabled={isSaving}>
+          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
           Add Teacher
         </Button>
       </div>
@@ -121,6 +150,7 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
         onOpenChange={setIsDialogOpen}
         teacher={selectedTeacher}
         onSave={handleSaveTeacher}
+        isSaving={isSaving}
       />
     </>
   );

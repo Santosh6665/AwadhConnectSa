@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,6 +34,7 @@ const teacherSchema = z.object({
   subjects: z.array(z.string()).min(1, 'At least one subject is required'),
   classes: z.array(z.string()).min(1, 'At least one class is required'),
   status: z.enum(['Active', 'Archived']),
+  salary: z.coerce.number().optional()
 });
 
 type TeacherFormData = z.infer<typeof teacherSchema>;
@@ -42,39 +43,38 @@ interface AddEditTeacherDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   teacher: Teacher | null;
-  onSave: (data: Teacher) => void;
+  onSave: (data: Omit<Teacher, 'id'> & { id?: string }) => void;
+  isSaving: boolean;
 }
 
 // Dummy data for multi-select, replace with actual data from Firestore later
 const allSubjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Geography', 'Computer Science'];
 const allclasses = ['6A', '6B', '7A', '7B', '8A', '8B', '9A', '9B', '10A', '10B', '11A', '12A'];
 
-export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, onSave }: AddEditTeacherDialogProps) {
+export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, onSave, isSaving }: AddEditTeacherDialogProps) {
   const form = useForm<TeacherFormData>({
     resolver: zodResolver(teacherSchema),
-    defaultValues: teacher ? {
-        ...teacher,
-        subjects: teacher.subjects || [],
-        classes: teacher.classes || [],
-    } : {
-        name: '',
-        email: '',
-        phone: '',
-        gender: 'Male',
-        designation: '',
-        subjects: [],
-        classes: [],
-        status: 'Active',
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      gender: 'Male',
+      designation: '',
+      subjects: [],
+      classes: [],
+      status: 'Active',
+      salary: 0,
+      dob: undefined,
+      hireDate: undefined
     },
   });
 
   const onSubmit = (data: TeacherFormData) => {
-    onSave({
+    const dataToSave = {
       ...(teacher || {}),
-      id: teacher?.id || '', // Keep original id or will be assigned in parent
       ...data,
-    });
-    onOpenChange(false);
+    };
+    onSave(dataToSave);
   };
   
   // Reset form when dialog opens with new data
@@ -95,6 +95,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
             status: 'Active',
             dob: undefined,
             hireDate: undefined,
+            salary: 0,
         });
     }
   }, [isOpen, teacher, form]);
@@ -266,25 +267,17 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                 )}
               />
               <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  control={form.control}
+                  name="salary"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Salary</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
+                        <Input type="number" placeholder="e.g. 75000" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Archived">Archived</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
               />
                <FormField
                 control={form.control}
@@ -303,7 +296,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto max-h-60 overflow-y-auto">
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2 p-2">
                                     {allSubjects.map(subject => (
                                         <div key={subject} className="flex items-center gap-2">
                                             <Input
@@ -347,7 +340,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto max-h-60 overflow-y-auto">
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2 p-2">
                                     {allclasses.map(cls => (
                                         <div key={cls} className="flex items-center gap-2">
                                             <Input
@@ -374,10 +367,34 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                   </FormItem>
                 )}
               />
+                 <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="Active">Active</SelectItem>
+                            <SelectItem value="Archived">Archived</SelectItem>
+                        </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit">Save Teacher</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>Cancel</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Teacher
+              </Button>
             </DialogFooter>
           </form>
         </Form>

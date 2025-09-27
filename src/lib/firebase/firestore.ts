@@ -1,33 +1,85 @@
 'use server';
 
-import { mockEvents, mockNotices, mockStudents, mockTeachers, mockFees } from '../mock-data';
-import { Notice, Event, Student, Teacher, Fee } from '../types';
+import {
+  collection,
+  getDocs,
+  Timestamp,
+  addDoc,
+  doc,
+  updateDoc,
+  setDoc,
+} from 'firebase/firestore';
+import { db } from './config';
+import type { Notice, Event, Student, Teacher, Fee } from '../types';
 
-// In a real application, these functions would interact with Firebase Firestore.
-// For this example, we are returning mock data.
+// Helper to convert Firestore Timestamps to JS Dates
+const convertTimestamps = (data: any) => {
+  const anemicData = JSON.parse(JSON.stringify(data));
+  for (const key in anemicData) {
+    if (anemicData[key] && anemicData[key].seconds) {
+      anemicData[key] = new Date(anemicData[key].seconds * 1000);
+    }
+  }
+  return anemicData;
+};
 
 export async function getNotices(): Promise<Notice[]> {
-  // Mocking an async operation
-  await new Promise(resolve => setTimeout(resolve, 50));
-  return mockNotices.sort((a, b) => b.date.getTime() - a.date.getTime());
+  const noticesCol = collection(db, 'notices');
+  const noticeSnapshot = await getDocs(noticesCol);
+  const noticeList = noticeSnapshot.docs.map(doc =>
+    convertTimestamps({ id: doc.id, ...doc.data() })
+  );
+  return noticeList.sort(
+    (a, b) => b.date.getTime() - a.date.getTime()
+  ) as Notice[];
 }
 
 export async function getEvents(): Promise<Event[]> {
-  await new Promise(resolve => setTimeout(resolve, 50));
-  return mockEvents.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+  const eventsCol = collection(db, 'events');
+  const eventSnapshot = await getDocs(eventsCol);
+  const eventList = eventSnapshot.docs.map(doc =>
+    convertTimestamps({ id: doc.id, ...doc.data() })
+  );
+  return eventList.sort(
+    (a, b) => a.startDate.getTime() - b.startDate.getTime()
+  ) as Event[];
 }
 
 export async function getStudents(): Promise<Student[]> {
-  await new Promise(resolve => setTimeout(resolve, 50));
-  return mockStudents;
+  const studentsCol = collection(db, 'students');
+  const studentSnapshot = await getDocs(studentsCol);
+  const studentList = studentSnapshot.docs.map(doc =>
+    convertTimestamps({ id: doc.id, ...doc.data() })
+  );
+  return studentList as Student[];
 }
 
 export async function getTeachers(): Promise<Teacher[]> {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return mockTeachers;
+  const teachersCol = collection(db, 'teachers');
+  const teacherSnapshot = await getDocs(teachersCol);
+  const teacherList = teacherSnapshot.docs.map(doc =>
+    convertTimestamps({ id: doc.id, ...doc.data() })
+  );
+  return teacherList as Teacher[];
 }
 
 export async function getFees(): Promise<Fee[]> {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return mockFees;
+  const feesCol = collection(db, 'fees');
+  const feeSnapshot = await getDocs(feesCol);
+  const feeList = feeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return feeList as Fee[];
+}
+
+export async function addTeacher(teacher: Omit<Teacher, 'id'>): Promise<Teacher> {
+  const teachersCol = collection(db, 'teachers');
+  const docRef = await addDoc(teachersCol, teacher);
+  return { id: docRef.id, ...teacher };
+}
+
+export async function updateTeacher(
+  id: string,
+  teacher: Partial<Teacher>
+): Promise<void> {
+  const teacherDoc = doc(db, 'teachers', id);
+  await updateDoc(teacherDoc, teacher);
 }
