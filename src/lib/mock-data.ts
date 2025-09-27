@@ -1,10 +1,62 @@
 import type { Student, Teacher, Parent, Notice, Event, Fee } from './types';
 
 export const mockTeachers: Teacher[] = [
-  { id: 'T01', name: 'Dr. Evelyn Reed', email: 'e.reed@awadh.edu', phone: '555-0101', subjects: ['SUB01', 'SUB05'], salary: 75000 },
-  { id: 'T02', name: 'Mr. Samuel Chen', email: 's.chen@awadh.edu', phone: '555-0102', subjects: ['SUB02', 'SUB06'], salary: 72000 },
-  { id: 'T03', name: 'Ms. Maria Garcia', email: 'm.garcia@awadh.edu', phone: '555-0103', subjects: ['SUB03', 'SUB07'], salary: 73000 },
-  { id: 'T04', name: 'Mr. David Miller', email: 'd.miller@awadh.edu', phone: '555-0104', subjects: ['SUB04', 'SUB08'], salary: 71000 },
+  { 
+    id: 'T01', 
+    name: 'Dr. Evelyn Reed', 
+    email: 'e.reed@awadh.edu', 
+    phone: '555-0101', 
+    subjects: ['Physics', 'Chemistry'], 
+    salary: 75000, 
+    dob: new Date('1985-05-20'),
+    gender: 'Female',
+    hireDate: new Date('2015-08-01'),
+    designation: 'Senior Science Teacher',
+    classes: ['10A', '10B', '11A'],
+    status: 'Active'
+  },
+  { 
+    id: 'T02', 
+    name: 'Mr. Samuel Chen', 
+    email: 's.chen@awadh.edu', 
+    phone: '555-0102', 
+    subjects: ['Mathematics'], 
+    salary: 72000,
+    dob: new Date('1990-11-12'),
+    gender: 'Male',
+    hireDate: new Date('2018-07-15'),
+    designation: 'Mathematics Coordinator',
+    classes: ['9A', '9B', '10A'],
+    status: 'Active'
+  },
+  { 
+    id: 'T03', 
+    name: 'Ms. Maria Garcia', 
+    email: 'm.garcia@awadh.edu', 
+    phone: '555-0103', 
+    subjects: ['History', 'Geography'], 
+    salary: 73000,
+    dob: new Date('1988-02-28'),
+    gender: 'Female',
+    hireDate: new Date('2017-03-10'),
+    designation: 'Social Studies Teacher',
+    classes: ['8A', '8B', '9A'],
+    status: 'Active'
+  },
+  { 
+    id: 'T04', 
+    name: 'Mr. David Miller', 
+    email: 'd.miller@awadh.edu', 
+    phone: '555-0104', 
+    subjects: ['English'], 
+    salary: 71000,
+    dob: new Date('1992-09-05'),
+    gender: 'Male',
+    hireDate: new Date('2020-09-01'),
+    designation: 'English Teacher',
+    classes: ['7A', '7B', '8A'],
+    status: 'Archived'
+  },
 ];
 
 export const mockParents: Parent[] = [

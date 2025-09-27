@@ -23,11 +23,17 @@ export interface Parent {
 }
 
 export interface Teacher {
-  id: string;
-  name: string;
+  id: string; // Teacher ID / Employee ID
+  name: string; // Full Name
   email: string;
   phone: string;
+  dob: Date;
+  gender: 'Male' | 'Female' | 'Other';
+  hireDate: Date;
+  designation: string;
   subjects: string[]; // array of subjectIds
+  classes: string[]; // e.g., ['9A', '10B']
+  status: 'Active' | 'Archived';
   salary?: number;
   attendance?: AttendanceRecord[];
 }
@@ -45,7 +51,7 @@ export interface Section {
 
 export interface Subject {
   id: string;
-  name: string;
+  name:string;
   classId: string;
   teacherId: string;
 }
