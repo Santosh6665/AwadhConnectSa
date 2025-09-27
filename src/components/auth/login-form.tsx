@@ -41,28 +41,30 @@ export default function LoginForm({ role }: { role: UserRole }) {
         const firstName = teacher.name.split(' ')[0];
         const defaultPassword = `${firstName.charAt(0).toUpperCase() + firstName.slice(1)}@${dob.getFullYear()}`;
         
-        let isPasswordCorrect = password === defaultPassword;
-
-        // If it's not the default password, it means user has changed it. Try firebase auth.
-        if(!isPasswordCorrect) {
-          try {
-            await login(teacher.email, password);
-            isPasswordCorrect = true;
-          } catch (e) {
-            // It is okay for this to fail.
-          }
-        }
-
-        if (isPasswordCorrect) {
-          // We need to sign in the user to set the session
+        // First, try logging in with the custom password.
+        try {
           await login(teacher.email, password);
+          // If this succeeds, password is correct.
           if (teacher.mustChangePassword) {
-            router.push('/teacher/change-password');
+             router.push('/teacher/change-password');
           } else {
-            router.push('/teacher/dashboard');
+             router.push('/teacher/dashboard');
           }
-        } else {
-          throw new Error('Invalid password');
+        } catch (authError) {
+          // If custom password fails, check if the default password was used.
+          if (password === defaultPassword) {
+            // This is the first login. Sign in with the default password to create a session.
+            await login(teacher.email, defaultPassword);
+            if (teacher.mustChangePassword) {
+              router.push('/teacher/change-password');
+            } else {
+              // This case shouldn't happen if mustChangePassword is true, but as a fallback:
+              router.push('/teacher/dashboard');
+            }
+          } else {
+            // If neither custom nor default password works, throw the final error.
+            throw new Error('Invalid credentials');
+          }
         }
       }
     } catch (error: any) {
