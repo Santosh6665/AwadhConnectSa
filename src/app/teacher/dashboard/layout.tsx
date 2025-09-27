@@ -7,8 +7,9 @@ import { AuthProvider, useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { UserRole } from "@/lib/types";
 
-function TeacherDashboardContent({ children }: { children: React.ReactNode }) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -26,13 +27,16 @@ function TeacherDashboardContent({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // This is a placeholder role. You would determine the actual role from the user object.
+  const role: UserRole = 'teacher';
+
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarNav role="teacher" />
+        <SidebarNav role={role} />
       </Sidebar>
       <SidebarInset>
-        <DashboardHeader role="teacher" />
+        <DashboardHeader role={role} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">
             {children}
         </main>
@@ -48,7 +52,7 @@ export default function TeacherDashboardLayout({
 }) {
   return (
     <AuthProvider>
-      <TeacherDashboardContent>{children}</TeacherDashboardContent>
+      <DashboardContent>{children}</DashboardContent>
     </AuthProvider>
   );
 }

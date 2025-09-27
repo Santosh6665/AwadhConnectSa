@@ -12,7 +12,7 @@ export default function TeacherLoginPage() {
             <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
               <GraduationCap className="h-10 w-10 text-primary" />
             </div>
-            <CardTitle className="font-headline text-3xl">AwadhConnect Teacher Portal</CardTitle>
+            <CardTitle className="font-headline text-3xl">AwadhConnect Teacher</CardTitle>
             <CardDescription>Please sign in to continue</CardDescription>
           </CardHeader>
           <CardContent>

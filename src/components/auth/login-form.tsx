@@ -9,10 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Loader2, LogIn, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserRole } from '@/lib/types';
-import { getTeacherById } from '@/lib/firebase/firestore';
 
 export default function LoginForm({ role }: { role: UserRole }) {
-  const [credential, setCredential] = useState(''); // Can be email or teacher ID
+  const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,7 +19,10 @@ export default function LoginForm({ role }: { role: UserRole }) {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleAdminLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
     try {
       await login(credential, password);
       router.push('/dashboard');
@@ -34,71 +36,19 @@ export default function LoginForm({ role }: { role: UserRole }) {
         description: errorMessage,
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
-
-  const handleTeacherLogin = async () => {
-    try {
-      const teacher = await getTeacherById(credential);
-      
-      if (!teacher) {
-        throw new Error('Teacher not found.');
-      }
-
-      const firstName = teacher.name.split(' ')[0];
-      const phone = teacher.phone || '';
-      
-      if (phone.length < 2) {
-          throw new Error('Invalid phone number for password generation.');
-      }
-
-      const firstTwoDigitsOfPhone = phone.substring(0, 2);
-      const defaultPassword = `${firstName.charAt(0).toUpperCase()}${firstName.slice(1).toLowerCase()}@${firstTwoDigitsOfPhone}`;
-
-      if (password !== defaultPassword) {
-        throw new Error('Invalid credentials.');
-      }
-      
-      // For now, we are just verifying the credentials and not logging in via Firebase Auth for teachers.
-      // This is because we don't have a user record in Firebase Auth for each teacher with the default password.
-      // We are just routing to the dashboard which is protected by a general auth guard.
-      // A more robust solution would involve a custom auth system or creating teacher users in Firebase Auth.
-      
-      router.push('/teacher/dashboard');
-
-    } catch (error: any) {
-      toast({
-        title: 'Login Failed',
-        description: 'Invalid Teacher ID or password. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    if (role === 'admin') {
-      await handleAdminLogin();
-    } else if (role === 'teacher') {
-      await handleTeacherLogin();
-    }
-    
-    setLoading(false);
-  };
-
-  const isTeacherLogin = role === 'teacher';
 
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="credential">{isTeacherLogin ? 'Teacher ID' : 'Email'}</Label>
+        <Label htmlFor="credential">Email</Label>
         <Input
           id="credential"
-          type="text"
-          placeholder={isTeacherLogin ? 'e.g. T01' : 'admin@example.com'}
+          type="email"
+          placeholder="admin@example.com"
           value={credential}
           onChange={(e) => setCredential(e.target.value)}
           required

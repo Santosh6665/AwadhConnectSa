@@ -1,20 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { GraduationCap, Menu, X, User } from 'lucide-react';
+import { GraduationCap, Menu, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -43,24 +33,12 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
-           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
+           <Button asChild>
+             <Link href="/login">
                 <User className="mr-2 h-4 w-4" />
-                Login
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Select Your Role</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/login">Admin Login</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/teacher/login">Teacher Login</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                Admin Login
+             </Link>
+            </Button>
 
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -89,19 +67,9 @@ export default function Header() {
                         {item.label}
                       </Link>
                     ))}
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button className="w-full justify-start text-lg">Login</Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Admin Login</Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href="/teacher/login" onClick={() => setMobileMenuOpen(false)}>Teacher Login</Link>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                     <Button asChild>
+                        <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Admin Login</Link>
+                     </Button>
                   </nav>
                 </div>
               </SheetContent>
