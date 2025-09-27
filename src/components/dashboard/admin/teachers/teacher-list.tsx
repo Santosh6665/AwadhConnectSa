@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, PlusCircle, Filter, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import AddEditTeacherDialog from './add-edit-teacher-dialog';
+import TeacherDetailDialog from './teacher-detail-dialog';
 import { addTeacher, updateTeacher } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,7 +18,8 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
   const [teachers, setTeachers] = useState<Teacher[]>(initialTeachers);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'Active' | 'Archived'>('all');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [isSaving, startTransition] = useTransition();
   const router = useRouter();
@@ -39,12 +41,17 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
 
   const handleAddTeacher = () => {
     setSelectedTeacher(null);
-    setIsDialogOpen(true);
+    setIsAddEditDialogOpen(true);
   };
 
   const handleEditTeacher = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
-    setIsDialogOpen(true);
+    setIsAddEditDialogOpen(true);
+  };
+
+  const handleViewTeacher = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setIsDetailDialogOpen(true);
   };
   
   const handleSaveTeacher = async (data: Omit<Teacher, 'dob' | 'hireDate'> & { dob: string | Date, hireDate: string | Date }) => {
@@ -59,7 +66,7 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
         if (selectedTeacher) {
           // Update existing teacher
           await updateTeacher(data.id, dataToSave);
-          setTeachers(teachers.map(t => t.id === data.id ? dataToSave : t));
+          setTeachers(teachers.map(t => t.id === data.id ? { ...t, ...dataToSave } : t));
           toast({ title: "Success", description: "Teacher profile updated." });
         } else {
           // Add new teacher
@@ -67,7 +74,7 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
           setTeachers(prev => [...prev, dataToSave]);
            toast({ title: "Success", description: "New teacher added." });
         }
-        setIsDialogOpen(false);
+        setIsAddEditDialogOpen(false);
         router.refresh(); // Re-fetch server-side props to get the latest data
       } catch (error) {
         console.error("Failed to save teacher:", error);
@@ -139,8 +146,8 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleViewTeacher(teacher)}>View Details</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleEditTeacher(teacher)}>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -150,11 +157,16 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
         </Table>
       </div>
       <AddEditTeacherDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        isOpen={isAddEditDialogOpen}
+        onOpenChange={setIsAddEditDialogOpen}
         teacher={selectedTeacher}
         onSave={handleSaveTeacher}
         isSaving={isSaving}
+      />
+      <TeacherDetailDialog
+        isOpen={isDetailDialogOpen}
+        onOpenChange={setIsDetailDialogOpen}
+        teacher={selectedTeacher}
       />
     </>
   );
