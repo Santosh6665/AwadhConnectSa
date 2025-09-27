@@ -26,14 +26,15 @@ const convertTimestamps = (data: any) => {
 const convertToTimestamps = (data: any) => {
     const dataWithTimestamps = { ...data };
     for (const key in dataWithTimestamps) {
-        if (dataWithTimestamps[key] && (typeof dataWithTimestamps[key] === 'string' && new Date(dataWithTimestamps[key]).toString() !== 'Invalid Date')) {
-             const date = new Date(dataWithTimestamps[key]);
-             // Check if it's a valid date string before converting
-             if (!isNaN(date.getTime())) {
-                dataWithTimestamps[key] = Timestamp.fromDate(date);
-             }
-        } else if (dataWithTimestamps[key] instanceof Date) {
-            dataWithTimestamps[key] = Timestamp.fromDate(dataWithTimestamps[key]);
+        const value = dataWithTimestamps[key];
+        if (value instanceof Date) {
+            dataWithTimestamps[key] = Timestamp.fromDate(value);
+        } else if (typeof value === 'string') {
+            const date = new Date(value);
+            // Check if it's a valid date string before converting
+            if (!isNaN(date.getTime())) {
+               dataWithTimestamps[key] = Timestamp.fromDate(date);
+            }
         }
     }
     return dataWithTimestamps;
@@ -86,7 +87,7 @@ export async function getFees(): Promise<Fee[]> {
   return feeList as Fee[];
 }
 
-export async function addTeacher(teacher: Omit<Teacher, 'id'> & { id: string }): Promise<void> {
+export async function addTeacher(teacher: Teacher): Promise<void> {
   const teacherDoc = doc(db, 'teachers', teacher.id);
   const dataToSave = convertToTimestamps(teacher);
   await setDoc(teacherDoc, dataToSave);
