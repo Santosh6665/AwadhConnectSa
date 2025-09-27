@@ -23,7 +23,9 @@ export default function LoginForm({ role }: { role: UserRole }) {
     setLoading(true);
     try {
       await login(email, password);
-      router.push('/dashboard');
+      // Redirect based on role
+      const redirectPath = role === 'admin' ? '/dashboard' : `/teacher/dashboard`;
+      router.push(redirectPath);
     } catch (error: any) {
         let errorMessage = 'An unexpected error occurred. Please try again.';
         if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
@@ -45,7 +47,7 @@ export default function LoginForm({ role }: { role: UserRole }) {
         <Input
           id="email"
           type="email"
-          placeholder="admin@example.com"
+          placeholder={`${role}@example.com`}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required

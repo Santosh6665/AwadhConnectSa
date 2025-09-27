@@ -17,6 +17,8 @@ import {
   Settings,
   Presentation,
   HelpCircle,
+  BookOpenCheck,
+  ClipboardList,
 } from 'lucide-react';
 import Link from 'next/link';
 import { UserRole } from '@/lib/types';
@@ -29,6 +31,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  // Admin Links
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin'] },
   { href: '/dashboard/students', label: 'Manage Students', icon: Users, roles: ['admin'] },
   { href: '/dashboard/teachers', label: 'Manage Teachers', icon: BookUser, roles: ['admin'] },
@@ -37,6 +40,13 @@ const navItems: NavItem[] = [
   { href: '/dashboard/events', label: 'Events & Notices', icon: CalendarDays, roles: ['admin'] },
   { href: '/dashboard/reports', label: 'Reports', icon: Presentation, roles: ['admin'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['admin'] },
+
+  // Teacher Links
+  { href: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['teacher'] },
+  { href: '/teacher/my-classes', label: 'My Classes', icon: Users, roles: ['teacher'] },
+  { href: '/teacher/attendance', label: 'Mark Attendance', icon: UserCheck, roles: ['teacher'] },
+  { href: '/teacher/study-material', label: 'Study Material', icon: BookOpenCheck, roles: ['teacher'] },
+  { href: '/teacher/results', label: 'Enter Results', icon: ClipboardList, roles: ['teacher'] },
 ];
 
 export default function SidebarNav({ role }: { role: UserRole }) {
@@ -50,7 +60,7 @@ export default function SidebarNav({ role }: { role: UserRole }) {
             <GraduationCap className="size-8 text-sidebar-primary" />
             <div className="flex flex-col">
                 <h3 className="text-lg font-headline font-semibold text-sidebar-primary">AwadhConnect</h3>
-                <p className="text-xs text-sidebar-foreground/70">School Management</p>
+                <p className="text-xs text-sidebar-foreground/70">{role === 'admin' ? 'Admin Portal' : 'Teacher Portal'}</p>
             </div>
         </div>
       </SidebarHeader>
