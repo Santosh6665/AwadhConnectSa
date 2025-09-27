@@ -21,7 +21,7 @@ export default function TeacherDashboardPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <p>More features coming soon!</p>
+                    <p>You have successfully logged in. More features coming soon!</p>
                 </CardContent>
             </Card>
         </div>

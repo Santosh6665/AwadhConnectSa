@@ -1,3 +1,4 @@
+'use client';
 import LoginForm from '@/components/auth/login-form';
 import { GraduationCap } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -35,7 +35,8 @@ const teacherSchema = z.object({
   subjects: z.array(z.string()).min(1, 'At least one subject is required'),
   classes: z.array(z.string()).min(1, 'At least one class is required'),
   status: z.enum(['Active', 'Archived']),
-  salary: z.coerce.number().optional()
+  salary: z.coerce.number().optional(),
+  mustChangePassword: z.boolean().default(true),
 });
 
 type TeacherFormData = z.infer<typeof teacherSchema>;
@@ -67,7 +68,8 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
       status: 'Active',
       salary: 0,
       dob: undefined,
-      hireDate: undefined
+      hireDate: undefined,
+      mustChangePassword: true,
     },
   });
 
@@ -76,6 +78,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
       ...data,
       dob: data.dob.toISOString(),
       hireDate: data.hireDate.toISOString(),
+      mustChangePassword: teacher ? teacher.mustChangePassword : true,
     };
     onSave(dataToSave as any);
   };
@@ -90,6 +93,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
           hireDate: typeof teacher.hireDate === 'string' ? new Date(teacher.hireDate) : teacher.hireDate,
           subjects: teacher.subjects || [],
           classes: teacher.classes || [],
+          mustChangePassword: teacher.mustChangePassword ?? true,
         });
       } else {
         form.reset({
@@ -105,6 +109,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
             dob: undefined,
             hireDate: undefined,
             salary: 0,
+            mustChangePassword: true,
         });
       }
     }

@@ -6,7 +6,8 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
   signOut,
-  User 
+  User,
+  updatePassword
 } from 'firebase/auth';
 import { app } from '@/lib/firebase/config';
 import { useRouter } from 'next/navigation';
@@ -18,6 +19,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, pass: string) => Promise<any>;
   logout: () => Promise<void>;
+  updateUserPassword: (newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,7 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await signOut(auth);
-    router.push('/login');
+    router.push('/');
+  };
+
+  const updateUserPassword = async (newPassword: string) => {
+    if (!auth.currentUser) throw new Error("Not authenticated");
+    return updatePassword(auth.currentUser, newPassword);
   };
 
   const value = {
@@ -49,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     login,
     logout,
+    updateUserPassword
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

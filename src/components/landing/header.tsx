@@ -5,6 +5,15 @@ import { GraduationCap, Menu, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -33,12 +42,24 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
-           <Button asChild>
-             <Link href="/login">
-                <User className="mr-2 h-4 w-4" />
-                Admin Login
-             </Link>
-            </Button>
+           <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <User className="mr-2 h-4 w-4" />
+                  Login
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Select Your Role</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/login">Admin Login</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/teacher/login">Teacher Login</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -69,6 +90,9 @@ export default function Header() {
                     ))}
                      <Button asChild>
                         <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Admin Login</Link>
+                     </Button>
+                     <Button asChild variant="outline">
+                        <Link href="/teacher/login" onClick={() => setMobileMenuOpen(false)}>Teacher Login</Link>
                      </Button>
                   </nav>
                 </div>

@@ -36,6 +36,7 @@ export interface Teacher {
   status: 'Active' | 'Archived';
   salary?: number;
   attendance?: AttendanceRecord[];
+  mustChangePassword?: boolean;
 }
 
 export interface Class {

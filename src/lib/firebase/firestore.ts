@@ -8,6 +8,9 @@ import {
   updateDoc,
   setDoc,
   getDoc,
+  query,
+  where,
+  limit
 } from 'firebase/firestore';
 import { db } from './config';
 import type { Notice, Event, Student, Teacher, Fee } from '../types';
@@ -82,15 +85,26 @@ export async function getTeachers(): Promise<Teacher[]> {
 }
 
 export async function getTeacherById(id: string): Promise<Teacher | null> {
-    const teacherDocRef = doc(db, 'teachers', id);
-    const teacherSnap = await getDoc(teacherDocRef);
-  
-    if (teacherSnap.exists()) {
-      return convertTimestamps({ id: teacherSnap.id, ...teacherSnap.data() }) as Teacher;
+    const teachersRef = collection(db, 'teachers');
+    const q = query(teachersRef, where("id", "==", id), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        const teacherDoc = querySnapshot.docs[0];
+        return convertTimestamps({ id: teacherDoc.id, ...teacherDoc.data() }) as Teacher;
     } else {
-      return null;
+        // Fallback for older documents that might use the document ID as teacher.id
+        const teacherDocRef = doc(db, 'teachers', id);
+        const teacherSnap = await getDoc(teacherDocRef);
+      
+        if (teacherSnap.exists()) {
+          return convertTimestamps({ id: teacherSnap.id, ...teacherSnap.data() }) as Teacher;
+        } else {
+          return null;
+        }
     }
-  }
+}
+
 
 export async function getFees(): Promise<Fee[]> {
   const feesCol = collection(db, 'fees');

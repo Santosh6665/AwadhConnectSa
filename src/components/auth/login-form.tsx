@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, LogIn, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserRole } from '@/lib/types';
+import { getTeacherById } from '@/lib/firebase/firestore';
 
 export default function LoginForm({ role }: { role: UserRole }) {
   const [credential, setCredential] = useState('');
@@ -24,12 +25,50 @@ export default function LoginForm({ role }: { role: UserRole }) {
     setLoading(true);
 
     try {
-      await login(credential, password);
-      router.push('/dashboard');
+      if (role === 'admin') {
+        await login(credential, password);
+        router.push('/dashboard');
+      } else if (role === 'teacher') {
+        const teacherId = credential;
+        const teacher = await getTeacherById(teacherId);
+
+        if (!teacher) {
+          throw new Error('Invalid Teacher ID');
+        }
+        
+        // When dob is serialized from server, it becomes a string
+        const dob = new Date(teacher.dob);
+        const firstName = teacher.name.split(' ')[0];
+        const defaultPassword = `${firstName.charAt(0).toUpperCase() + firstName.slice(1)}@${dob.getFullYear()}`;
+        
+        let isPasswordCorrect = password === defaultPassword;
+
+        // If it's not the default password, it means user has changed it. Try firebase auth.
+        if(!isPasswordCorrect) {
+          try {
+            await login(teacher.email, password);
+            isPasswordCorrect = true;
+          } catch (e) {
+            // It is okay for this to fail.
+          }
+        }
+
+        if (isPasswordCorrect) {
+          // We need to sign in the user to set the session
+          await login(teacher.email, password);
+          if (teacher.mustChangePassword) {
+            router.push('/teacher/change-password');
+          } else {
+            router.push('/teacher/dashboard');
+          }
+        } else {
+          throw new Error('Invalid password');
+        }
+      }
     } catch (error: any) {
       let errorMessage = 'An unexpected error occurred. Please try again.';
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.message.includes('Invalid')) {
+          errorMessage = 'Invalid credentials. Please check your details and try again.';
       }
       toast({
         title: 'Login Failed',
@@ -44,11 +83,11 @@ export default function LoginForm({ role }: { role: UserRole }) {
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="credential">Email</Label>
+        <Label htmlFor="credential">{role === 'teacher' ? 'Teacher ID' : 'Email'}</Label>
         <Input
           id="credential"
-          type="email"
-          placeholder="admin@example.com"
+          type={role === 'teacher' ? 'text' : 'email'}
+          placeholder={role === 'teacher' ? 'e.g., T01' : 'admin@example.com'}
           value={credential}
           onChange={(e) => setCredential(e.target.value)}
           required
