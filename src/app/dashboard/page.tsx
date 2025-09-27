@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import EventSuggestionGenerator from "@/components/dashboard/admin/event-suggestion-generator";
+import RecentTeachers from "@/components/dashboard/recent-teachers";
 
 const quickActions = [
     { label: "Manage Students", href: "/dashboard/admin/students", icon: Users },
@@ -23,6 +24,8 @@ export default async function AdminDashboardPage() {
     const totalFeesCollected = fees.reduce((acc, fee) => acc + fee.paidFee, 0);
     const totalDues = fees.reduce((acc, fee) => acc + fee.dueFee, 0);
     const totalSalary = teachers.reduce((acc, teacher) => acc + (teacher.salary || 0), 0);
+    
+    const sortedTeachers = [...teachers].sort((a, b) => new Date(b.hireDate).getTime() - new Date(a.hireDate).getTime());
 
     return (
         <div className="space-y-8">
@@ -40,22 +43,25 @@ export default async function AdminDashboardPage() {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-3">
-                <Card className="lg:col-span-1">
-                    <CardHeader>
-                        <CardTitle>Quick Actions</CardTitle>
-                        <CardDescription>Quickly jump to common management tasks.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-4">
-                        {quickActions.map(action => (
-                            <Button key={action.href} variant="outline" className="flex flex-col h-24 gap-2" asChild>
-                                <Link href={action.href}>
-                                    <action.icon className="h-6 w-6 text-primary" />
-                                    <span className="text-center text-sm">{action.label}</span>
-                                </Link>
-                            </Button>
-                        ))}
-                    </CardContent>
-                </Card>
+                <div className="lg:col-span-1 space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Quick Actions</CardTitle>
+                            <CardDescription>Quickly jump to common management tasks.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-4">
+                            {quickActions.map(action => (
+                                <Button key={action.href} variant="outline" className="flex flex-col h-24 gap-2" asChild>
+                                    <Link href={action.href}>
+                                        <action.icon className="h-6 w-6 text-primary" />
+                                        <span className="text-center text-sm">{action.label}</span>
+                                    </Link>
+                                </Button>
+                            ))}
+                        </CardContent>
+                    </Card>
+                    <RecentTeachers teachers={sortedTeachers} />
+                </div>
 
                 <div className="lg:col-span-2">
                   <EventSuggestionGenerator />
