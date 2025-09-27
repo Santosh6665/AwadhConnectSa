@@ -2,8 +2,6 @@
 import {
   Bell,
   Home,
-  LogOut,
-  PanelLeft,
   Settings,
   User,
 } from 'lucide-react';
@@ -31,7 +29,6 @@ import { usePathname } from 'next/navigation';
 import { UserRole } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
-import { useAuth } from '@/contexts/auth-context';
 
 function capitalize(str: string) {
     if(!str) return "";
@@ -41,16 +38,8 @@ function capitalize(str: string) {
 export default function DashboardHeader({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
-  const { user, logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
-    // Redirect to the main login page after logout
-    window.location.href = '/login';
-  };
 
   const getRoleName = (role: UserRole) => {
-    if (user?.email) return user.email;
     switch(role) {
       case 'admin': return 'Admin';
       case 'teacher': return 'Teacher';
@@ -61,14 +50,11 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
   }
 
   const getAvatarFallback = (name: string) => {
-    if (name.includes('@')) {
-        return name.substring(0, 2).toUpperCase();
-    }
     const parts = name.split(' ');
     if (parts.length > 1) {
       return `${parts[0][0]}${parts[parts.length - 1][0]}`;
     }
-    return parts[0].substring(0, 2);
+    return name.substring(0, 2);
   }
 
   const userName = getRoleName(role);
@@ -132,10 +118,6 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4"/>
             Settings
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4"/>Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

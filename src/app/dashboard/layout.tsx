@@ -1,4 +1,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { UserRole } from "@/lib/types";
+import { headers } from "next/headers";
+import RolesLayout from "./(roles)/layout";
 
 export default function DashboardLayout({
   children,
@@ -7,7 +10,9 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-        {children}
+        <RolesLayout>
+          {children}
+        </RolesLayout>
     </SidebarProvider>
   );
 }

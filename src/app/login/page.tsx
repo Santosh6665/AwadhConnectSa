@@ -20,15 +20,15 @@ export default function LoginPage() {
                         <GraduationCap className="h-10 w-10 text-primary" />
                     </div>
                     <CardTitle className="font-headline text-3xl">Welcome to AwadhConnect</CardTitle>
-                    <CardDescription>Select your role to login to the dashboard.</CardDescription>
+                    <CardDescription>Select a dashboard to view.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 gap-4">
                         {roles.map(({ role, name }) => (
                             <Button key={role} asChild size="lg">
-                                <Link href={`/dashboard/${role}/login`}>
+                                <Link href={`/dashboard/${role}`}>
                                     <LogIn className="mr-2 h-5 w-5" />
-                                    Login as {name}
+                                    Go to {name} Dashboard
                                 </Link>
                             </Button>
                         ))}
