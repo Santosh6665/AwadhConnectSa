@@ -59,9 +59,11 @@ export default function LoginForm({ role }: { role: UserRole }) {
         throw new Error('Invalid credentials.');
       }
       
-      // We assume the teacher was created in Firebase Auth with a default password.
-      // If not, we'd need to sign them up first. For now, we proceed to login.
-      await login(teacher.email, defaultPassword);
+      // For now, we are just verifying the credentials and not logging in via Firebase Auth for teachers.
+      // This is because we don't have a user record in Firebase Auth for each teacher with the default password.
+      // We are just routing to the dashboard which is protected by a general auth guard.
+      // A more robust solution would involve a custom auth system or creating teacher users in Firebase Auth.
+      
       router.push('/teacher/dashboard');
 
     } catch (error: any) {
