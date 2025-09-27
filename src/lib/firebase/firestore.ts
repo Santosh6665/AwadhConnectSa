@@ -4,7 +4,6 @@ import {
   collection,
   getDocs,
   Timestamp,
-  addDoc,
   doc,
   updateDoc,
   setDoc,
@@ -27,7 +26,7 @@ const convertTimestamps = (data: any) => {
 const convertToTimestamps = (data: any) => {
     const dataWithTimestamps = { ...data };
     for (const key in dataWithTimestamps) {
-        if (dataWithTimestamps[key] && (typeof dataWithTimestamps[key] === 'string' && new Date(dataWithTimestamps[key]) instanceof Date && !isNaN(new Date(dataWithTimestamps[key] as any)))) {
+        if (dataWithTimestamps[key] && (typeof dataWithTimestamps[key] === 'string' && new Date(dataWithTimestamps[key]).toString() !== 'Invalid Date')) {
             dataWithTimestamps[key] = Timestamp.fromDate(new Date(dataWithTimestamps[key]));
         } else if (dataWithTimestamps[key] instanceof Date) {
             dataWithTimestamps[key] = Timestamp.fromDate(dataWithTimestamps[key]);
@@ -83,11 +82,11 @@ export async function getFees(): Promise<Fee[]> {
   return feeList as Fee[];
 }
 
-export async function addTeacher(teacher: Omit<Teacher, 'id'>): Promise<Teacher> {
-  const teachersCol = collection(db, 'teachers');
+export async function addTeacher(teacher: Teacher): Promise<Teacher> {
+  const teacherDoc = doc(db, 'teachers', teacher.id);
   const dataToSave = convertToTimestamps(teacher);
-  const docRef = await addDoc(teachersCol, dataToSave);
-  return { id: docRef.id, ...teacher };
+  await setDoc(teacherDoc, dataToSave);
+  return teacher;
 }
 
 export async function updateTeacher(

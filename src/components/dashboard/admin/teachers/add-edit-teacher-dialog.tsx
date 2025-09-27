@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 const teacherSchema = z.object({
+  id: z.string().min(1, 'Teacher ID is required'),
   name: z.string().min(1, 'Full name is required'),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(1, 'Phone number is required'),
@@ -43,7 +44,7 @@ interface AddEditTeacherDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   teacher: Teacher | null;
-  onSave: (data: Omit<Teacher, 'id'> & { id?: string }) => void;
+  onSave: (data: Teacher) => void;
   isSaving: boolean;
 }
 
@@ -55,6 +56,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
   const form = useForm<TeacherFormData>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
+      id: '',
       name: '',
       email: '',
       phone: '',
@@ -71,7 +73,6 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
 
   const onSubmit = (data: TeacherFormData) => {
     const dataToSave = {
-      ...(teacher || {}),
       ...data,
       dob: data.dob.toISOString(),
       hireDate: data.hireDate.toISOString(),
@@ -92,6 +93,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
         });
       } else {
         form.reset({
+            id: '',
             name: '',
             email: '',
             phone: '',
@@ -121,6 +123,19 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
+                control={form.control}
+                name="id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teacher ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. T05" {...field} disabled={!!teacher} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (

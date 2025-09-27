@@ -47,20 +47,18 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
     setIsDialogOpen(true);
   };
   
-  const handleSaveTeacher = async (data: Omit<Teacher, 'id'> & { id?: string }) => {
+  const handleSaveTeacher = async (data: Teacher) => {
     startTransition(async () => {
       try {
-        if (selectedTeacher && data.id) {
+        if (selectedTeacher) {
           // Update existing teacher
-          const { id, ...updateData } = data;
-          await updateTeacher(id, updateData);
-          setTeachers(teachers.map(t => t.id === id ? { ...t, ...updateData } : t));
+          await updateTeacher(data.id, data);
+          setTeachers(teachers.map(t => t.id === data.id ? data : t));
           toast({ title: "Success", description: "Teacher profile updated." });
         } else {
           // Add new teacher
-          const { id, ...newTeacherData } = data; // remove id if it's there
-          const newTeacher = await addTeacher(newTeacherData as Omit<Teacher, 'id'>);
-          setTeachers(prev => [...prev, newTeacher]);
+          await addTeacher(data);
+          setTeachers(prev => [...prev, data]);
            toast({ title: "Success", description: "New teacher added." });
         }
         setIsDialogOpen(false);
