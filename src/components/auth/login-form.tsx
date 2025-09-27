@@ -46,16 +46,14 @@ export default function LoginForm({ role }: { role: UserRole }) {
       }
 
       const firstName = teacher.name.split(' ')[0];
-      // When data comes from a server action, Date objects are serialized as strings.
-      // We need to convert it back to a Date object to use date methods.
-      const dob = new Date(teacher.dob);
-      const birthYear = dob.getFullYear();
+      const phone = teacher.phone || '';
       
-      if (isNaN(birthYear)) {
-        throw new Error('Invalid date of birth for teacher.');
+      if (phone.length < 2) {
+          throw new Error('Invalid phone number for password generation.');
       }
 
-      const defaultPassword = `${firstName.charAt(0).toUpperCase()}${firstName.slice(1).toLowerCase()}@${birthYear}`;
+      const firstTwoDigitsOfPhone = phone.substring(0, 2);
+      const defaultPassword = `${firstName.charAt(0).toUpperCase()}${firstName.slice(1).toLowerCase()}@${firstTwoDigitsOfPhone}`;
 
       if (password !== defaultPassword) {
         throw new Error('Invalid credentials.');
