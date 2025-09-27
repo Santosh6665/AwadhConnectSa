@@ -46,7 +46,7 @@ export default function LoginForm({ role }: { role: UserRole }) {
       }
 
       const firstName = teacher.name.split(' ')[0];
-      const birthYear = new Date(teacher.dob).getFullYear();
+      const birthYear = teacher.dob.getFullYear();
       const defaultPassword = `${firstName.charAt(0).toUpperCase()}${firstName.slice(1).toLowerCase()}@${birthYear}`;
 
       if (password !== defaultPassword) {
