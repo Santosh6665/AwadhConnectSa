@@ -23,6 +23,19 @@ const convertTimestamps = (data: any) => {
   return anemicData;
 };
 
+// Helper to convert date strings or Date objects to Firestore Timestamps
+const convertToTimestamps = (data: any) => {
+    const dataWithTimestamps = { ...data };
+    for (const key in dataWithTimestamps) {
+        if (dataWithTimestamps[key] && (typeof dataWithTimestamps[key] === 'string' && new Date(dataWithTimestamps[key]) instanceof Date && !isNaN(new Date(dataWithTimestamps[key] as any)))) {
+            dataWithTimestamps[key] = Timestamp.fromDate(new Date(dataWithTimestamps[key]));
+        } else if (dataWithTimestamps[key] instanceof Date) {
+            dataWithTimestamps[key] = Timestamp.fromDate(dataWithTimestamps[key]);
+        }
+    }
+    return dataWithTimestamps;
+}
+
 export async function getNotices(): Promise<Notice[]> {
   const noticesCol = collection(db, 'notices');
   const noticeSnapshot = await getDocs(noticesCol);
@@ -72,7 +85,8 @@ export async function getFees(): Promise<Fee[]> {
 
 export async function addTeacher(teacher: Omit<Teacher, 'id'>): Promise<Teacher> {
   const teachersCol = collection(db, 'teachers');
-  const docRef = await addDoc(teachersCol, teacher);
+  const dataToSave = convertToTimestamps(teacher);
+  const docRef = await addDoc(teachersCol, dataToSave);
   return { id: docRef.id, ...teacher };
 }
 
@@ -81,5 +95,6 @@ export async function updateTeacher(
   teacher: Partial<Teacher>
 ): Promise<void> {
   const teacherDoc = doc(db, 'teachers', id);
-  await updateDoc(teacherDoc, teacher);
+  const dataToSave = convertToTimestamps(teacher);
+  await updateDoc(teacherDoc, dataToSave);
 }

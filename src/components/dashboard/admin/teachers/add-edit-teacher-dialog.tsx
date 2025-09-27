@@ -73,18 +73,25 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
     const dataToSave = {
       ...(teacher || {}),
       ...data,
+      dob: data.dob.toISOString(),
+      hireDate: data.hireDate.toISOString(),
     };
-    onSave(dataToSave);
+    onSave(dataToSave as any);
   };
   
   // Reset form when dialog opens with new data
   React.useEffect(() => {
     if (isOpen) {
-        form.reset(teacher ? {
-            ...teacher,
-            subjects: teacher.subjects || [],
-            classes: teacher.classes || [],
-        } : {
+      if (teacher) {
+        form.reset({
+          ...teacher,
+          dob: typeof teacher.dob === 'string' ? new Date(teacher.dob) : teacher.dob,
+          hireDate: typeof teacher.hireDate === 'string' ? new Date(teacher.hireDate) : teacher.hireDate,
+          subjects: teacher.subjects || [],
+          classes: teacher.classes || [],
+        });
+      } else {
+        form.reset({
             name: '',
             email: '',
             phone: '',
@@ -97,6 +104,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
             hireDate: undefined,
             salary: 0,
         });
+      }
     }
   }, [isOpen, teacher, form]);
 
