@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-campus",
+      "description": "A sprawling, modern school campus under a clear blue sky.",
+      "imageUrl": "https://images.unsplash.com/photo-1559323940-f4551075a7da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzY2hvb2wlMjBjYW1wdXN8ZW58MHx8fHwxNzU4OTY1MDYxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "school campus"
+    },
+    {
+      "id": "hero-classroom",
+      "description": "A bright and airy classroom with students engaged in learning.",
+      "imageUrl": "https://images.unsplash.com/photo-1665860817333-a61810b54278?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtb2Rlcm4lMjBjbGFzc3Jvb218ZW58MHx8fHwxNzU4OTg0NzgyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern classroom"
+    },
+    {
+      "id": "hero-library",
+      "description": "A well-stocked school library with students reading at tables.",
+      "imageUrl": "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzY2hvb2wlMjBsaWJyYXJ5fGVufDB8fHx8MTc1ODg4NjE1OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "school library"
+    },
+    {
+      "id": "principal",
+      "description": "Portrait of the Principal",
+      "imageUrl": "https://images.unsplash.com/photo-1595211877493-41a4e5f236b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NTg4OTY4ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "professional headshot"
+    },
+    {
+      "id": "founder",
+      "description": "Portrait of the Founder",
+      "imageUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb3Jwb3JhdGUlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NTg5MTE0NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "corporate headshot"
+    },
+    {
+      "id": "director",
+      "description": "Portrait of the Director",
+      "imageUrl": "https://images.unsplash.com/photo-1722648346293-51a5bb04036a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhY2FkZW1pYyUyMHBvcnRyYWl0fGVufDB8fHx8MTc1ODg4NzA0OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "academic portrait"
+    }
+  ]
 }
