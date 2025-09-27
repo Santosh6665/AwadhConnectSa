@@ -2,6 +2,7 @@
 import {
   Bell,
   Home,
+  LogOut,
   Settings,
   User,
 } from 'lucide-react';
@@ -29,6 +30,7 @@ import { usePathname } from 'next/navigation';
 import { UserRole } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
+import { useAuth } from '@/contexts/auth-context';
 
 function capitalize(str: string) {
     if(!str) return "";
@@ -38,9 +40,9 @@ function capitalize(str: string) {
 export default function DashboardHeader({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
+  const { user, logout } = useAuth();
 
-  const userName = "Admin";
-  const userAvatarFallback = "A";
+  const userAvatarFallback = user?.email ? user.email.charAt(0).toUpperCase() : "A";
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -85,13 +87,13 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
             <Avatar>
-                <AvatarImage src={`https://picsum.photos/seed/admin/100/100`} alt={userName} />
+                <AvatarImage src={`https://picsum.photos/seed/admin/100/100`} alt={user?.email || 'Admin'} />
                 <AvatarFallback>{userAvatarFallback}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>{userName}</DropdownMenuLabel>
+          <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4"/>
@@ -100,6 +102,11 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4"/>
             Settings
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+           <DropdownMenuItem onClick={logout}>
+            <LogOut className="mr-2 h-4 w-4"/>
+            Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
