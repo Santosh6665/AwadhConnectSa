@@ -4,8 +4,8 @@ import { GraduationCap, LogIn } from "lucide-react";
 import Link from "next/link";
 import { UserRole } from "@/lib/types";
 
-const roles: { role: UserRole; name: string }[] = [
-    { role: 'admin', name: 'Admin' },
+const roles: { role: UserRole | 'admin-login'; name: string }[] = [
+    { role: 'admin-login', name: 'Admin' },
     { role: 'teacher', name: 'Teacher' },
     { role: 'parent', name: 'Parent' },
     { role: 'student', name: 'Student' },
@@ -26,7 +26,7 @@ export default function LoginPage() {
                     <div className="grid grid-cols-1 gap-4">
                         {roles.map(({ role, name }) => (
                             <Button key={role} asChild size="lg">
-                                <Link href={`/dashboard/${role}`}>
+                                <Link href={role === 'admin-login' ? '/dashboard/admin/login' : `/dashboard/${role}`}>
                                     <LogIn className="mr-2 h-5 w-5" />
                                     Login as {name}
                                 </Link>
