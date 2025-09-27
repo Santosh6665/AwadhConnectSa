@@ -1,15 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, LogIn } from "lucide-react";
+import { GraduationCap, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
-import { UserRole } from "@/lib/types";
-
-const roles: { role: UserRole; name: string }[] = [
-    { role: 'admin', name: 'Admin' },
-    { role: 'teacher', name: 'Teacher' },
-    { role: 'parent', name: 'Parent' },
-    { role: 'student', name: 'Student' },
-];
 
 export default function LoginPage() {
     return (
@@ -20,18 +12,16 @@ export default function LoginPage() {
                         <GraduationCap className="h-10 w-10 text-primary" />
                     </div>
                     <CardTitle className="font-headline text-3xl">Welcome to AwadhConnect</CardTitle>
-                    <CardDescription>Select a dashboard to view.</CardDescription>
+                    <CardDescription>School Management Dashboard</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 gap-4">
-                        {roles.map(({ role, name }) => (
-                            <Button key={role} asChild size="lg">
-                                <Link href={`/dashboard/${role}`}>
-                                    <LogIn className="mr-2 h-5 w-5" />
-                                    Go to {name} Dashboard
-                                </Link>
-                            </Button>
-                        ))}
+                        <Button asChild size="lg">
+                            <Link href={`/dashboard`}>
+                                <LayoutDashboard className="mr-2 h-5 w-5" />
+                                Go to Dashboard
+                            </Link>
+                        </Button>
                     </div>
                 </CardContent>
             </Card>

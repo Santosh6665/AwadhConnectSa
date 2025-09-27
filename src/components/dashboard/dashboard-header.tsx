@@ -39,26 +39,8 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
 
-  const getRoleName = (role: UserRole) => {
-    switch(role) {
-      case 'admin': return 'Admin';
-      case 'teacher': return 'Teacher';
-      case 'parent': return 'Parent';
-      case 'student': return 'Student';
-      default: return 'User';
-    }
-  }
-
-  const getAvatarFallback = (name: string) => {
-    const parts = name.split(' ');
-    if (parts.length > 1) {
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`;
-    }
-    return name.substring(0, 2);
-  }
-
-  const userName = getRoleName(role);
-  const userAvatarFallback = getAvatarFallback(userName);
+  const userName = "Admin";
+  const userAvatarFallback = "A";
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -103,7 +85,7 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
             <Avatar>
-                <AvatarImage src={`https://picsum.photos/seed/${role}/100/100`} alt={userName} />
+                <AvatarImage src={`https://picsum.photos/seed/admin/100/100`} alt={userName} />
                 <AvatarFallback>{userAvatarFallback}</AvatarFallback>
             </Avatar>
           </Button>
