@@ -5,25 +5,20 @@ import SidebarNav from '@/components/dashboard/sidebar-nav';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
 import { AuthProvider, useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // A simple check to see if the user object is not present.
-    // In a real app, you might check a token or session status.
-    if (!user) {
+    if (!loading && !user) {
       router.push('/login');
-    } else {
-      setIsCheckingAuth(false);
     }
-  }, [user, router]);
+  }, [user, loading, router]);
 
-  if (isCheckingAuth) {
+  if (loading || !user) {
     return (
         <div className="flex h-screen w-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

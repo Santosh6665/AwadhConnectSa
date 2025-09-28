@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AppUser } from '@/lib/types';
 import { getAdminByEmail } from '@/lib/firebase/firestore';
@@ -17,8 +17,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true
   const router = useRouter();
+
+  useEffect(() => {
+    try {
+      const storedUser = sessionStorage.getItem('app-user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Failed to parse user from sessionStorage", error);
+      sessionStorage.removeItem('app-user');
+    } finally {
+        setLoading(false);
+    }
+  }, []);
 
   const login = async (email: string, pass: string) => {
     setLoading(true);
@@ -37,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: email,
         role: 'admin',
       };
+      sessionStorage.setItem('app-user', JSON.stringify(appUser));
       setUser(appUser);
       router.push('/dashboard');
     } finally {
@@ -46,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    sessionStorage.removeItem('app-user');
     router.push('/login');
   };
 
