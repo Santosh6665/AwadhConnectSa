@@ -1,54 +1,52 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
-  getAuth, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  signOut,
-  User,
-  updatePassword
-} from 'firebase/auth';
-import { app } from '@/lib/firebase/config';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-
-const auth = getAuth(app);
+import type { AppUser } from '@/lib/types';
+import { getAdminByEmail } from '@/lib/firebase/firestore';
+import { sha256 } from 'js-sha256';
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<any>;
-  logout: () => Promise<void>;
-  updateUserPassword: (newPassword: string) => Promise<void>;
+  login: (email: string, pass: string) => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+  const login = async (email: string, pass: string) => {
+    setLoading(true);
+    try {
+      const admin = await getAdminByEmail(email);
+      if (!admin) {
+        throw new Error('Admin not found');
+      }
+
+      const passwordHash = sha256(pass);
+      if (admin.password !== passwordHash) {
+        throw new Error('Invalid password');
+      }
+
+      const appUser: AppUser = {
+        email: email,
+        role: 'admin',
+      };
+      setUser(appUser);
+      router.push('/dashboard');
+    } finally {
       setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const login = (email: string, pass: string) => {
-    return signInWithEmailAndPassword(auth, email, pass);
+    }
   };
 
-  const logout = async () => {
-    await signOut(auth);
-    router.push('/');
-  };
-
-  const updateUserPassword = async (newPassword: string) => {
-    if (!auth.currentUser) throw new Error("Not authenticated");
-    return updatePassword(auth.currentUser, newPassword);
+  const logout = () => {
+    setUser(null);
+    router.push('/login');
   };
 
   const value = {
@@ -56,7 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     login,
     logout,
-    updateUserPassword
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

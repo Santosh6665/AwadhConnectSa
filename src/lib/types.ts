@@ -114,3 +114,13 @@ export interface StudyMaterial {
 }
 
 export type UserRole = 'admin' | 'teacher' | 'parent' | 'student';
+
+export interface Admin {
+  email: string;
+  password?: string; // This is a hash
+}
+
+export interface AppUser {
+  email: string;
+  role: UserRole;
+}

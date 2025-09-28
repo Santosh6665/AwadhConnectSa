@@ -13,7 +13,7 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates
 const convertTimestamps = (data: any) => {
@@ -104,4 +104,15 @@ export async function updateTeacher(
   const teacherDoc = doc(db, 'teachers', id);
   const dataToSave = convertToTimestamps(teacher);
   await updateDoc(teacherDoc, dataToSave);
+}
+
+export async function getAdminByEmail(email: string): Promise<Admin | null> {
+  const adminDocRef = doc(db, 'admins', email);
+  const adminDocSnap = await getDoc(adminDocRef);
+
+  if (!adminDocSnap.exists()) {
+    return null;
+  }
+
+  return adminDocSnap.data() as Admin;
 }
