@@ -16,7 +16,7 @@ export default function TeacherResultsPage() {
   useEffect(() => {
     if (user?.id) {
       const fetchData = async () => {
-        setIsLoading(true);
+        setLoading(true);
         try {
           const teacherData = await getTeacherById(user.id);
           if (teacherData && teacherData.classes) {
