@@ -5,11 +5,13 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import type { Student } from '@/lib/types';
-import { Loader2, User as UserIcon, BookOpen, Calendar, Banknote } from 'lucide-react';
+import { Loader2, User as UserIcon, BookOpen, Calendar, Banknote, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import PreviousSessionCard from '@/components/student/previous-session-card';
+import { Button } from '@/components/ui/button';
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className="grid grid-cols-3 gap-4 items-start">
@@ -22,6 +24,7 @@ export default function StudentDashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
+  const [previousSessionIndex, setPreviousSessionIndex] = useState(0);
 
   useEffect(() => {
     if (user && user.id) {
@@ -51,6 +54,15 @@ export default function StudentDashboardPage() {
   };
   
   const feeStatus = getFeeStatus(student, student.className);
+  const hasPreviousSessions = student.previousSessions && student.previousSessions.length > 0;
+
+  const handlePreviousSession = () => {
+    setPreviousSessionIndex(prev => (prev > 0 ? prev - 1 : prev));
+  };
+  const handleNextSession = () => {
+    setPreviousSessionIndex(prev => (student.previousSessions && prev < student.previousSessions.length - 1 ? prev + 1 : prev));
+  };
+
 
   return (
     <div className="space-y-8">
@@ -102,6 +114,33 @@ export default function StudentDashboardPage() {
                </div>
             </CardContent>
           </Card>
+          
+          {hasPreviousSessions && student.previousSessions && (
+            <Card>
+                 <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-primary/10 p-3 rounded-lg"><Calendar className="w-6 h-6 text-primary" /></div>
+                            <CardTitle>Previous Sessions</CardTitle>
+                        </div>
+                         <div className="flex items-center gap-2">
+                            <Button variant="outline" size="icon" onClick={handlePreviousSession} disabled={previousSessionIndex === 0}>
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                             <span className="text-sm text-muted-foreground">
+                                {previousSessionIndex + 1} of {student.previousSessions.length}
+                            </span>
+                            <Button variant="outline" size="icon" onClick={handleNextSession} disabled={previousSessionIndex === student.previousSessions.length - 1}>
+                                <ArrowRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <PreviousSessionCard session={student.previousSessions[previousSessionIndex]} />
+                </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
