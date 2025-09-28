@@ -15,7 +15,7 @@ const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
         </div>
         <div>
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="font-semibold">{value}</p>
+            <div className="font-semibold">{value}</div>
         </div>
     </div>
 );
