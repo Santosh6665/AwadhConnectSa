@@ -4,13 +4,13 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AppUser } from '@/lib/types';
-import { getAdminByEmail, getTeacherById, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
+import { getAdminByEmail, getTeacherById, getStudentByAdmissionNumber, getParentByMobile } from '@/lib/firebase/firestore';
 import { sha256 } from 'js-sha256';
 
 interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
-  login: (credential: string, pass: string, role: 'admin' | 'teacher' | 'student') => Promise<void>;
+  login: (credential: string, pass: string, role: 'admin' | 'teacher' | 'student' | 'parent') => Promise<void>;
   logout: () => void;
 }
 
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (credential: string, pass: string, role: 'admin' | 'teacher' | 'student') => {
+  const login = async (credential: string, pass: string, role: 'admin' | 'teacher' | 'student' | 'parent') => {
     setLoading(true);
     try {
       let appUser: AppUser | null = null;
@@ -62,6 +62,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         appUser = { id: credential, name: `${student.firstName} ${student.lastName}`, role: 'student' };
         router.push('/student/dashboard');
+      } else if (role === 'parent') {
+        const parent = await getParentByMobile(credential);
+        if (!parent) throw new Error('Parent not found');
+        if (parent.password !== pass) throw new Error('Invalid password');
+        
+        appUser = { id: credential, name: parent.name, role: 'parent' };
+        router.push('/parent/dashboard');
       }
 
       if (appUser) {
@@ -80,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (role === 'admin') router.push('/login');
     else if (role === 'teacher') router.push('/teacher/login');
     else if (role === 'student') router.push('/student/login');
+    else if (role === 'parent') router.push('/parent/login');
     else router.push('/');
   };
 

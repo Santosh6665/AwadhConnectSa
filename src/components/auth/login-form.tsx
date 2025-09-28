@@ -14,7 +14,7 @@ const roleConfig = {
     admin: { credentialLabel: 'Email', credentialType: 'email', placeholder: 'admin@example.com'},
     teacher: { credentialLabel: 'Teacher ID', credentialType: 'text', placeholder: 'T01'},
     student: { credentialLabel: 'Admission Number', credentialType: 'text', placeholder: 'ADM-123456'},
-    parent: { credentialLabel: 'Parent ID', credentialType: 'text', placeholder: 'P01' },
+    parent: { credentialLabel: 'Mobile Number', credentialType: 'tel', placeholder: '9876543210' },
 }
 
 

@@ -231,6 +231,17 @@ export async function getTeacherById(id: string): Promise<Teacher | null> {
 }
 
 
+export async function getParentByMobile(mobile: string): Promise<Parent | null> {
+  const parentDocRef = doc(db, 'parents', mobile);
+  const parentDocSnap = await getDoc(parentDocRef);
+
+  if (!parentDocSnap.exists()) {
+      return null;
+  }
+
+  return { id: parentDocSnap.id, ...parentDocSnap.data() } as Parent;
+}
+
 // Functions to fetch classes, sections for dropdowns
 export async function getClasses(): Promise<Class[]> {
   const classesCol = collection(db, 'classes');

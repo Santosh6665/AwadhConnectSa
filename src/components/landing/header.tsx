@@ -67,6 +67,9 @@ export default function Header() {
               <DropdownMenuItem asChild>
                 <Link href="/student/login">Student Portal</Link>
               </DropdownMenuItem>
+               <DropdownMenuItem asChild>
+                <Link href="/parent/login">Parent Portal</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -116,6 +119,9 @@ export default function Header() {
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/student/login" onClick={() => setMobileMenuOpen(false)}>Student Portal</Link>
+                        </DropdownMenuItem>
+                         <DropdownMenuItem asChild>
+                            <Link href="/parent/login" onClick={() => setMobileMenuOpen(false)}>Parent Portal</Link>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

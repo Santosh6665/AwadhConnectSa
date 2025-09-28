@@ -157,7 +157,7 @@ export interface Admin {
 export interface AppUser {
   email?: string;
   role: UserRole;
-  // For teacher/student role
+  // For teacher/student/parent role
   id?: string; 
   name?: string;
 }

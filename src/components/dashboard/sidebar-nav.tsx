@@ -21,6 +21,8 @@ import {
   HelpCircle,
   BookCopy,
   PenSquare,
+  Shield,
+  HeartHandshake
 } from 'lucide-react';
 import Link from 'next/link';
 import { UserRole } from '@/lib/types';
@@ -58,6 +60,12 @@ const navItems: NavItem[] = [
   { href: '/student/fees', label: 'Fee Payment', icon: Banknote, roles: ['student'] },
   { href: '/student/materials', label: 'Study Materials', icon: BookCopy, roles: ['student'] },
   { href: '/student/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['student'] },
+
+  // Parent Links
+  { href: '/parent/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['parent'] },
+  { href: '/parent/children', label: 'My Children', icon: Users, roles: ['parent'] },
+  { href: '/parent/fees', label: 'Fee Payment', icon: Banknote, roles: ['parent'] },
+  { href: '/parent/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['parent'] },
 ];
 
 export default function SidebarNav({ role }: { role: UserRole }) {
