@@ -16,6 +16,7 @@ import ResultCard from './result-card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { deleteStudentResults } from '@/lib/firebase/firestore';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type StudentResultSummary = {
   student: Student;
@@ -239,11 +240,13 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                             Detailed report card for {selectedStudent.firstName} {selectedStudent.lastName}.
                         </DialogDescription>
                    </DialogHeader>
-                   {selectedStudent.results?.[selectedStudent.session] ? (
-                     <ResultCard student={selectedStudent} annualResult={selectedStudent.results[selectedStudent.session]}/>
-                   ): (
-                    <div className="p-8 text-center">No results found for the current session.</div>
-                   )}
+                   <ScrollArea className="max-h-[90vh]">
+                     {selectedStudent.results?.[selectedStudent.session] ? (
+                       <ResultCard student={selectedStudent} annualResult={selectedStudent.results[selectedStudent.session]}/>
+                     ): (
+                      <div className="p-8 text-center">No results found for the current session.</div>
+                     )}
+                   </ScrollArea>
                 </DialogContent>
             </Dialog>
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
