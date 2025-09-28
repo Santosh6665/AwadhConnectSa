@@ -9,17 +9,18 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
 
 const navItems = [
   { label: 'Home', href: '/' },
+  { label: 'About Us', href: '#about' },
+  { label: 'Academics', href: '#academics' },
+  { label: 'Admissions', href: '#admissions' },
+  { label: 'Gallery', href: '#gallery' },
   { label: 'Notices', href: '#notices' },
-  { label: 'Events', href: '#events' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Contact Us', href: '#contact' },
 ];
 
 export default function Header() {
@@ -31,7 +32,7 @@ export default function Header() {
         <div className="mr-4 flex items-center">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <GraduationCap className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline text-lg">AwadhConnect</span>
+            <span className="font-bold font-headline text-lg">Awadh Inter College</span>
           </Link>
         </div>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
@@ -42,12 +43,28 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
-           <Button asChild>
-              <Link href="/login">
-                <User className="mr-2 h-4 w-4" />
-                Admin Login
-              </Link>
-            </Button>
+           <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <User className="mr-2 h-4 w-4" />
+                  Login
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/login">Admin Portal</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                  <Link href="#">Teacher Portal</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                  <Link href="#">Parent Portal</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                  <Link href="#">Student Portal</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -62,7 +79,7 @@ export default function Header() {
                   <div className="flex items-center justify-between p-4 border-b">
                      <Link href="/" className="flex items-center space-x-2">
                         <GraduationCap className="h-6 w-6 text-primary" />
-                        <span className="font-bold font-headline text-lg">AwadhConnect</span>
+                        <span className="font-bold font-headline text-lg">Awadh Inter College</span>
                       </Link>
                   </div>
                   <nav className="flex flex-col p-4 space-y-4">
@@ -76,9 +93,25 @@ export default function Header() {
                         {item.label}
                       </Link>
                     ))}
-                     <Button asChild>
-                        <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Admin Login</Link>
-                     </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button className="w-full justify-start">Login</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem asChild>
+                          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Admin Portal</Link>
+                        </DropdownMenuItem>
+                         <DropdownMenuItem asChild>
+                          <Link href="#" onClick={() => setMobileMenuOpen(false)}>Teacher Portal</Link>
+                        </DropdownMenuItem>
+                         <DropdownMenuItem asChild>
+                          <Link href="#" onClick={() => setMobileMenuOpen(false)}>Parent Portal</Link>
+                        </DropdownMenuItem>
+                         <DropdownMenuItem asChild>
+                          <Link href="#" onClick={() => setMobileMenuOpen(false)}>Student Portal</Link>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </nav>
                 </div>
               </SheetContent>

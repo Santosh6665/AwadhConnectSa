@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
@@ -45,10 +44,10 @@ export default function HeroSlider() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center text-white p-4">
                     <h1 className="text-4xl md:text-6xl font-headline font-bold drop-shadow-lg">
-                      Welcome to AwadhConnect
+                      Awadh Inter College
                     </h1>
                     <p className="mt-4 text-lg md:text-2xl font-body drop-shadow-md max-w-3xl mx-auto">
-                      Nurturing Minds, Shaping Futures: Your Gateway to Excellence in Education.
+                      Learning with Excellence, Living with Purpose.
                     </p>
                   </div>
                 </div>
