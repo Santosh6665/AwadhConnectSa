@@ -11,9 +11,9 @@ export interface Student {
   status: 'Active' | 'Archived';
   session: string; // e.g., '2024-25'
   
-  // New structured data for fees and results
-  fees: { [session: string]: FeeReceipt[] };
-  results: { [session: string]: Result[] };
+  // New structured data for fees and results, keyed by class name
+  fees: { [className: string]: FeeReceipt[] };
+  results: { [className: string]: Result[] };
 
   // Optional fields
   password?: string;

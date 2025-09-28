@@ -21,9 +21,9 @@ type SortConfig = {
 };
 
 const getFeeStatus = (student: Student) => {
-    const sessionFees = student.fees[student.session] || [];
-    if (sessionFees.length === 0) return 'Due';
-    const lastReceipt = sessionFees[sessionFees.length - 1];
+    const classFees = student.fees[student.className] || [];
+    if (classFees.length === 0) return 'Due';
+    const lastReceipt = classFees[classFees.length - 1];
     return lastReceipt.status;
 };
 
