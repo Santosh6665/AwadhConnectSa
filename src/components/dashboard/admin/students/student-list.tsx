@@ -10,7 +10,7 @@ import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, Archive, Arro
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { addStudent, updateStudent, promoteStudent } from '@/lib/firebase/firestore';
+import { addStudent, updateStudent, promoteStudent, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import AddEditStudentDialog from './add-edit-student-dialog';
 import PromoteStudentDialog from './promote-student-dialog';
 
@@ -31,12 +31,8 @@ const getFeeStatus = (student: Student) => {
 
 export default function StudentList({
   initialStudents,
-  classes,
-  sections,
 }: {
   initialStudents: Student[];
-  classes: Class[];
-  sections: Section[];
 }) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [searchTerm, setSearchTerm] = useState('');
