@@ -16,7 +16,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, Parent } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -96,7 +96,7 @@ export async function promoteStudent(
   });
 
   // 2. Create the new student record for the new session
-  const newStudentData: Omit<Student, 'id'> = {
+  const newStudentData: Omit<Student, 'id' | 'password'> = {
       ...oldStudentData,
       className: newClassName,
       sectionName: newSectionName,
@@ -104,6 +104,8 @@ export async function promoteStudent(
       status: 'Active',
       previousSessions: [], // This will be on the new document eventually, starting fresh
   };
+  
+  // Correctly create a new document reference for the batch
   const newStudentRef = doc(collection(db, 'students'));
   batch.set(newStudentRef, newStudentData);
 
@@ -145,9 +147,10 @@ export async function getTeachers(): Promise<Teacher[]> {
 }
 
 export async function addTeacher(teacher: Omit<Teacher, 'id'>): Promise<string> {
-    const docRef = await addDoc(collection(db, 'teachers'), teacher);
-    // You might want to update the document with its own ID if needed, but for now just return it.
-    return docRef.id;
+    // ID is now provided in the form, so we use setDoc
+    const teacherRef = doc(db, 'teachers', teacher.id);
+    await setDoc(teacherRef, teacher);
+    return teacher.id;
 }
 
 
@@ -171,11 +174,19 @@ export async function getAdminByEmail(email: string): Promise<Admin | null> {
 }
 
 export async function getTeacherById(id: string): Promise<Teacher | null> {
+  // Teachers are now stored with their ID as the document ID
   const teacherDocRef = doc(db, 'teachers', id);
   const teacherDocSnap = await getDoc(teacherDocRef);
 
   if (!teacherDocSnap.exists()) {
-    return null;
+      // Fallback for old data structure if needed, can be removed later
+      const q = query(collection(db, 'teachers'), where('id', '==', id), limit(1));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+          return null;
+      }
+      const doc = querySnapshot.docs[0];
+      return { id: doc.id, ...doc.data() } as Teacher;
   }
 
   return { id: teacherDocSnap.id, ...teacherDocSnap.data() } as Teacher;
