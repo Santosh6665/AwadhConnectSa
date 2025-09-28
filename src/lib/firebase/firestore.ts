@@ -16,9 +16,12 @@ import {
   addDoc,
   writeBatch,
   arrayUnion,
+  startAt,
+  endAt,
+  orderBy,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -279,4 +282,32 @@ export async function getAttendance(date: string, className: string, sectionName
         return { id: docSnap.id, ...docSnap.data() } as DailyAttendance;
     }
     return null;
+}
+
+export async function getAttendanceForMonth(studentId: string, year: number, month: number): Promise<AttendanceRecord[]> {
+  const startDate = new Date(year, month, 1);
+  const endDate = new Date(year, month + 1, 0);
+
+  const startStr = startDate.toISOString().split('T')[0];
+  const endStr = endDate.toISOString().split('T')[0];
+
+  const attendanceCol = collection(db, 'attendance');
+  const q = query(attendanceCol, where('date', '>=', startStr), where('date', '<=', endStr));
+
+  const querySnapshot = await getDocs(q);
+  const studentAttendanceRecords: AttendanceRecord[] = [];
+
+  querySnapshot.forEach(doc => {
+      const dailyData = doc.data() as DailyAttendance;
+      const record = dailyData.records.find(r => r.studentId === studentId);
+      if (record) {
+          studentAttendanceRecords.push({
+              studentId: record.studentId,
+              status: record.status,
+              date: dailyData.date,
+          });
+      }
+  });
+
+  return studentAttendanceRecords;
 }

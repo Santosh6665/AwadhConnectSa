@@ -105,6 +105,7 @@ export type AttendanceStatus = 'Present' | 'Absent' | 'Leave';
 export interface AttendanceRecord {
   studentId: string;
   status: AttendanceStatus;
+  date?: string; // YYYY-MM-DD - Optional, used for history fetching
 }
 
 export interface DailyAttendance {

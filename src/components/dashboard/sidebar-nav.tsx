@@ -22,7 +22,8 @@ import {
   BookCopy,
   PenSquare,
   Shield,
-  HeartHandshake
+  HeartHandshake,
+  History,
 } from 'lucide-react';
 import Link from 'next/link';
 import { UserRole } from '@/lib/types';
@@ -40,32 +41,35 @@ const navItems: NavItem[] = [
   { href: '/dashboard/students', label: 'Manage Students', icon: Users, roles: ['admin'] },
   { href: '/dashboard/teachers', label: 'Manage Teachers', icon: BookUser, roles: ['admin'] },
   { href: '/dashboard/fees', label: 'Fee Management', icon: Banknote, roles: ['admin'] },
-  { href: '/dashboard/attendance', label: 'Attendance', icon: UserCheck, roles: ['admin'] },
+  { href: '/dashboard/attendance', label: 'Mark Attendance', icon: UserCheck, roles: ['admin'] },
+  { href: '/dashboard/attendance-history', label: 'Attendance History', icon: History, roles: ['admin'] },
   { href: '/dashboard/events', label: 'Events & Notices', icon: CalendarDays, roles: ['admin'] },
   { href: '/dashboard/reports', label: 'Reports', icon: Presentation, roles: ['admin'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['admin'] },
   
   // Teacher Links
   { href: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['teacher'] },
-  { href: '/teacher/students', label: 'My Students', icon: Users, roles: ['teacher'] },
-  { href: '/teacher/attendance', label: 'Mark Attendance', icon: UserCheck, roles: ['teacher'] },
-  { href: '/teacher/results', label: 'Enter Results', icon: PenSquare, roles: ['teacher'] },
-  { href: '/teacher/materials', label: 'Study Materials', icon: BookCopy, roles: ['teacher'] },
-  { href: '/teacher/notices', label: 'View Notices', icon: CalendarDays, roles: ['teacher'] },
+  { href: '/teacher/dashboard/students', label: 'My Students', icon: Users, roles: ['teacher'] },
+  { href: '/teacher/dashboard/attendance', label: 'Mark Attendance', icon: UserCheck, roles: ['teacher'] },
+  { href: '/teacher/dashboard/attendance-history', label: 'Attendance History', icon: History, roles: ['teacher'] },
+  { href: '/teacher/dashboard/results', label: 'Enter Results', icon: PenSquare, roles: ['teacher'] },
+  { href: '/teacher/dashboard/materials', label: 'Study Materials', icon: BookCopy, roles: ['teacher'] },
+  { href: '/teacher/dashboard/notices', label: 'View Notices', icon: CalendarDays, roles: ['teacher'] },
   
   // Student Links
   { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['student'] },
-  { href: '/student/results', label: 'My Results', icon: Presentation, roles: ['student'] },
-  { href: '/student/attendance', label: 'My Attendance', icon: UserCheck, roles: ['student'] },
-  { href: '/student/fees', label: 'Fee Payment', icon: Banknote, roles: ['student'] },
-  { href: '/student/materials', label: 'Study Materials', icon: BookCopy, roles: ['student'] },
-  { href: '/student/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['student'] },
+  { href: '/student/dashboard/results', label: 'My Results', icon: Presentation, roles: ['student'] },
+  { href: '/student/dashboard/attendance', label: 'My Attendance', icon: UserCheck, roles: ['student'] },
+  { href: '/student/dashboard/fees', label: 'Fee Payment', icon: Banknote, roles: ['student'] },
+  { href: '/student/dashboard/materials', label: 'Study Materials', icon: BookCopy, roles: ['student'] },
+  { href: '/student/dashboard/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['student'] },
 
   // Parent Links
   { href: '/parent/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['parent'] },
-  { href: '/parent/children', label: 'My Children', icon: Users, roles: ['parent'] },
-  { href: '/parent/fees', label: 'Fee Payment', icon: Banknote, roles: ['parent'] },
-  { href: '/parent/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['parent'] },
+  { href: '/parent/dashboard/children', label: 'My Children', icon: Users, roles: ['parent'] },
+  { href: '/parent/dashboard/attendance', label: 'Attendance', icon: UserCheck, roles: ['parent'] },
+  { href: '/parent/dashboard/fees', label: 'Fee Payment', icon: Banknote, roles: ['parent'] },
+  { href: '/parent/dashboard/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['parent'] },
 ];
 
 export default function SidebarNav({ role }: { role: UserRole }) {
