@@ -6,14 +6,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, Archive, ArrowUpCircle, History } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, ArrowUpCircle, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { addStudent, updateStudent, promoteStudent, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
+import { addStudent, updateStudent, promoteStudent } from '@/lib/firebase/firestore';
 import AddEditStudentDialog from './add-edit-student-dialog';
 import PromoteStudentDialog from './promote-student-dialog';
 import ViewPreviousRecordsDialog from './view-previous-records-dialog';
+import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 
 type StudentWithDetails = Student;
 
@@ -56,7 +57,10 @@ export default function StudentList({
         `${student.firstName.toLowerCase()} ${student.lastName.toLowerCase()}`.includes(searchLower) ||
         student.rollNo.toLowerCase().includes(searchLower) ||
         student.admissionNumber.toLowerCase().includes(searchLower) ||
-        student.className?.toLowerCase().includes(searchLower)
+        student.className?.toLowerCase().includes(searchLower) ||
+        student.sectionName?.toLowerCase().includes(searchLower) ||
+        student.session?.toLowerCase().includes(searchLower) ||
+        student.parentName?.toLowerCase().includes(searchLower)
       );
     });
 
@@ -104,19 +108,6 @@ export default function StudentList({
   const handleViewRecords = (student: Student) => {
     setSelectedStudent(student);
     setIsViewRecordsDialogOpen(true);
-  };
-
-  const handleArchive = (student: Student) => {
-    startTransition(async () => {
-        try {
-            await updateStudent(student.admissionNumber, { status: 'Archived' });
-            setStudents(students.map(s => s.admissionNumber === student.admissionNumber ? { ...s, status: 'Archived' } : s));
-            toast({ title: "Success", description: "Student has been archived." });
-        } catch (error) {
-            console.error("Failed to archive student:", error);
-            toast({ title: "Error", description: "Failed to archive student.", variant: "destructive" });
-        }
-    });
   };
   
   const handleSaveStudent = (data: Student) => {
@@ -256,10 +247,6 @@ export default function StudentList({
                             <ArrowUpCircle className="mr-2 h-4 w-4" />
                             Promote
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleArchive(student)}>
-                            <Archive className="mr-2 h-4 w-4" />
-                            Archive
-                          </DropdownMenuItem>
                         </>
                       )}
                     </DropdownMenuContent>
@@ -297,3 +284,5 @@ export default function StudentList({
     </>
   );
 }
+
+    
