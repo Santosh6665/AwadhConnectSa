@@ -31,8 +31,8 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExam, setSelectedExam] = useState<ExamType>('Annual');
-  const [selectedClass, setSelectedClass] = useState<string>('');
-  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedClass, setSelectedClass] = useState<string>('all');
+  const [selectedSection, setSelectedSection] = useState<string>('all');
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -62,8 +62,8 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
         student.lastName.toLowerCase().includes(searchLower) ||
         student.rollNo.toLowerCase().includes(searchLower);
 
-      const matchesClass = !selectedClass || student.className === selectedClass;
-      const matchesSection = !selectedSection || student.sectionName === selectedSection;
+      const matchesClass = selectedClass === 'all' || student.className === selectedClass;
+      const matchesSection = selectedSection === 'all' || student.sectionName === selectedSection;
 
       return matchesSearch && matchesClass && matchesSection;
     });
@@ -105,14 +105,14 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                  <Select onValueChange={setSelectedClass} value={selectedClass}>
                     <SelectTrigger className="w-40"><SelectValue placeholder="All Classes" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">All Classes</SelectItem>
+                        <SelectItem value="all">All Classes</SelectItem>
                         {classOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}
                     </SelectContent>
                  </Select>
-                 <Select onValueChange={setSelectedSection} value={selectedSection} disabled={!selectedClass}>
+                 <Select onValueChange={setSelectedSection} value={selectedSection} disabled={selectedClass === 'all'}>
                     <SelectTrigger className="w-40"><SelectValue placeholder="All Sections" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">All Sections</SelectItem>
+                        <SelectItem value="all">All Sections</SelectItem>
                         {sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                     </SelectContent>
                 </Select>
