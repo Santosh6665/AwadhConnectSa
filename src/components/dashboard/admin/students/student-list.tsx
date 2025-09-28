@@ -6,13 +6,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, Archive, ArrowUpCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, Archive, ArrowUpCircle, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { addStudent, updateStudent, promoteStudent, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import AddEditStudentDialog from './add-edit-student-dialog';
 import PromoteStudentDialog from './promote-student-dialog';
+import ViewPreviousRecordsDialog from './view-previous-records-dialog';
 
 type StudentWithDetails = Student;
 
@@ -41,6 +42,7 @@ export default function StudentList({
 
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
   const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
+  const [isViewRecordsDialogOpen, setIsViewRecordsDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
@@ -97,6 +99,11 @@ export default function StudentList({
   const handlePromote = (student: Student) => {
     setSelectedStudent(student);
     setIsPromoteDialogOpen(true);
+  };
+
+  const handleViewRecords = (student: Student) => {
+    setSelectedStudent(student);
+    setIsViewRecordsDialogOpen(true);
   };
 
   const handleArchive = (student: Student) => {
@@ -198,6 +205,7 @@ export default function StudentList({
           <TableBody>
             {filteredStudents.map((student) => {
               const feeStatus = getFeeStatus(student);
+              const hasPreviousRecords = student.previousSessions && student.previousSessions.length > 0;
               return (
               <TableRow key={student.admissionNumber}>
                 <TableCell className="font-medium">{student.rollNo}</TableCell>
@@ -229,8 +237,15 @@ export default function StudentList({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleEdit(student)}>Edit Details</DropdownMenuItem>
+                       {hasPreviousRecords && (
+                          <DropdownMenuItem onClick={() => handleViewRecords(student)}>
+                            <History className="mr-2 h-4 w-4" />
+                            View Previous Records
+                          </DropdownMenuItem>
+                        )}
                       {student.status === 'Active' && (
                         <>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handlePromote(student)}>
                             <ArrowUpCircle className="mr-2 h-4 w-4" />
                             Promote
@@ -258,13 +273,20 @@ export default function StudentList({
           isSaving={isSaving}
        />
        {selectedStudent && (
-        <PromoteStudentDialog
-          isOpen={isPromoteDialogOpen}
-          onOpenChange={setIsPromoteDialogOpen}
-          student={selectedStudent}
-          onSave={handleSavePromotion}
-          isSaving={isSaving}
-        />
+        <>
+          <PromoteStudentDialog
+            isOpen={isPromoteDialogOpen}
+            onOpenChange={setIsPromoteDialogOpen}
+            student={selectedStudent}
+            onSave={handleSavePromotion}
+            isSaving={isSaving}
+          />
+          <ViewPreviousRecordsDialog
+            isOpen={isViewRecordsDialogOpen}
+            onOpenChange={setIsViewRecordsDialogOpen}
+            student={selectedStudent}
+          />
+        </>
        )}
     </>
   );
