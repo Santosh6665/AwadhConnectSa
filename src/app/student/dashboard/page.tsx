@@ -45,15 +45,7 @@ export default function StudentDashboardPage() {
       </div>
     );
   }
-
-  const getFeeStatus = (student: Student, className: string) => {
-    const classFees = student.fees[className] || [];
-    if (classFees.length === 0) return 'Due';
-    const lastReceipt = classFees[classFees.length - 1];
-    return lastReceipt.status;
-  };
   
-  const feeStatus = getFeeStatus(student, student.className);
   const hasPreviousSessions = student.previousSessions && student.previousSessions.length > 0;
 
   const handlePreviousSession = () => {
@@ -99,21 +91,6 @@ export default function StudentDashboardPage() {
 
         {/* Right Column - Details */}
         <div className="lg:col-span-2 space-y-8">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <div className="bg-primary/10 p-3 rounded-lg"><Banknote className="w-6 h-6 text-primary" /></div>
-                <CardTitle>Fee Status</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-               <div>Your current fee status for class {student.className} is: 
-                 <Badge variant={feeStatus === 'Paid' ? 'default' : feeStatus === 'Due' ? 'destructive' : 'secondary'} className="ml-2">
-                    {feeStatus}
-                 </Badge>
-               </div>
-            </CardContent>
-          </Card>
           
           {hasPreviousSessions && student.previousSessions && (
             <Card>
@@ -142,31 +119,6 @@ export default function StudentDashboardPage() {
             </Card>
           )}
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <div className="bg-primary/10 p-3 rounded-lg"><BookOpen className="w-6 h-6 text-primary" /></div>
-                <CardTitle>Results</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Your recent exam results will be displayed here.</p>
-              {/* Results will be implemented here */}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <div className="bg-primary/10 p-3 rounded-lg"><Calendar className="w-6 h-6 text-primary" /></div>
-                <CardTitle>Attendance</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Your attendance record will be displayed here.</p>
-              {/* Attendance will be implemented here */}
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
