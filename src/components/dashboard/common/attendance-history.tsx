@@ -142,9 +142,9 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
     fetchAttendance();
   }, [selectedStudent, currentMonth]);
 
-  const { presentDays, absentDays, leaveDays, holidays } = useMemo(() => {
+  const { presentDays, absentDays, holidays } = useMemo(() => {
     const daysInMonth = getDaysInMonth(currentMonth);
-    const result = { presentDays: [] as Date[], absentDays: [] as Date[], leaveDays: [] as Date[], holidays: [] as Date[] };
+    const result = { presentDays: [] as Date[], absentDays: [] as Date[], holidays: [] as Date[] };
 
     for (let i = 1; i <= daysInMonth; i++) {
         const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
@@ -154,7 +154,6 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
         if (record) {
             if (record.status === 'Present') result.presentDays.push(date);
             else if (record.status === 'Absent') result.absentDays.push(date);
-            else if (record.status === 'Leave') result.leaveDays.push(date);
         } else if (isSunday(date)) {
             result.holidays.push(date);
         }
@@ -250,13 +249,11 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
                 modifiers={{ 
                     present: presentDays, 
                     absent: absentDays, 
-                    leave: leaveDays,
                     holiday: holidays
                 }}
                 modifiersClassNames={{
                     present: 'rdp-day_present',
                     absent: 'rdp-day_absent',
-                    leave: 'rdp-day_leave',
                     holiday: 'rdp-day_holiday'
                 }}
                 className="w-full"
@@ -267,7 +264,6 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
                     <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-400"></span>Present: {presentDays.length} days</div>
                         <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-400"></span>Absent: {absentDays.length} days</div>
-                        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-yellow-400"></span>Leave: {leaveDays.length} days</div>
                         <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-gray-300"></span>Holidays: {holidays.length} days</div>
                     </div>
                      <Badge>Current Month: {monthlyPercentage.toFixed(2)}%</Badge>

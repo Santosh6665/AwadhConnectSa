@@ -100,7 +100,7 @@ export interface Result {
   totalMarks: number;
 }
 
-export type AttendanceStatus = 'Present' | 'Absent' | 'Leave';
+export type AttendanceStatus = 'Present' | 'Absent' | 'Unmarked';
 
 export interface AttendanceRecord {
   studentId: string;

@@ -11,7 +11,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Loader2, Eye, History } from 'lucide-react';
+import { CalendarIcon, Loader2, Eye, History, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
@@ -124,7 +124,7 @@ export default function AdminAttendancePage() {
         });
     };
 
-    const allMarked = students.length > 0 && students.every(s => attendanceRecords.has(s.admissionNumber));
+    const allMarked = students.length > 0 && students.every(s => attendanceRecords.get(s.admissionNumber) !== 'Unmarked');
 
     return (
         <div className="space-y-6">
@@ -199,25 +199,33 @@ export default function AdminAttendancePage() {
                                         <TableCell>{student.rollNo}</TableCell>
                                         <TableCell>{`${student.firstName} ${student.lastName}`}</TableCell>
                                         <TableCell>
-                                            <RadioGroup
-                                                value={attendanceRecords.get(student.admissionNumber)}
-                                                onValueChange={(status) => handleStatusChange(student.admissionNumber, status as AttendanceStatus)}
-                                                className="flex gap-4"
-                                                disabled={isSaving}
-                                            >
-                                                <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Present" id={`present-${student.admissionNumber}`} />
-                                                    <Label htmlFor={`present-${student.admissionNumber}`}>Present</Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Absent" id={`absent-${student.admissionNumber}`} />
-                                                    <Label htmlFor={`absent-${student.admissionNumber}`}>Absent</Label>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Leave" id={`leave-${student.admissionNumber}`} />
-                                                    <Label htmlFor={`leave-${student.admissionNumber}`}>Leave</Label>
-                                                </div>
-                                            </RadioGroup>
+                                            <div className="flex items-center gap-4">
+                                                <RadioGroup
+                                                    value={attendanceRecords.get(student.admissionNumber)}
+                                                    onValueChange={(status) => handleStatusChange(student.admissionNumber, status as AttendanceStatus)}
+                                                    className="flex gap-4"
+                                                    disabled={isSaving}
+                                                >
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="Present" id={`present-${student.admissionNumber}`} />
+                                                        <Label htmlFor={`present-${student.admissionNumber}`}>Present</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="Absent" id={`absent-${student.admissionNumber}`} />
+                                                        <Label htmlFor={`absent-${student.admissionNumber}`}>Absent</Label>
+                                                    </div>
+                                                </RadioGroup>
+                                                 <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
+                                                    onClick={() => handleStatusChange(student.admissionNumber, 'Unmarked')}
+                                                    disabled={isSaving}
+                                                    className="text-muted-foreground hover:text-foreground"
+                                                >
+                                                    <XCircle className="mr-2 h-4 w-4" />
+                                                    Clear
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                          <TableCell>
                                             <Button variant="outline" size="sm" asChild>

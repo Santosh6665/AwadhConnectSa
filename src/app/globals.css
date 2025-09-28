@@ -89,9 +89,6 @@
   .rdp-day_absent {
     @apply bg-red-100 text-red-800 rounded-md;
   }
-  .rdp-day_leave {
-     @apply bg-yellow-100 text-yellow-800 rounded-md;
-  }
   .rdp-day_holiday {
     @apply text-muted-foreground;
   }
@@ -101,8 +98,5 @@
   }
   .dark .rdp-day_absent {
     @apply bg-red-900/50 text-red-300;
-  }
-  .dark .rdp-day_leave {
-    @apply bg-yellow-900/50 text-yellow-300;
   }
 }
