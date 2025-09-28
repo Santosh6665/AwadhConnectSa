@@ -6,10 +6,11 @@ import type { UserRole, Student, Teacher, Parent, AttendanceRecord, AttendanceSt
 import { getStudents, getTeacherById, getParentByMobile, getAttendanceForMonth } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
-import { format, getDaysInMonth } from 'date-fns';
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { format, getDaysInMonth, addMonths, subMonths, isSunday } from 'date-fns';
 
 interface AttendanceHistoryProps {
   role: UserRole;
@@ -18,37 +19,31 @@ interface AttendanceHistoryProps {
   teacherId?: string;
 }
 
-const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
-const months = Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(currentYear, i), 'MMMM') }));
 const classOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
 const sectionOptions = ["A", "B", "C"];
 
 export default function AttendanceHistory({ role, studentId, parentId, teacherId }: AttendanceHistoryProps) {
-  const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
-  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().getMonth().toString());
-
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  
   // Admin/Teacher filters
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('');
-
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  
   // Parent state
   const [children, setChildren] = useState<Student[]>([]);
 
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Set initial student for non-admin/teacher roles
   useEffect(() => {
     if (role === 'student' && studentId) {
-      setSelectedStudentId(studentId);
+       getStudents({admissionNumber: studentId, status: 'Active'}).then(s => setSelectedStudent(s[0] || null));
     }
   }, [role, studentId]);
 
-  // Fetch data for filters (Admin/Teacher)
   useEffect(() => {
     async function fetchDataForFilters() {
       if (role === 'admin') {
@@ -80,7 +75,6 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
     fetchDataForFilters();
   }, [role, teacherId]);
 
-  // Fetch children for parent
   useEffect(() => {
     async function fetchChildren() {
         if (role === 'parent' && parentId) {
@@ -91,7 +85,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
                 const parentChildren = studentsArrays.flat().filter(s => s.status === 'Active');
                 setChildren(parentChildren);
                 if (parentChildren.length > 0) {
-                    setSelectedStudentId(parentChildren[0].admissionNumber);
+                    setSelectedStudent(parentChildren[0]);
                 }
             }
         }
@@ -100,7 +94,6 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
   }, [role, parentId]);
 
 
-  // Filter students for dropdown when class/section changes
   useEffect(() => {
     if (role === 'admin' || role === 'teacher') {
       let studentsToList = allStudents;
@@ -112,24 +105,23 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
       }
       setFilteredStudents(studentsToList);
       if (studentsToList.length > 0) {
-          setSelectedStudentId(studentsToList[0].admissionNumber);
+          setSelectedStudent(studentsToList[0]);
       } else {
-          setSelectedStudentId('');
+          setSelectedStudent(null);
       }
     }
   }, [selectedClass, selectedSection, allStudents, role]);
   
-  // Fetch attendance data
   useEffect(() => {
-    if (!selectedStudentId || !selectedYear || selectedMonth === undefined) return;
+    if (!selectedStudent?.admissionNumber) return;
 
     const fetchAttendance = async () => {
       setIsLoading(true);
       try {
         const records = await getAttendanceForMonth(
-          selectedStudentId,
-          parseInt(selectedYear),
-          parseInt(selectedMonth)
+          selectedStudent.admissionNumber,
+          currentMonth.getFullYear(),
+          currentMonth.getMonth()
         );
         setAttendance(records);
       } catch (error) {
@@ -140,39 +132,35 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
     };
 
     fetchAttendance();
-  }, [selectedStudentId, selectedYear, selectedMonth]);
+  }, [selectedStudent, currentMonth]);
 
-  const monthlyReport = useMemo(() => {
-    const year = parseInt(selectedYear);
-    const month = parseInt(selectedMonth);
-    const daysInMonth = getDaysInMonth(new Date(year, month));
-    
-    const report = Array.from({ length: daysInMonth }, (_, i) => {
-      const date = new Date(year, month, i + 1);
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const record = attendance.find(a => a.date === dateStr);
-      return {
-        date: format(date, 'dd MMM yyyy'),
-        day: format(date, 'EEEE'),
-        status: record ? record.status : ('Sunday' === format(date, 'EEEE') ? 'Holiday' : 'N/A'),
-      };
-    });
+  const { presentDays, absentDays, leaveDays, holidays } = useMemo(() => {
+    const daysInMonth = getDaysInMonth(currentMonth);
+    const result = { presentDays: [], absentDays: [], leaveDays: [], holidays: [] };
 
-    const summary = {
-      Present: report.filter(r => r.status === 'Present').length,
-      Absent: report.filter(r => r.status === 'Absent').length,
-      Leave: report.filter(r => r.status === 'Leave').length,
-    };
+    for (let i = 1; i <= daysInMonth; i++) {
+        const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const record = attendance.find(a => a.date === dateStr);
 
-    return { report, summary };
-  }, [attendance, selectedYear, selectedMonth]);
+        if (record) {
+            if (record.status === 'Present') result.presentDays.push(date);
+            else if (record.status === 'Absent') result.absentDays.push(date);
+            else if (record.status === 'Leave') result.leaveDays.push(date);
+        } else if (isSunday(date)) {
+            result.holidays.push(date);
+        }
+    }
+    return result;
+  }, [attendance, currentMonth]);
+  
+  const totalWorkingDays = getDaysInMonth(currentMonth) - holidays.length;
+  const monthlyPercentage = totalWorkingDays > 0 ? (presentDays.length / totalWorkingDays) * 100 : 0;
 
-  const getStatusVariant = (status: AttendanceStatus | 'N/A' | 'Holiday'): 'default' | 'destructive' | 'secondary' => {
-      switch(status) {
-          case 'Present': return 'default';
-          case 'Absent': return 'destructive';
-          default: return 'secondary';
-      }
+
+  const handleStudentChange = (admissionNumber: string) => {
+    const student = allStudents.find(s => s.admissionNumber === admissionNumber) || children.find(c => c.admissionNumber === admissionNumber);
+    setSelectedStudent(student || null);
   }
 
   return (
@@ -182,17 +170,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
         <CardDescription>Select filters to view the monthly attendance report.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Filter Section */}
         <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-32"><SelectValue placeholder="Year" /></SelectTrigger>
-            <SelectContent>{years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
-          </Select>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-40"><SelectValue placeholder="Month" /></SelectTrigger>
-            <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>)}</SelectContent>
-          </Select>
-
           {role === 'admin' && (
             <>
               <Select value={selectedClass} onValueChange={setSelectedClass}>
@@ -207,7 +185,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
           )}
 
           {(role === 'admin' || role === 'teacher') && (
-            <Select value={selectedStudentId} onValueChange={setSelectedStudentId} disabled={filteredStudents.length === 0}>
+            <Select value={selectedStudent?.admissionNumber || ''} onValueChange={handleStudentChange} disabled={filteredStudents.length === 0}>
                 <SelectTrigger className="w-64"><SelectValue placeholder="Select Student" /></SelectTrigger>
                 <SelectContent>
                     {filteredStudents.map(s => <SelectItem key={s.admissionNumber} value={s.admissionNumber}>{s.firstName} {s.lastName} ({s.rollNo})</SelectItem>)}
@@ -216,7 +194,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
           )}
 
           {role === 'parent' && (
-            <Select value={selectedStudentId} onValueChange={setSelectedStudentId} disabled={children.length === 0}>
+            <Select value={selectedStudent?.admissionNumber || ''} onValueChange={handleStudentChange} disabled={children.length === 0}>
                 <SelectTrigger className="w-64"><SelectValue placeholder="Select Child" /></SelectTrigger>
                 <SelectContent>
                     {children.map(c => <SelectItem key={c.admissionNumber} value={c.admissionNumber}>{c.firstName} {c.lastName}</SelectItem>)}
@@ -225,39 +203,46 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
           )}
         </div>
 
-        {/* Report Section */}
         {isLoading ? (
             <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-        ) : selectedStudentId ? (
-          <div>
-            <div className="border rounded-lg overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Day</TableHead>
-                            <TableHead>Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {monthlyReport.report.map(day => (
-                            <TableRow key={day.date}>
-                                <TableCell>{day.date}</TableCell>
-                                <TableCell>{day.day}</TableCell>
-                                <TableCell>
-                                    <Badge variant={getStatusVariant(day.status as any)}>{day.status}</Badge>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+        ) : selectedStudent ? (
+          <div className="p-4 border rounded-lg">
+            <div className="flex justify-between items-center mb-4">
+                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft /></Button>
+                <h3 className="text-xl font-semibold font-headline">{format(currentMonth, 'MMMM yyyy')}</h3>
+                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight /></Button>
             </div>
-             <div className="mt-4 flex justify-end gap-4 font-semibold text-sm pr-4">
-                <span>Total Present: <span className="text-green-600">{monthlyReport.summary.Present}</span></span>
-                <span>Total Absent: <span className="text-red-600">{monthlyReport.summary.Absent}</span></span>
-                <span>Total Leave: <span className="text-yellow-600">{monthlyReport.summary.Leave}</span></span>
+
+            <Calendar
+                month={currentMonth}
+                onMonthChange={setCurrentMonth}
+                modifiers={{ 
+                    present: presentDays, 
+                    absent: absentDays, 
+                    leave: leaveDays,
+                    holiday: holidays
+                }}
+                modifiersClassNames={{
+                    present: 'rdp-day_present',
+                    absent: 'rdp-day_absent',
+                    leave: 'rdp-day_leave',
+                    holiday: 'rdp-day_holiday'
+                }}
+                className="w-full"
+            />
+            <div className="mt-6 pt-4 border-t">
+                <h4 className="font-semibold mb-2">Monthly Summary</h4>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-400"></span>Present: {presentDays.length} days</div>
+                        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-400"></span>Absent: {absentDays.length} days</div>
+                        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-yellow-400"></span>Leave: {leaveDays.length} days</div>
+                        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-gray-300"></span>Holidays: {holidays.length} days</div>
+                    </div>
+                     <Badge>Current Month: {monthlyPercentage.toFixed(2)}%</Badge>
+                </div>
             </div>
           </div>
         ) : (
