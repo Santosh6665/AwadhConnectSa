@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import {
@@ -17,7 +18,7 @@ import {
   arrayUnion,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -52,13 +53,26 @@ export async function getEvents(): Promise<Event[]> {
   ) as Event[];
 }
 
-export async function getStudents(): Promise<Student[]> {
-  const studentSnapshot = await getDocs(collection(db, 'students'));
+export async function getStudents(filters?: { className?: string; sectionName?: string; status?: 'Active' | 'Archived' }): Promise<Student[]> {
+  let q = query(collection(db, 'students'));
+
+  if (filters?.className) {
+    q = query(q, where('className', '==', filters.className));
+  }
+  if (filters?.sectionName) {
+    q = query(q, where('sectionName', '==', filters.sectionName));
+  }
+   if (filters?.status) {
+    q = query(q, where('status', '==', filters.status));
+  }
+
+  const studentSnapshot = await getDocs(q);
   const studentList = studentSnapshot.docs.map(doc =>
     ({ admissionNumber: doc.id, ...doc.data() })
   );
   return studentList as Student[];
 }
+
 
 export async function getStudentByAdmissionNumber(admissionNumber: string): Promise<Student | null> {
   const studentDocRef = doc(db, 'students', admissionNumber);
@@ -205,4 +219,23 @@ export async function getFees(): Promise<Fee[]> {
   const feeSnapshot = await getDocs(feesCol);
   const feeList = feeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   return feeList as Fee[];
+}
+
+
+export async function saveAttendance(attendanceData: Omit<DailyAttendance, 'id'>): Promise<void> {
+    const { date, className, sectionName } = attendanceData;
+    const docId = `${date}_${className}_${sectionName}`;
+    const attendanceRef = doc(db, 'attendance', docId);
+    await setDoc(attendanceRef, attendanceData);
+}
+
+export async function getAttendance(date: string, className: string, sectionName: string): Promise<DailyAttendance | null> {
+    const docId = `${date}_${className}_${sectionName}`;
+    const attendanceRef = doc(db, 'attendance', docId);
+    const docSnap = await getDoc(attendanceRef);
+
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as DailyAttendance;
+    }
+    return null;
 }

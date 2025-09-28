@@ -1,4 +1,5 @@
 
+
 export interface Student {
   admissionNumber: string; // Document ID
   rollNo: string;
@@ -53,7 +54,6 @@ export interface Teacher {
   classes: string[]; // e.g., ['9A', '10B']
   status: 'Active' | 'Archived';
   salary?: number;
-  attendance?: AttendanceRecord[];
   password?: string;
 }
 
@@ -98,11 +98,23 @@ export interface Result {
   totalMarks: number;
 }
 
+export type AttendanceStatus = 'Present' | 'Absent' | 'Leave';
+
 export interface AttendanceRecord {
-  date: Date;
-  status: 'Present' | 'Absent';
-  notes?: string;
+  studentId: string;
+  status: AttendanceStatus;
 }
+
+export interface DailyAttendance {
+  id: string; // YYYY-MM-DD_className_sectionName
+  date: string; // YYYY-MM-DD
+  className: string;
+  sectionName: string;
+  session: string;
+  takenBy: string; // teacherId
+  records: AttendanceRecord[];
+}
+
 
 export type NoticeAudience = 'student' | 'teacher' | 'parent' | 'all';
 
