@@ -223,7 +223,7 @@ export default function StudentList({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={student.status === 'Active' ? 'outline' : 'secondary'}>
+                  <Badge variant={student.status === 'Active' ? 'default' : 'secondary'}>
                     {student.status}
                   </Badge>
                 </TableCell>
