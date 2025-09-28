@@ -1,19 +1,35 @@
 
 export interface Student {
-  id: string;
+  id: string; // Auto-generated Firestore ID
   rollNo: string;
   firstName: string;
-  lastName:string;
-  dob: Date;
+  lastName: string;
+  dob: string; // Stored as 'dd/MM/yyyy'
   gender: 'Male' | 'Female' | 'Other';
   admissionNumber: string;
   classId: string;
   sectionId: string;
   parentId: string;
   feeStatus: 'Paid' | 'Due' | 'Partial';
+  status: 'Active' | 'Archived';
+  session: string; // e.g., '2024-25'
+  
+  // Optional fields
+  password?: string;
+  previousSessions?: PreviousSession[];
   attendance?: AttendanceRecord[];
   results?: Result[];
 }
+
+export interface PreviousSession {
+  sessionId: string; // e.g., 'S01-2023-24'
+  classId: string;
+  sectionId: string;
+  session: string;
+  rollNo: string;
+  finalStatus: 'Promoted' | 'Retained';
+}
+
 
 export interface Parent {
   id: string;
@@ -42,12 +58,12 @@ export interface Teacher {
 
 export interface Class {
   id: string;
-  name: string;
+  name: string; // e.g., 'Class 10'
 }
 
 export interface Section {
   id: string;
-  name: string;
+  name: string; // e.g., 'A'
   classId: string;
 }
 
