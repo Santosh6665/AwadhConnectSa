@@ -64,7 +64,6 @@ const navItems: NavItem[] = [
 
   // Parent Links
   { href: '/parent/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['parent'] },
-  { href: '/parent/dashboard/children', label: 'My Children', icon: Users, roles: ['parent'] },
   { href: '/parent/dashboard/attendance', label: 'Attendance', icon: UserCheck, roles: ['parent'] },
   { href: '/parent/dashboard/fees', label: 'Fee Payment', icon: Banknote, roles: ['parent'] },
   { href: '/parent/dashboard/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['parent'] },
