@@ -18,9 +18,10 @@ import {
   startAt,
   endAt,
   orderBy,
+  deleteField,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -408,4 +409,12 @@ export async function saveStudentResults(admissionNumber: string, session: strin
     results: updatedResults,
   });
 }
-    
+
+export async function deleteStudentResults(admissionNumber: string, session: string, examType: ExamType): Promise<void> {
+  const studentRef = doc(db, 'students', admissionNumber);
+  const updatePath = `results.${session}.examResults.${examType}`;
+  
+  await updateDoc(studentRef, {
+    [updatePath]: deleteField(),
+  });
+}

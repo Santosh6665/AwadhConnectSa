@@ -14,6 +14,8 @@ import { calculateOverallResult, getGrade } from '@/lib/utils';
 import EditMarksDialog from './edit-marks-dialog';
 import ResultCard from './result-card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { deleteStudentResults } from '@/lib/firebase/firestore';
 
 type StudentResultSummary = {
   student: Student;
@@ -33,9 +35,11 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [selectedExam, setSelectedExam] = useState<ExamType>('Annual');
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedSection, setSelectedSection] = useState<string>('all');
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const { toast } = useToast();
@@ -55,6 +59,45 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const handleView = (student: Student) => {
     setSelectedStudent(student);
     setIsViewDialogOpen(true);
+  };
+
+  const handleDeleteClick = (student: Student) => {
+    setSelectedStudent(student);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedStudent || !selectedStudent.session) {
+      toast({ title: "Error", description: "Cannot delete results without a selected student or session.", variant: "destructive" });
+      return;
+    }
+
+    startDeleteTransition(async () => {
+      try {
+        await deleteStudentResults(selectedStudent.admissionNumber, selectedStudent.session, selectedExam);
+        
+        // Optimistically update the UI
+        const updatedStudents = students.map(s => {
+          if (s.admissionNumber === selectedStudent.admissionNumber) {
+            const newStudent = { ...s };
+            if (newStudent.results?.[s.session]?.examResults) {
+              delete newStudent.results[s.session].examResults[selectedExam];
+            }
+            return newStudent;
+          }
+          return s;
+        });
+        setStudents(updatedStudents);
+        
+        toast({ title: "Success", description: `${selectedExam} results for ${selectedStudent.firstName} have been deleted.` });
+      } catch (error) {
+        console.error("Failed to delete results:", error);
+        toast({ title: "Error", description: "Could not delete results.", variant: "destructive" });
+      } finally {
+        setIsDeleteDialogOpen(false);
+        setSelectedStudent(null);
+      }
+    });
   };
 
   const handleSaveMarks = (updatedStudent: Student) => {
@@ -165,7 +208,9 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                                 <Button variant="ghost" size="icon" onClick={() => handleView(student)}><Eye className="h-4 w-4"/></Button>
                                 <Button variant="ghost" size="icon" onClick={() => handleEdit(student)}><Edit className="h-4 w-4"/></Button>
                                 {userRole === 'admin' && (
-                                    <Button variant="ghost" size="icon" className="text-destructive"><Trash className="h-4 w-4"/></Button>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(student)} disabled={isDeleting}>
+                                      <Trash className="h-4 w-4"/>
+                                    </Button>
                                 )}
                             </div>
                         </TableCell>
@@ -201,6 +246,23 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                    )}
                 </DialogContent>
             </Dialog>
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will permanently delete the <strong>{selectedExam}</strong> results for <strong>{selectedStudent.firstName}</strong>. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirmDelete} disabled={isDeleting}>
+                    {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </>
       )}
     </>
