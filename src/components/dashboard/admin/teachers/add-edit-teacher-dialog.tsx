@@ -21,6 +21,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { Teacher } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const teacherSchema = z.object({
   id: z.string().min(1, 'Teacher ID is required'),
@@ -323,17 +324,15 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                                     <div className="flex flex-col gap-2 p-2">
                                     {allSubjects.map(subject => (
                                         <div key={subject} className="flex items-center gap-2">
-                                            <Input
-                                                type="checkbox"
+                                            <Checkbox
                                                 id={`subject-${subject}`}
                                                 checked={field.value?.includes(subject)}
-                                                onChange={() => {
-                                                    const newValues = field.value?.includes(subject)
-                                                        ? field.value.filter(v => v !== subject)
-                                                        : [...(field.value || []), subject];
+                                                onCheckedChange={(checked) => {
+                                                    const newValues = checked
+                                                        ? [...(field.value || []), subject]
+                                                        : (field.value || []).filter(v => v !== subject);
                                                     field.onChange(newValues);
                                                 }}
-                                                className="h-4 w-4"
                                             />
                                             <Label htmlFor={`subject-${subject}`} className="font-normal">{subject}</Label>
                                         </div>
@@ -367,17 +366,15 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                                     <div className="flex flex-col gap-2 p-2">
                                     {allclasses.map(cls => (
                                         <div key={cls} className="flex items-center gap-2">
-                                            <Input
-                                                type="checkbox"
+                                            <Checkbox
                                                 id={`class-${cls}`}
                                                 checked={field.value?.includes(cls)}
-                                                onChange={() => {
-                                                    const newValues = field.value?.includes(cls)
-                                                        ? field.value.filter(v => v !== cls)
-                                                        : [...(field.value || []), cls];
+                                                onCheckedChange={(checked) => {
+                                                    const newValues = checked
+                                                        ? [...(field.value || []), cls]
+                                                        : (field.value || []).filter(v => v !== cls);
                                                     field.onChange(newValues);
                                                 }}
-                                                className="h-4 w-4"
                                             />
                                             <Label htmlFor={`class-${cls}`} className="font-normal">{cls}</Label>
                                         </div>
