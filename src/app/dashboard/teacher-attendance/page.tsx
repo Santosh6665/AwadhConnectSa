@@ -10,10 +10,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Loader2, XCircle } from 'lucide-react';
+import { CalendarIcon, Loader2, XCircle, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
+import Link from 'next/link';
 
 export default function AdminTeacherAttendancePage() {
     const { user } = useAuth();
@@ -148,6 +149,7 @@ export default function AdminTeacherAttendancePage() {
                                     <TableHead>Name</TableHead>
                                     <TableHead>Designation</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -185,6 +187,14 @@ export default function AdminTeacherAttendancePage() {
                                                 </Button>
                                             </div>
                                         </TableCell>
+                                        <TableCell>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={`/dashboard/teacher-attendance-history?teacherId=${teacher.id}`}>
+                                                    <Eye className="mr-2 h-4 w-4" />
+                                                    History
+                                                </Link>
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -208,4 +218,3 @@ export default function AdminTeacherAttendancePage() {
         </div>
     );
 }
-
