@@ -1,3 +1,4 @@
+
 export interface Student {
   admissionNumber: string; // Document ID
   rollNo: string;
@@ -27,6 +28,7 @@ export interface PreviousSession {
   session: string;
   rollNo: string;
   finalStatus: 'Promoted' | 'Retained';
+  dueFee: number;
 }
 
 

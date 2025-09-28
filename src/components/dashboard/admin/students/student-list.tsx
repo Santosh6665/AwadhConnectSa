@@ -6,12 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, Archive, ArrowUpCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { addStudent, updateStudent } from '@/lib/firebase/firestore';
+import { addStudent, updateStudent, promoteStudent } from '@/lib/firebase/firestore';
 import AddEditStudentDialog from './add-edit-student-dialog';
+import PromoteStudentDialog from './promote-student-dialog';
 
 type StudentWithDetails = Student;
 
@@ -36,7 +37,6 @@ export default function StudentList({
   initialStudents: Student[];
   classes: Class[];
   sections: Section[];
-  parents: Parent[];
 }) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,6 +44,7 @@ export default function StudentList({
   const { toast } = useToast();
 
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
+  const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
@@ -96,6 +97,24 @@ export default function StudentList({
     setSelectedStudent(student);
     setIsAddEditDialogOpen(true);
   };
+
+  const handlePromote = (student: Student) => {
+    setSelectedStudent(student);
+    setIsPromoteDialogOpen(true);
+  };
+
+  const handleArchive = (student: Student) => {
+    startTransition(async () => {
+        try {
+            await updateStudent(student.admissionNumber, { status: 'Archived' });
+            setStudents(students.map(s => s.admissionNumber === student.admissionNumber ? { ...s, status: 'Archived' } : s));
+            toast({ title: "Success", description: "Student has been archived." });
+        } catch (error) {
+            console.error("Failed to archive student:", error);
+            toast({ title: "Error", description: "Failed to archive student.", variant: "destructive" });
+        }
+    });
+  };
   
   const handleSaveStudent = (data: Student) => {
       startTransition(async () => {
@@ -117,6 +136,29 @@ export default function StudentList({
         }
       });
   };
+
+  const handleSavePromotion = async (
+    admissionNumber: string,
+    newSession: string,
+    newClassName: string,
+    newSectionName: string,
+    carryForwardDues: boolean
+  ) => {
+    startTransition(async () => {
+      try {
+        await promoteStudent(admissionNumber, newSession, newClassName, newSectionName, carryForwardDues);
+        const updatedStudent = await getStudentByAdmissionNumber(admissionNumber);
+        if (updatedStudent) {
+            setStudents(students.map(s => s.admissionNumber === admissionNumber ? updatedStudent : s));
+        }
+        toast({ title: "Success", description: "Student promoted successfully." });
+        setIsPromoteDialogOpen(false);
+      } catch (error) {
+        console.error("Failed to promote student:", error);
+        toast({ title: "Error", description: "Failed to promote student.", variant: "destructive" });
+      }
+    });
+  };  
   
 
   return (
@@ -191,6 +233,18 @@ export default function StudentList({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleEdit(student)}>Edit Details</DropdownMenuItem>
+                      {student.status === 'Active' && (
+                        <>
+                          <DropdownMenuItem onClick={() => handlePromote(student)}>
+                            <ArrowUpCircle className="mr-2 h-4 w-4" />
+                            Promote
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleArchive(student)}>
+                            <Archive className="mr-2 h-4 w-4" />
+                            Archive
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -207,6 +261,15 @@ export default function StudentList({
           onSave={handleSaveStudent}
           isSaving={isSaving}
        />
+       {selectedStudent && (
+        <PromoteStudentDialog
+          isOpen={isPromoteDialogOpen}
+          onOpenChange={setIsPromoteDialogOpen}
+          student={selectedStudent}
+          onSave={handleSavePromotion}
+          isSaving={isSaving}
+        />
+       )}
     </>
   );
 }

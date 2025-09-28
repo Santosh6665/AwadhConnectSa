@@ -14,6 +14,7 @@ import {
   limit,
   addDoc,
   writeBatch,
+  arrayUnion,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section } from '../types';
@@ -80,6 +81,64 @@ export async function updateStudent(admissionNumber: string, studentData: Partia
     const studentDoc = doc(db, 'students', admissionNumber);
     await updateDoc(studentDoc, studentData);
 }
+
+export async function promoteStudent(
+  admissionNumber: string,
+  newSession: string,
+  newClassName: string,
+  newSectionName: string,
+  carryForwardDues: boolean
+): Promise<void> {
+  const studentRef = doc(db, 'students', admissionNumber);
+  const studentSnap = await getDoc(studentRef);
+
+  if (!studentSnap.exists()) {
+    throw new Error('Student not found');
+  }
+
+  const studentData = studentSnap.data() as Student;
+  const currentFees = studentData.fees[studentData.className] || [];
+  const lastReceipt = currentFees.length > 0 ? currentFees[currentFees.length - 1] : null;
+  const dueFee = lastReceipt?.status === 'Due' ? lastReceipt.amount : 0;
+
+  const previousSessionRecord = {
+    sessionId: `${studentData.admissionNumber}-${studentData.session}`,
+    className: studentData.className,
+    sectionName: studentData.sectionName,
+    session: studentData.session,
+    rollNo: studentData.rollNo,
+    finalStatus: 'Promoted',
+    dueFee: dueFee,
+  };
+
+  const newFees = { ...studentData.fees };
+  let newFeeReceipts = [];
+
+  if (carryForwardDues && dueFee > 0) {
+    newFeeReceipts.push({
+      id: `receipt-${Date.now()}`,
+      amount: dueFee,
+      date: new Date().toLocaleDateString('en-GB'),
+      status: 'Due',
+    });
+  }
+  newFees[newClassName] = newFeeReceipts;
+
+  const batch = writeBatch(db);
+
+  batch.update(studentRef, {
+    session: newSession,
+    className: newClassName,
+    sectionName: newSectionName,
+    // Add current session details to the `previousSessions` array
+    previousSessions: arrayUnion(previousSessionRecord),
+    fees: newFees,
+    results: { ...studentData.results, [newClassName]: [] },
+  });
+
+  await batch.commit();
+}
+
 
 export async function getTeachers(): Promise<Teacher[]> {
   const teachersCol = collection(db, 'teachers');
