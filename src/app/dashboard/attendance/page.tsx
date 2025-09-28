@@ -1,15 +1,17 @@
 
 'use client';
 import { useState, useEffect, useTransition } from 'react';
-import { getStudents, getAttendance } from '@/lib/firebase/firestore';
-import type { Student, DailyAttendance, AttendanceStatus } from '@/lib/types';
+import { getStudents, saveAttendance, getAttendance } from '@/lib/firebase/firestore';
+import type { Student, AttendanceStatus, DailyAttendance } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CalendarIcon, Loader2, Search } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
@@ -17,108 +19,123 @@ import { useAuth } from '@/contexts/auth-context';
 const classOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
 const sectionOptions = ["A", "B", "C"];
 
-const AttendanceSummary = ({ attendance }: { attendance: DailyAttendance | null }) => {
-    if (!attendance) return null;
-
-    const total = attendance.records.length;
-    const present = attendance.records.filter(r => r.status === 'Present').length;
-    const absent = attendance.records.filter(r => r.status === 'Absent').length;
-    const leave = attendance.records.filter(r => r.status === 'Leave').length;
-
-    const toPercent = (val: number) => total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Attendance Summary</CardTitle>
-                <CardDescription>
-                    For {format(new Date(attendance.date), 'PPP')} | Class: {attendance.className}-{attendance.sectionName}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                    <p className="text-2xl font-bold">{toPercent(present)}%</p>
-                    <p className="text-sm text-muted-foreground">Present</p>
-                </div>
-                <div>
-                    <p className="text-2xl font-bold">{toPercent(absent)}%</p>
-                    <p className="text-sm text-muted-foreground">Absent</p>
-                </div>
-                <div>
-                    <p className="text-2xl font-bold">{toPercent(leave)}%</p>
-                    <p className="text-sm text-muted-foreground">On Leave</p>
-                </div>
-            </CardContent>
-        </Card>
-    );
-};
-
-
 export default function AdminAttendancePage() {
     const { user } = useAuth();
     const [selectedClass, setSelectedClass] = useState<string>('');
     const [selectedSection, setSelectedSection] = useState<string>('');
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [students, setStudents] = useState<Student[]>([]);
-    const [attendance, setAttendance] = useState<DailyAttendance | null>(null);
+    const [attendanceRecords, setAttendanceRecords] = useState<Map<string, AttendanceStatus>>(new Map());
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, startTransition] = useTransition();
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [initialLoad, setInitialLoad] = useState(true);
 
     const { toast } = useToast();
 
-    const handleFetchAttendance = async () => {
-        if (!selectedClass || !selectedSection || !selectedDate) {
-            toast({ title: "Incomplete Selection", description: "Please select class, section, and date.", variant: "destructive"});
+    useEffect(() => {
+        if (initialLoad) return;
+
+        const fetchStudentsAndAttendance = async () => {
+            if (!selectedClass || !selectedSection || !selectedDate) return;
+
+            setIsLoading(true);
+            setAttendanceRecords(new Map());
+            setIsSubmitted(false);
+
+            try {
+                const dateStr = format(selectedDate, 'yyyy-MM-dd');
+                const [fetchedStudents, existingAttendance] = await Promise.all([
+                    getStudents({ className: selectedClass, sectionName: selectedSection, status: 'Active' }),
+                    getAttendance(dateStr, selectedClass, selectedSection)
+                ]);
+
+                setStudents(fetchedStudents);
+
+                if (fetchedStudents.length === 0) {
+                     toast({ title: "No Students", description: "No active students found for this class.", variant: "destructive" });
+                     return;
+                }
+
+                if (existingAttendance) {
+                    const recordsMap = new Map<string, AttendanceStatus>();
+                    existingAttendance.records.forEach(rec => {
+                        recordsMap.set(rec.studentId, rec.status);
+                    });
+                    setAttendanceRecords(recordsMap);
+                    toast({ title: "Record Found", description: "Editing existing attendance record." });
+                } else {
+                    const newRecords = new Map<string, AttendanceStatus>();
+                    fetchedStudents.forEach(student => {
+                        newRecords.set(student.admissionNumber, 'Present');
+                    });
+                    setAttendanceRecords(newRecords);
+                     toast({ title: "New Record", description: "Marking new attendance. Default status is 'Present'." });
+                }
+
+            } catch (error) {
+                console.error("Error fetching data: ", error);
+                toast({ title: "Error", description: "Could not fetch attendance data.", variant: "destructive" });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStudentsAndAttendance();
+    }, [selectedClass, selectedSection, selectedDate, toast, initialLoad]);
+
+    const handleFetchData = () => {
+        if (!selectedClass || !selectedSection) {
+            toast({ title: "Incomplete Selection", description: "Please select a class and section.", variant: "destructive"});
             return;
         }
-        setIsLoading(true);
-        setAttendance(null);
-        setStudents([]);
-
-        try {
-            const dateStr = format(selectedDate, 'yyyy-MM-dd');
-            const [fetchedStudents, fetchedAttendance] = await Promise.all([
-                getStudents({ className: selectedClass, sectionName: selectedSection, status: 'Active' }),
-                getAttendance(dateStr, selectedClass, selectedSection)
-            ]);
-
-            setStudents(fetchedStudents);
-            if (fetchedAttendance) {
-                setAttendance(fetchedAttendance);
-            } else {
-                 toast({ title: "No Record", description: "Attendance for this date and class has not been submitted yet." });
-            }
-
-        } catch (error) {
-            console.error("Error fetching attendance: ", error);
-            toast({ title: "Error", description: "Could not fetch attendance data.", variant: "destructive" });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    const getStudentName = (studentId: string) => {
-        const student = students.find(s => s.admissionNumber === studentId);
-        return student ? `${student.firstName} ${student.lastName}` : 'Unknown Student';
-    };
-    
-    const getStudentRollNo = (studentId: string) => {
-        const student = students.find(s => s.admissionNumber === studentId);
-        return student ? student.rollNo : 'N/A';
+        setInitialLoad(false);
     }
 
+    const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
+        setAttendanceRecords(prev => new Map(prev).set(studentId, status));
+    };
+
+    const handleSubmit = () => {
+        if (!user) {
+            toast({ title: "Authentication Error", description: "Could not verify admin identity.", variant: "destructive" });
+            return;
+        }
+
+        startTransition(async () => {
+            try {
+                const attendanceData: Omit<DailyAttendance, 'id'> = {
+                    date: format(selectedDate, 'yyyy-MM-dd'),
+                    className: selectedClass,
+                    sectionName: selectedSection,
+                    session: students[0]?.session,
+                    takenBy: user.email || 'admin',
+                    records: Array.from(attendanceRecords.entries()).map(([studentId, status]) => ({ studentId, status })),
+                };
+
+                await saveAttendance(attendanceData);
+                setIsSubmitted(true);
+                toast({ title: "Success", description: "Attendance submitted successfully." });
+            } catch (error) {
+                console.error("Error saving attendance: ", error);
+                toast({ title: "Error", description: "Failed to submit attendance.", variant: "destructive" });
+            }
+        });
+    };
+
+    const allMarked = students.length > 0 && students.every(s => attendanceRecords.has(s.admissionNumber));
 
     return (
         <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-headline font-bold">Manage Attendance</h1>
-                <p className="text-muted-foreground">View student attendance records.</p>
+                <p className="text-muted-foreground">Mark or edit student attendance records.</p>
             </div>
 
             <Card>
                 <CardHeader>
                     <CardTitle>Filter Records</CardTitle>
-                    <CardDescription>Select class, section, and date to view attendance.</CardDescription>
+                    <CardDescription>Select class, section, and date to manage attendance.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center gap-4">
                      <Select onValueChange={setSelectedClass} value={selectedClass}>
@@ -138,54 +155,77 @@ export default function AdminAttendancePage() {
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={selectedDate} onSelect={(d) => d && setSelectedDate(d)} initialFocus /></PopoverContent>
                     </Popover>
-                    <Button onClick={handleFetchAttendance} disabled={isLoading}>
-                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-                        Fetch Records
+                    <Button onClick={handleFetchData} disabled={isLoading}>
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Fetch Data'}
                     </Button>
                 </CardContent>
             </Card>
 
             {isLoading && <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
 
-            {attendance && students.length > 0 && (
-                 <div className="grid gap-8 lg:grid-cols-3">
-                    <div className="lg:col-span-2">
-                         <Card>
-                            <CardHeader>
-                               <CardTitle>Attendance Details</CardTitle>
-                                <CardDescription>
-                                    Showing records for Class {attendance.className}-{attendance.sectionName} on {format(new Date(attendance.date), 'PPP')}.
-                                    Marked by Teacher ID: {attendance.takenBy}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="border rounded-lg">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Roll No</TableHead>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Status</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {attendance.records.map(record => (
-                                            <TableRow key={record.studentId}>
-                                                <TableCell>{getStudentRollNo(record.studentId)}</TableCell>
-                                                <TableCell>{getStudentName(record.studentId)}</TableCell>
-                                                <TableCell>{record.status}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    <div className="lg:col-span-1">
-                        <AttendanceSummary attendance={attendance} />
-                    </div>
-                 </div>
+            {!isLoading && students.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Student List</CardTitle>
+                        <CardDescription>
+                            Marking/Editing attendance for Class {selectedClass}-{selectedSection} on {format(selectedDate, 'PPP')}.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="border rounded-lg">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Roll No</TableHead>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Status</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {students.map(student => (
+                                    <TableRow key={student.admissionNumber}>
+                                        <TableCell>{student.rollNo}</TableCell>
+                                        <TableCell>{`${student.firstName} ${student.lastName}`}</TableCell>
+                                        <TableCell>
+                                            <RadioGroup
+                                                value={attendanceRecords.get(student.admissionNumber)}
+                                                onValueChange={(status) => handleStatusChange(student.admissionNumber, status as AttendanceStatus)}
+                                                className="flex gap-4"
+                                                disabled={isSaving}
+                                            >
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="Present" id={`present-${student.admissionNumber}`} />
+                                                    <Label htmlFor={`present-${student.admissionNumber}`}>Present</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="Absent" id={`absent-${student.admissionNumber}`} />
+                                                    <Label htmlFor={`absent-${student.admissionNumber}`}>Absent</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="Leave" id={`leave-${student.admissionNumber}`} />
+                                                    <Label htmlFor={`leave-${student.admissionNumber}`}>Leave</Label>
+                                                </div>
+                                            </RadioGroup>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        </div>
+                         <Button onClick={handleSubmit} disabled={isSaving || !allMarked} className="mt-6">
+                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isSubmitted ? 'Attendance Submitted' : 'Submit Attendance'}
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
+
+            {!initialLoad && !isLoading && students.length === 0 && (
+                 <Card>
+                    <CardContent className="p-8 text-center text-muted-foreground">
+                        No active students found for the selected class and section, or data has not been fetched.
+                    </CardContent>
+                 </Card>
             )}
         </div>
     );
