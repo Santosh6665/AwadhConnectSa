@@ -5,8 +5,8 @@ import type { Student, AnnualResult, ExamResult, SubjectResult } from '@/lib/typ
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { GraduationCap, User, BookOpen, BarChart, Award, Printer } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { Separator } from '../ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 const getGrade = (percentage: number): { grade: string; remarks: string; passed: boolean } => {
   if (percentage >= 90) return { grade: 'A+', remarks: 'Outstanding', passed: true };
