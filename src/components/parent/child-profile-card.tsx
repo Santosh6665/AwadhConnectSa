@@ -59,7 +59,7 @@ export default function ChildProfileCard({ student }: { student: Student }) {
            <DetailItem 
                 icon={Banknote}
                 label="Fee Status" 
-                value={<Badge variant={feeStatus === 'Paid' ? 'default' : 'destructive'}>{feeStatus}</Badge>} 
+                value={<Badge variant={feeStatus === 'Paid' ? 'default' : feeStatus === 'Due' ? 'destructive' : 'secondary'}>{feeStatus}</Badge>} 
            />
            <DetailItem 
                 icon={CalendarCheck}
