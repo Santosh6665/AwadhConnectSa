@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { UserRole, Student, Teacher, Parent, AttendanceRecord } from '@/lib/types';
-import { getStudents, getTeacherById, getParentByMobile, getAttendanceForMonth } from '@/lib/firebase/firestore';
+import { getStudents, getTeacherById, getParentByMobile, getAttendanceForMonth, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
@@ -283,5 +283,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
     </Card>
   );
 }
+
+    
 
     
