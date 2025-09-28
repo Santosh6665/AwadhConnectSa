@@ -16,12 +16,35 @@ export interface Student {
   
   // New structured data for fees and results, keyed by class name
   fees: { [className: string]: FeeReceipt[] };
-  results: { [className: string]: Result[] };
+  results: { [session: string]: AnnualResult };
 
   // Optional fields
   password?: string;
   previousSessions?: PreviousSession[];
 }
+
+export interface AnnualResult {
+  examResults: {
+    Quarterly?: ExamResult;
+    'Half-Yearly'?: ExamResult;
+    Annual?: ExamResult;
+  };
+  rank?: number;
+}
+
+export type ExamType = 'Quarterly' | 'Half-Yearly' | 'Annual';
+
+export interface ExamResult {
+  examType: ExamType;
+  subjects: SubjectResult[];
+}
+
+export interface SubjectResult {
+  subjectName: string;
+  maxMarks: number;
+  obtainedMarks: number;
+}
+
 
 export interface PreviousSession {
   sessionId: string; // e.g., 'S01-2023-24'
@@ -91,13 +114,6 @@ export interface FeeReceipt {
   amount: number;
   date: string; // dd/MM/yyyy
   status: 'Paid' | 'Due' | 'Partial';
-}
-
-export interface Result {
-  examType: 'Quarterly' | 'Half-Yearly' | 'Annual';
-  subjectId: string;
-  marksObtained: number;
-  totalMarks: number;
 }
 
 export type AttendanceStatus = 'Present' | 'Absent' | 'Unmarked';

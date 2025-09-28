@@ -20,7 +20,7 @@ import {
   orderBy,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -103,7 +103,7 @@ export async function addStudent(studentData: Omit<Student, 'admissionNumber' | 
         dob: studentData.dob.toLocaleDateString('en-GB'),
         password: password,
         fees: { [studentData.className]: [] },
-        results: { [studentData.className]: [] },
+        results: {},
     }
 
     // 1. Set student document
@@ -193,7 +193,7 @@ export async function promoteStudent(
     // Add current session details to the `previousSessions` array
     previousSessions: arrayUnion(previousSessionRecord),
     fees: newFees,
-    results: { ...studentData.results, [newClassName]: [] },
+    results: { ...studentData.results, [newSession]: { examResults: {} } },
   });
 
   await batch.commit();
@@ -375,5 +375,37 @@ export async function getTeacherAttendanceForMonth(teacherId: string, year: numb
   });
 
   return teacherAttendanceRecords;
+}
+
+export async function saveStudentResults(admissionNumber: string, session: string, examResult: ExamResult): Promise<void> {
+  const studentRef = doc(db, 'students', admissionNumber);
+  const studentSnap = await getDoc(studentRef);
+
+  if (!studentSnap.exists()) {
+    throw new Error('Student not found');
+  }
+
+  const studentData = studentSnap.data() as Student;
+  const currentResults = studentData.results || {};
+  const currentSessionResults = currentResults[session] || { examResults: {} };
+
+  const updatedExamResults = {
+    ...currentSessionResults.examResults,
+    [examResult.examType]: examResult,
+  };
+
+  const updatedSessionResults = {
+    ...currentSessionResults,
+    examResults: updatedExamResults,
+  };
+
+  const updatedResults = {
+    ...currentResults,
+    [session]: updatedSessionResults,
+  };
+
+  await updateDoc(studentRef, {
+    results: updatedResults,
+  });
 }
     
