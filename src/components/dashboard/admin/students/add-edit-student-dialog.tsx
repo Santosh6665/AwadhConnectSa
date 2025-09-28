@@ -30,6 +30,7 @@ const studentSchema = z.object({
   className: z.string().min(1, 'Class is required'),
   sectionName: z.string().min(1, 'Section is required'),
   parentName: z.string().min(1, 'Parent Name is required'),
+  parentMobile: z.string().optional(),
   status: z.enum(['Active', 'Archived']),
   session: z.string().min(1, 'Session is required'),
 });
@@ -103,6 +104,7 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
           className: '',
           sectionName: '',
           parentName: '',
+          parentMobile: '',
           status: 'Active',
           session: `${currentYear}-${currentYear + 1}`
         });
@@ -162,6 +164,9 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
               )}/>
                <FormField name="parentName" control={form.control} render={({ field }) => (
                   <FormItem><FormLabel>Parent Name</FormLabel><FormControl><Input placeholder="e.g. Jane Doe" {...field} /></FormControl><FormMessage /></FormItem>
+              )}/>
+              <FormField name="parentMobile" control={form.control} render={({ field }) => (
+                  <FormItem><FormLabel>Parent Mobile</FormLabel><FormControl><Input placeholder="e.g. 9876543210" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
               <FormField name="gender" control={form.control} render={({ field }) => (
                 <FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Male">Male</SelectItem><SelectItem value="Female">Female</SelectItem><SelectItem value="Other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>

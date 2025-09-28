@@ -10,6 +10,7 @@ export interface Student {
   className: string;
   sectionName: string;
   parentName: string;
+  parentMobile?: string;
   status: 'Active' | 'Archived';
   session: string; // e.g., '2024-25'
   
