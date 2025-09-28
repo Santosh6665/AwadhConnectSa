@@ -232,7 +232,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                 onSave={handleSaveMarks}
             />
             <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-                <DialogContent className="max-w-4xl p-0 border-0 max-h-[90vh] overflow-y-auto print-container">
+                <DialogContent className="max-w-4xl p-0 border-0 print-container">
                    <DialogHeader className="sr-only">
                         <DialogTitle>Student Report Card</DialogTitle>
                         <DialogDescription>
