@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -21,13 +22,11 @@ export default function LoginForm({ role }: { role: UserRole }) {
     setLoading(true);
 
     try {
-      if (role === 'admin') {
-        await login(credential, password);
-      }
+       await login(credential, password, role as 'admin' | 'teacher');
     } catch (error: any) {
       let errorMessage = 'An unexpected error occurred. Please try again.';
       if (error.message.includes('not found') || error.message.includes('Invalid')) {
-          errorMessage = 'Invalid credentials. Please check your email and password and try again.';
+          errorMessage = 'Invalid credentials. Please check your details and try again.';
       }
       toast({
         title: 'Login Failed',
@@ -38,15 +37,17 @@ export default function LoginForm({ role }: { role: UserRole }) {
       setLoading(false);
     }
   };
+  
+  const isTeacherLogin = role === 'teacher';
 
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="credential">Email</Label>
+        <Label htmlFor="credential">{isTeacherLogin ? 'Teacher ID' : 'Email'}</Label>
         <Input
           id="credential"
-          type="email"
-          placeholder={'admin@example.com'}
+          type={isTeacherLogin ? 'text' : 'email'}
+          placeholder={isTeacherLogin ? 'e.g. T01' : 'admin@example.com'}
           value={credential}
           onChange={(e) => setCredential(e.target.value)}
           required

@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -95,4 +96,15 @@ export async function getAdminByEmail(email: string): Promise<Admin | null> {
   }
 
   return adminDocSnap.data() as Admin;
+}
+
+export async function getTeacherById(id: string): Promise<Teacher | null> {
+  const teacherDocRef = doc(db, 'teachers', id);
+  const teacherDocSnap = await getDoc(teacherDocRef);
+
+  if (!teacherDocSnap.exists()) {
+    return null;
+  }
+
+  return { id: teacherDocSnap.id, ...teacherDocSnap.data() } as Teacher;
 }

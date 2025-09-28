@@ -1,3 +1,4 @@
+
 export interface Student {
   id: string;
   rollNo: string;
@@ -122,6 +123,7 @@ export interface Admin {
 }
 
 export interface AppUser {
-  email: string;
+  email?: string;
   role: UserRole;
+  id?: string; // teacherId for teacher role
 }
