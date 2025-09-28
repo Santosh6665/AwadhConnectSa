@@ -70,32 +70,6 @@ export async function updateStudent(id: string, studentData: Partial<Student>): 
     await updateDoc(studentDoc, studentData);
 }
 
-export async function promoteStudent(
-  studentId: string,
-  newClassName: string,
-  newSectionName: string,
-  newSession: string,
-  carryOverDues: boolean
-) {
-  const studentRef = doc(db, 'students', studentId);
-  
-  const updateData: Partial<Student> = {
-    className: newClassName,
-    sectionName: newSectionName,
-    session: newSession,
-  };
-
-  // Fee logic can be added here if needed, for now we just update the class details
-  if (carryOverDues) {
-    // This is more complex and might require updating a separate 'fees' collection.
-    // For now, we are just updating the student record as requested.
-    console.log(`Fee carry-over requested for student ${studentId}. Logic to be implemented.`);
-  }
-
-  await updateDoc(studentRef, updateData);
-}
-
-
 export async function getTeachers(): Promise<Teacher[]> {
   const teachersCol = collection(db, 'teachers');
   const teacherSnapshot = await getDocs(teachersCol);

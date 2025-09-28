@@ -1,4 +1,3 @@
-
 export interface Student {
   id: string; // Auto-generated Firestore ID
   rollNo: string;
@@ -139,7 +138,6 @@ export interface Admin {
 }
 
 export interface AppUser {
-  email?: string;
+  email: string;
   role: UserRole;
-  id?: string; // teacherId for teacher role
 }

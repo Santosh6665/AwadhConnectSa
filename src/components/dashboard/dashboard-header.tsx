@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Bell,
@@ -41,11 +40,9 @@ function capitalize(str: string) {
 export default function DashboardHeader({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
-  const { user, logout, teacherDetails } = useAuth();
+  const { user, logout } = useAuth();
 
   const userAvatarFallback = user?.email ? user.email.charAt(0).toUpperCase() : "A";
-  const userDisplayName = role === 'teacher' ? teacherDetails?.name : user?.email;
-  const userAvatarImage = role === 'teacher' ? `https://picsum.photos/seed/${teacherDetails?.id}/100/100` : `https://picsum.photos/seed/admin/100/100`;
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -90,13 +87,13 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
             <Avatar>
-                <AvatarImage src={userAvatarImage} alt={userDisplayName || 'User'} />
+                <AvatarImage src={`https://picsum.photos/seed/admin/100/100`} alt={user?.email || 'Admin'} />
                 <AvatarFallback>{userAvatarFallback}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>{userDisplayName}</DropdownMenuLabel>
+          <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4"/>
@@ -107,7 +104,7 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
             Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-           <DropdownMenuItem onClick={() => logout(role)}>
+           <DropdownMenuItem onClick={logout}>
             <LogOut className="mr-2 h-4 w-4"/>
             Logout
           </DropdownMenuItem>
