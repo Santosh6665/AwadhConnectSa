@@ -206,3 +206,5 @@ export default function ResultCard({ student, annualResult }: { student: Student
 }
 
     
+
+    
