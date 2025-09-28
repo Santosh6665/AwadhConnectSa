@@ -2,9 +2,12 @@
 'use client';
 import AttendanceHistory from '@/components/dashboard/common/attendance-history';
 import { useAuth } from '@/contexts/auth-context';
+import { useSearchParams } from 'next/navigation';
 
 export default function TeacherAttendanceHistoryPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const studentId = searchParams.get('studentId') || undefined;
 
   if (!user || user.role !== 'teacher') {
     return null;
@@ -18,7 +21,7 @@ export default function TeacherAttendanceHistoryPage() {
           View monthly attendance records for students in your classes.
         </p>
       </div>
-      <AttendanceHistory role="teacher" teacherId={user.id} />
+      <AttendanceHistory role="teacher" teacherId={user.id} studentId={studentId} />
     </div>
   );
 }

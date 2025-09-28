@@ -2,9 +2,12 @@
 'use client';
 import AttendanceHistory from '@/components/dashboard/common/attendance-history';
 import { useAuth } from '@/contexts/auth-context';
+import { useSearchParams } from 'next/navigation';
 
 export default function AdminAttendanceHistoryPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const studentId = searchParams.get('studentId') || undefined;
 
   if (!user || user.role !== 'admin') {
     return null;
@@ -18,7 +21,7 @@ export default function AdminAttendanceHistoryPage() {
           View monthly attendance records for any student.
         </p>
       </div>
-      <AttendanceHistory role="admin" />
+      <AttendanceHistory role="admin" studentId={studentId} />
     </div>
   );
 }

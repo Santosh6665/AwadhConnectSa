@@ -39,10 +39,19 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
   const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
-    if (role === 'student' && studentId) {
-       getStudents({admissionNumber: studentId, status: 'Active'}).then(s => setSelectedStudent(s[0] || null));
+    async function getStudent() {
+      if (studentId) {
+         const students = await getStudents({ admissionNumber: studentId, status: 'Active' });
+         const student = students[0] || null;
+         setSelectedStudent(student);
+         if (student) {
+           setSelectedClass(student.className);
+           setSelectedSection(student.sectionName);
+         }
+      }
     }
-  }, [role, studentId]);
+    getStudent();
+  }, [studentId]);
 
   useEffect(() => {
     async function fetchDataForFilters() {
@@ -84,14 +93,14 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
                 const studentsArrays = await Promise.all(studentPromises);
                 const parentChildren = studentsArrays.flat().filter(s => s.status === 'Active');
                 setChildren(parentChildren);
-                if (parentChildren.length > 0) {
+                if (parentChildren.length > 0 && !studentId) {
                     setSelectedStudent(parentChildren[0]);
                 }
             }
         }
     }
     fetchChildren();
-  }, [role, parentId]);
+  }, [role, parentId, studentId]);
 
 
   useEffect(() => {
@@ -104,16 +113,20 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
         studentsToList = studentsToList.filter(s => s.sectionName === selectedSection);
       }
       setFilteredStudents(studentsToList);
-      if (studentsToList.length > 0) {
+
+      if (!studentId && studentsToList.length > 0) {
           setSelectedStudent(studentsToList[0]);
-      } else {
+      } else if (!studentId) {
           setSelectedStudent(null);
       }
     }
-  }, [selectedClass, selectedSection, allStudents, role]);
+  }, [selectedClass, selectedSection, allStudents, role, studentId]);
   
   useEffect(() => {
-    if (!selectedStudent?.admissionNumber) return;
+    if (!selectedStudent?.admissionNumber) {
+        setAttendance([]);
+        return;
+    };
 
     const fetchAttendance = async () => {
       setIsLoading(true);
@@ -171,7 +184,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
-          {role === 'admin' && (
+          {(role === 'admin' || role === 'teacher') && (
             <>
               <Select value={selectedClass} onValueChange={setSelectedClass}>
                 <SelectTrigger className="w-40"><SelectValue placeholder="All Classes" /></SelectTrigger>

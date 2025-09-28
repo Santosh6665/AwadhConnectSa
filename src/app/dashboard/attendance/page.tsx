@@ -11,7 +11,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Loader2, Eye } from 'lucide-react';
+import { CalendarIcon, Loader2, Eye, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
@@ -190,6 +190,7 @@ export default function AdminAttendancePage() {
                                     <TableHead>Roll No</TableHead>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -217,6 +218,14 @@ export default function AdminAttendancePage() {
                                                     <Label htmlFor={`leave-${student.admissionNumber}`}>Leave</Label>
                                                 </div>
                                             </RadioGroup>
+                                        </TableCell>
+                                         <TableCell>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={`/dashboard/attendance-history?studentId=${student.admissionNumber}`}>
+                                                    <History className="mr-2 h-4 w-4" />
+                                                    History
+                                                </Link>
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}
