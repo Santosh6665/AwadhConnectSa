@@ -20,7 +20,7 @@ import {
   orderBy,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -200,9 +200,14 @@ export async function promoteStudent(
 }
 
 
-export async function getTeachers(): Promise<Teacher[]> {
-  const teachersCol = collection(db, 'teachers');
-  const teacherSnapshot = await getDocs(teachersCol);
+export async function getTeachers(filters?: { status?: 'Active' | 'Archived' }): Promise<Teacher[]> {
+  let q = query(collection(db, 'teachers'));
+
+  if (filters?.status) {
+    q = query(q, where('status', '==', filters.status));
+  }
+
+  const teacherSnapshot = await getDocs(q);
   const teacherList = teacherSnapshot.docs.map(doc =>
     ({ id: doc.id, ...doc.data() })
   );
@@ -325,4 +330,50 @@ export async function getAttendanceForMonth(studentId: string, year: number, mon
   return studentAttendanceRecords;
 }
 
+// Teacher Attendance
+export async function saveTeacherAttendance(attendanceData: { date: string; takenBy: string; records: AttendanceRecord[] }): Promise<void> {
+    const { date } = attendanceData;
+    const docId = `teachers_${date}`;
+    const attendanceRef = doc(db, 'teacher_attendance', docId);
+    await setDoc(attendanceRef, attendanceData);
+}
+
+export async function getTeacherAttendance(date: string): Promise<TeacherDailyAttendance | null> {
+    const docId = `teachers_${date}`;
+    const attendanceRef = doc(db, 'teacher_attendance', docId);
+    const docSnap = await getDoc(attendanceRef);
+
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as TeacherDailyAttendance;
+    }
+    return null;
+}
+
+export async function getTeacherAttendanceForMonth(teacherId: string, year: number, month: number): Promise<AttendanceRecord[]> {
+  const startDate = new Date(year, month, 1);
+  const endDate = new Date(year, month + 1, 0);
+
+  const startStr = startDate.toISOString().split('T')[0];
+  const endStr = endDate.toISOString().split('T')[0];
+
+  const attendanceCol = collection(db, 'teacher_attendance');
+  const q = query(attendanceCol, where('date', '>=', startStr), where('date', '<=', endStr));
+
+  const querySnapshot = await getDocs(q);
+  const teacherAttendanceRecords: AttendanceRecord[] = [];
+
+  querySnapshot.forEach(doc => {
+      const dailyData = doc.data() as TeacherDailyAttendance;
+      const record = dailyData.records.find(r => r.studentId === teacherId); // studentId is teacherId here
+      if (record) {
+          teacherAttendanceRecords.push({
+              studentId: record.studentId,
+              status: record.status,
+              date: dailyData.date,
+          });
+      }
+  });
+
+  return teacherAttendanceRecords;
+}
     

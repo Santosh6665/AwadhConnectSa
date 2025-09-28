@@ -103,7 +103,7 @@ export interface Result {
 export type AttendanceStatus = 'Present' | 'Absent' | 'Unmarked';
 
 export interface AttendanceRecord {
-  studentId: string;
+  studentId: string; // Can be student admissionNumber or teacherId
   status: AttendanceStatus;
   date?: string; // YYYY-MM-DD - Optional, used for history fetching
 }
@@ -115,6 +115,13 @@ export interface DailyAttendance {
   sectionName: string;
   session: string;
   takenBy: string; // teacherId
+  records: AttendanceRecord[];
+}
+
+export interface TeacherDailyAttendance {
+  id: string; // teachers_YYYY-MM-DD
+  date: string; // YYYY-MM-DD
+  takenBy: string; // admin email
   records: AttendanceRecord[];
 }
 
