@@ -1,9 +1,17 @@
+
 'use client';
 
 import Link from 'next/link';
 import { GraduationCap, Menu, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -11,7 +19,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -43,28 +50,19 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
-           <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button>
-                  <User className="mr-2 h-4 w-4" />
-                  Login
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href="/login">Admin Portal</Link>
-                </DropdownMenuItem>
-                 <DropdownMenuItem asChild>
-                  <Link href="#">Teacher Portal</Link>
-                </DropdownMenuItem>
-                 <DropdownMenuItem asChild>
-                  <Link href="#">Parent Portal</Link>
-                </DropdownMenuItem>
-                 <DropdownMenuItem asChild>
-                  <Link href="#">Student Portal</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <User className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/login">Admin Portal</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="md:hidden">
             <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -75,13 +73,19 @@ export default function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <div className="flex flex-col h-full">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Main Menu</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Main navigation links for Awadh Inter College.
+                  </SheetDescription>
                   <div className="flex items-center justify-between p-4 border-b">
-                     <Link href="/" className="flex items-center space-x-2">
-                        <GraduationCap className="h-6 w-6 text-primary" />
-                        <span className="font-bold font-headline text-lg">Awadh Inter College</span>
-                      </Link>
+                    <Link href="/" className="flex items-center space-x-2">
+                      <GraduationCap className="h-6 w-6 text-primary" />
+                      <span className="font-bold font-headline text-lg">Awadh Inter College</span>
+                    </Link>
                   </div>
+                </SheetHeader>
+                <div className="flex flex-col h-full">
                   <nav className="flex flex-col p-4 space-y-4">
                     {navItems.map((item) => (
                       <Link
@@ -99,16 +103,9 @@ export default function Header() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem asChild>
-                          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Admin Portal</Link>
-                        </DropdownMenuItem>
-                         <DropdownMenuItem asChild>
-                          <Link href="#" onClick={() => setMobileMenuOpen(false)}>Teacher Portal</Link>
-                        </DropdownMenuItem>
-                         <DropdownMenuItem asChild>
-                          <Link href="#" onClick={() => setMobileMenuOpen(false)}>Parent Portal</Link>
-                        </DropdownMenuItem>
-                         <DropdownMenuItem asChild>
-                          <Link href="#" onClick={() => setMobileMenuOpen(false)}>Student Portal</Link>
+                          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                            Admin Portal
+                          </Link>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
