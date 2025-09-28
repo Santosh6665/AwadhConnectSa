@@ -13,14 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { Teacher } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 const teacherSchema = z.object({
@@ -48,9 +46,61 @@ interface AddEditTeacherDialogProps {
   isSaving: boolean;
 }
 
-// Dummy data for multi-select, replace with actual data from Firestore later
 const allSubjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Geography', 'Computer Science'];
 const allclasses = ['6A', '6B', '7A', '7B', '8A', '8B', '9A', '9B', '10A', '10B', '11A', '12A'];
+const months = Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(0, i), 'MMMM') }));
+
+interface DateDropdownsProps {
+  value?: Date;
+  onChange: (date: Date) => void;
+  fromYear: number;
+  toYear: number;
+}
+
+function DateDropdowns({ value, onChange, fromYear, toYear }: DateDropdownsProps) {
+  const [day, setDay] = React.useState(value ? value.getDate() : '');
+  const [month, setMonth] = React.useState(value ? value.getMonth() : '');
+  const [year, setYear] = React.useState(value ? value.getFullYear() : '');
+
+  React.useEffect(() => {
+    if (day && month !== '' && year) {
+      onChange(new Date(Number(year), Number(month), Number(day)));
+    }
+  }, [day, month, year, onChange]);
+
+  React.useEffect(() => {
+    setDay(value ? value.getDate() : '');
+    setMonth(value ? value.getMonth() : '');
+    setYear(value ? value.getFullYear() : '');
+  }, [value]);
+
+  const years = Array.from({ length: toYear - fromYear + 1 }, (_, i) => toYear - i);
+  const daysInMonth = (year && month !== '') ? new Date(Number(year), Number(month) + 1, 0).getDate() : 31;
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  return (
+    <div className="flex gap-2">
+      <Select value={day.toString()} onValueChange={(val) => setDay(val)}>
+        <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+        <SelectContent>
+          {days.map(d => <SelectItem key={d} value={d.toString()}>{d}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={month.toString()} onValueChange={(val) => setMonth(val)}>
+        <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+        <SelectContent>
+          {months.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      <Select value={year.toString()} onValueChange={(val) => setYear(val)}>
+        <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
+        <SelectContent>
+          {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
 
 export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, onSave, isSaving }: AddEditTeacherDialogProps) {
   const form = useForm<TeacherFormData>({
@@ -75,7 +125,6 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
     onSave(data as any);
   };
   
-  // Reset form when dialog opens with new data
   React.useEffect(() => {
     if (isOpen) {
       if (teacher) {
@@ -197,40 +246,14 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Date of Birth</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "dd/MM/yyyy")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          captionLayout="dropdown-nav"
-                          fromYear={1950}
-                          toYear={new Date().getFullYear() - 18}
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1930-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <DateDropdowns 
+                        value={field.value}
+                        onChange={field.onChange}
+                        fromYear={1950}
+                        toYear={new Date().getFullYear() - 18}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -241,38 +264,14 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Hire Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "dd/MM/yyyy")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          captionLayout="dropdown-nav"
-                          fromYear={2000}
-                          toYear={new Date().getFullYear()}
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date > new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <DateDropdowns 
+                        value={field.value}
+                        onChange={field.onChange}
+                        fromYear={2000}
+                        toYear={new Date().getFullYear()}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
