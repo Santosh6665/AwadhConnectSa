@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { calculateOverallResult, getGrade } from '@/lib/utils';
 import EditMarksDialog from './edit-marks-dialog';
 import ResultCard from './result-card';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 type StudentResultSummary = {
   student: Student;
@@ -166,6 +166,12 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
             />
             <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
                 <DialogContent className="max-w-4xl p-0 border-0">
+                   <DialogHeader className="sr-only">
+                        <DialogTitle>Student Report Card</DialogTitle>
+                        <DialogDescription>
+                            Detailed report card for {selectedStudent.firstName} {selectedStudent.lastName}.
+                        </DialogDescription>
+                   </DialogHeader>
                    {selectedStudent.results?.[selectedStudent.session] ? (
                      <ResultCard student={selectedStudent} annualResult={selectedStudent.results[selectedStudent.session]}/>
                    ): (
