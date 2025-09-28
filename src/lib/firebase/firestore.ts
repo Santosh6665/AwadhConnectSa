@@ -73,8 +73,8 @@ export async function updateStudent(id: string, studentData: Partial<Student>): 
 export async function promoteStudent(
   studentId: string,
   oldStudentData: Student,
-  newClassId: string,
-  newSectionId: string,
+  newClassName: string,
+  newSectionName: string,
   newSession: string,
   carryOverDues: boolean
 ) {
@@ -98,8 +98,8 @@ export async function promoteStudent(
   // 2. Create the new student record for the new session
   const newStudentData: Omit<Student, 'id'> = {
       ...oldStudentData,
-      className: newClassId, // This is now a name, not ID
-      sectionName: newSectionId, // This is now a name, not ID
+      className: newClassName,
+      sectionName: newSectionName,
       session: newSession,
       status: 'Active',
       previousSessions: [], // This will be on the new document eventually, starting fresh

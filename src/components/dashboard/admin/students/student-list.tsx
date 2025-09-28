@@ -138,11 +138,11 @@ export default function StudentList({
       });
   };
   
-  const handleSavePromotion = ({ newClassId, newSectionId, newSession, carryOverDues }: { newClassId: string; newSectionId: string; newSession: string; carryOverDues: boolean }) => {
+  const handleSavePromotion = ({ newClassName, newSectionName, newSession, carryOverDues }: { newClassName: string; newSectionName: string; newSession: string; carryOverDues: boolean }) => {
     if (!selectedStudent) return;
     startTransition(async () => {
         try {
-            await promoteStudent(selectedStudent.id, selectedStudent, newClassId, newSectionId, newSession, carryOverDues);
+            await promoteStudent(selectedStudent.id, selectedStudent, newClassName, newSectionName, newSession, carryOverDues);
             // This is tricky. For now, we'll just filter out the promoted (now archived) student.
             // A full refresh would be better to show the new student record.
             setStudents(students.filter(s => s.id !== selectedStudent.id));
@@ -270,8 +270,6 @@ export default function StudentList({
           student={selectedStudent}
           onSave={handleSavePromotion}
           isSaving={isSaving}
-          classes={classes}
-          sections={sections}
         />
     </>
   );

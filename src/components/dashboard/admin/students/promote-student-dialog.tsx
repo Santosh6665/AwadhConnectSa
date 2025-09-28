@@ -15,15 +15,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { Student, Class, Section } from '@/lib/types';
+import type { Student } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 const promotionSchema = z.object({
-  newClassId: z.string().min(1, 'New Class is required'),
-  newSectionId: z.string().min(1, 'New Section is required'),
+  newClassName: z.string().min(1, 'New Class is required'),
+  newSectionName: z.string().min(1, 'New Section is required'),
   newSession: z.string().min(1, 'New Session is required'),
   carryOverDues: z.boolean().default(false),
 });
@@ -36,24 +36,18 @@ interface PromoteStudentDialogProps {
   student: Student | null;
   onSave: (data: PromotionFormData) => void;
   isSaving: boolean;
-  classes: Class[];
-  sections: Section[];
 }
 
-export default function PromoteStudentDialog({ isOpen, onOpenChange, student, onSave, isSaving, classes, sections }: PromoteStudentDialogProps) {
+const classOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
+const sectionOptions = ["A", "B", "C"];
+
+export default function PromoteStudentDialog({ isOpen, onOpenChange, student, onSave, isSaving }: PromoteStudentDialogProps) {
   const form = useForm<PromotionFormData>({
     resolver: zodResolver(promotionSchema),
     defaultValues: {
         carryOverDues: false,
     }
   });
-
-  const { watch, setValue } = form;
-  const watchedClassId = watch('newClassId');
-
-  const filteredSections = React.useMemo(() => {
-    return sections.filter(s => s.classId === watchedClassId);
-  }, [sections, watchedClassId]);
 
   React.useEffect(() => {
     if (student) {
@@ -90,11 +84,11 @@ export default function PromoteStudentDialog({ isOpen, onOpenChange, student, on
             )}/>
 
             <div className="grid grid-cols-2 gap-4">
-                 <FormField name="newClassId" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>New Class</FormLabel><Select onValueChange={(value) => { field.onChange(value); setValue('newSectionId', ''); }}><FormControl><SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger></FormControl><SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                 <FormField name="newClassName" control={form.control} render={({ field }) => (
+                    <FormItem><FormLabel>New Class</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger></FormControl><SelectContent>{classOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                 )}/>
-                <FormField name="newSectionId" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>New Section</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Section" /></SelectTrigger></FormControl><SelectContent>{filteredSections.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                <FormField name="newSectionName" control={form.control} render={({ field }) => (
+                    <FormItem><FormLabel>New Section</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Section" /></SelectTrigger></FormControl><SelectContent>{sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                 )}/>
             </div>
             
