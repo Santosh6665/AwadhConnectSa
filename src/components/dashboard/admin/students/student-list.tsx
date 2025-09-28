@@ -142,10 +142,8 @@ export default function StudentList({
     if (!selectedStudent) return;
     startTransition(async () => {
         try {
-            await promoteStudent(selectedStudent.id, selectedStudent, newClassName, newSectionName, newSession, carryOverDues);
-            // This is tricky. For now, we'll just filter out the promoted (now archived) student.
-            // A full refresh would be better to show the new student record.
-            setStudents(students.filter(s => s.id !== selectedStudent.id));
+            await promoteStudent(selectedStudent.id, newClassName, newSectionName, newSession, carryOverDues);
+            setStudents(students.map(s => s.id === selectedStudent.id ? { ...s, className: newClassName, sectionName: newSectionName, session: newSession } : s));
             toast({ title: "Promotion Successful", description: `${selectedStudent.firstName} has been promoted.` });
             setIsPromoteDialogOpen(false);
         } catch(error) {
