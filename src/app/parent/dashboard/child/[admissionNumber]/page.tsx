@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import PreviousSessionCard from '@/components/student/previous-session-card';
 import { useAuth } from '@/contexts/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className="grid grid-cols-3 gap-4 items-start py-2">
@@ -22,11 +22,13 @@ const DetailItem = ({ label, value }: { label: string; value: React.ReactNode })
   </div>
 );
 
-export default function ChildDetailPage({ params }: { params: { admissionNumber: string } }) {
+export default function ChildDetailPage() {
   const { user, loading: authLoading } = useAuth();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const params = useParams();
+  const admissionNumber = params.admissionNumber as string;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -34,10 +36,10 @@ export default function ChildDetailPage({ params }: { params: { admissionNumber:
         return;
     }
     
-    if (params.admissionNumber) {
+    if (admissionNumber) {
       const fetchStudentData = async () => {
         setLoading(true);
-        const studentData = await getStudentByAdmissionNumber(params.admissionNumber);
+        const studentData = await getStudentByAdmissionNumber(admissionNumber);
         
         // Security check: Make sure the logged-in parent is authorized to see this student.
         if (user && studentData?.parentMobile !== user.id) {
@@ -50,7 +52,7 @@ export default function ChildDetailPage({ params }: { params: { admissionNumber:
       };
       fetchStudentData();
     }
-  }, [params.admissionNumber, user, authLoading, router]);
+  }, [admissionNumber, user, authLoading, router]);
 
   if (authLoading || loading || !student) {
     return (
