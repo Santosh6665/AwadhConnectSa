@@ -7,9 +7,9 @@ export interface Student {
   dob: string; // Stored as 'dd/MM/yyyy'
   gender: 'Male' | 'Female' | 'Other';
   admissionNumber: string;
-  classId: string;
-  sectionId: string;
-  parentId: string;
+  className: string;
+  sectionName: string;
+  parentName: string;
   feeStatus: 'Paid' | 'Due' | 'Partial';
   status: 'Active' | 'Archived';
   session: string; // e.g., '2024-25'
@@ -23,8 +23,8 @@ export interface Student {
 
 export interface PreviousSession {
   sessionId: string; // e.g., 'S01-2023-24'
-  classId: string;
-  sectionId: string;
+  className: string;
+  sectionName: string;
   session: string;
   rollNo: string;
   finalStatus: 'Promoted' | 'Retained';

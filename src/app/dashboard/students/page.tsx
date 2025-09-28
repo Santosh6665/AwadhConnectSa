@@ -1,12 +1,12 @@
-import { getStudents, getClasses, getSections, getParents } from '@/lib/firebase/firestore';
+
+import { getStudents, getClasses, getSections } from '@/lib/firebase/firestore';
 import StudentList from '@/components/dashboard/admin/students/student-list';
 
 export default async function StudentManagementPage() {
-  const [students, classes, sections, parents] = await Promise.all([
+  const [students, classes, sections] = await Promise.all([
     getStudents(),
     getClasses(),
     getSections(),
-    getParents(),
   ]);
 
   return (
@@ -21,7 +21,7 @@ export default async function StudentManagementPage() {
         initialStudents={students} 
         classes={classes} 
         sections={sections} 
-        parents={parents} 
+        parents={[]} 
       />
     </div>
   );

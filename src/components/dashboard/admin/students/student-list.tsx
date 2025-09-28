@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useTransition } from 'react';
 import type { Student, Class, Section, Parent } from '@/lib/types';
@@ -25,11 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-type StudentWithDetails = Student & {
-  className?: string;
-  sectionName?: string;
-  parentName?: string;
-};
+type StudentWithDetails = Student;
 
 type SortConfig = {
   key: keyof Student;
@@ -40,7 +37,6 @@ export default function StudentList({
   initialStudents,
   classes,
   sections,
-  parents,
 }: {
   initialStudents: Student[];
   classes: Class[];
@@ -57,22 +53,9 @@ export default function StudentList({
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
-
-  const classMap = useMemo(() => new Map(classes.map(c => [c.id, c.name])), [classes]);
-  const sectionMap = useMemo(() => new Map(sections.map(s => [s.id, s.name])), [sections]);
-  const parentMap = useMemo(() => new Map(parents.map(p => [p.id, p.name])), [parents]);
-
-  const studentsWithDetails: StudentWithDetails[] = useMemo(() => {
-    return students.map(student => ({
-      ...student,
-      className: classMap.get(student.classId),
-      sectionName: sectionMap.get(student.sectionId),
-      parentName: parentMap.get(student.parentId),
-    }));
-  }, [students, classMap, sectionMap, parentMap]);
   
   const filteredStudents = useMemo(() => {
-    let filtered = studentsWithDetails.filter(student => {
+    let filtered = students.filter(student => {
       const searchLower = searchTerm.toLowerCase();
       return (
         student.firstName.toLowerCase().includes(searchLower) ||
@@ -96,7 +79,7 @@ export default function StudentList({
       });
     }
     return filtered;
-  }, [studentsWithDetails, searchTerm, sortConfig]);
+  }, [students, searchTerm, sortConfig]);
 
   const requestSort = (key: keyof Student) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -279,9 +262,6 @@ export default function StudentList({
           student={selectedStudent}
           onSave={handleSaveStudent}
           isSaving={isSaving}
-          classes={classes}
-          sections={sections}
-          parents={parents}
        />
        
        <PromoteStudentDialog

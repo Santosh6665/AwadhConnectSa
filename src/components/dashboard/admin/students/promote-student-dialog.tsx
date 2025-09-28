@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import {
@@ -9,6 +10,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -63,9 +65,6 @@ export default function PromoteStudentDialog({ isOpen, onOpenChange, student, on
   
   if (!student) return null;
 
-  const currentClass = classes.find(c => c.id === student.classId)?.name;
-  const currentSection = sections.find(s => s.id === student.sectionId)?.name;
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -81,7 +80,7 @@ export default function PromoteStudentDialog({ isOpen, onOpenChange, student, on
                 <Label>Current Status</Label>
                 <div className="text-sm p-3 bg-muted rounded-md">
                     <p><strong>Student:</strong> {student.firstName} {student.lastName}</p>
-                    <p><strong>Current Class:</strong> {currentClass}-{currentSection}</p>
+                    <p><strong>Current Class:</strong> {student.className}-{student.sectionName}</p>
                     <p><strong>Current Session:</strong> {student.session}</p>
                 </div>
             </div>

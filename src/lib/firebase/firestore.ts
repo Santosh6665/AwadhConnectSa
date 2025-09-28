@@ -84,8 +84,8 @@ export async function promoteStudent(
   const oldStudentRef = doc(db, 'students', studentId);
   const previousSession = {
     sessionId: `${oldStudentData.id}-${oldStudentData.session}`,
-    classId: oldStudentData.classId,
-    sectionId: oldStudentData.sectionId,
+    className: oldStudentData.className,
+    sectionName: oldStudentData.sectionName,
     session: oldStudentData.session,
     rollNo: oldStudentData.rollNo,
     finalStatus: 'Promoted',
@@ -98,8 +98,8 @@ export async function promoteStudent(
   // 2. Create the new student record for the new session
   const newStudentData: Omit<Student, 'id'> = {
       ...oldStudentData,
-      classId: newClassId,
-      sectionId: newSectionId,
+      className: newClassId, // This is now a name, not ID
+      sectionName: newSectionId, // This is now a name, not ID
       session: newSession,
       status: 'Active',
       previousSessions: [], // This will be on the new document eventually, starting fresh
@@ -182,7 +182,7 @@ export async function getTeacherById(id: string): Promise<Teacher | null> {
 }
 
 
-// Functions to fetch classes, sections, parents for dropdowns
+// Functions to fetch classes, sections for dropdowns
 export async function getClasses(): Promise<Class[]> {
   const classesCol = collection(db, 'classes');
   const classSnapshot = await getDocs(classesCol);
@@ -193,12 +193,6 @@ export async function getSections(): Promise<Section[]> {
   const sectionsCol = collection(db, 'sections');
   const sectionSnapshot = await getDocs(sectionsCol);
   return sectionSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Section));
-}
-
-export async function getParents(): Promise<Parent[]> {
-  const parentsCol = collection(db, 'parents');
-  const parentSnapshot = await getDocs(parentsCol);
-  return parentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Parent));
 }
 
 export async function getFees(): Promise<Fee[]> {

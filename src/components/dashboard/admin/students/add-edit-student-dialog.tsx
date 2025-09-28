@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import {
@@ -26,9 +27,9 @@ const studentSchema = z.object({
   dob: z.date({ required_error: 'Date of birth is required' }),
   gender: z.enum(['Male', 'Female', 'Other']),
   admissionNumber: z.string().min(1, 'Admission number is required'),
-  classId: z.string().min(1, 'Class is required'),
-  sectionId: z.string().min(1, 'Section is required'),
-  parentId: z.string().min(1, 'Parent is required'),
+  className: z.string().min(1, 'Class is required'),
+  sectionName: z.string().min(1, 'Section is required'),
+  parentName: z.string().min(1, 'Parent Name is required'),
   feeStatus: z.enum(['Paid', 'Due', 'Partial']),
   status: z.enum(['Active', 'Archived']),
   session: z.string().min(1, 'Session is required'),
@@ -42,11 +43,10 @@ interface AddEditStudentDialogProps {
   student: Student | null;
   onSave: (data: Student) => void;
   isSaving: boolean;
-  classes: Class[];
-  sections: Section[];
-  parents: Parent[];
 }
 
+const classOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
+const sectionOptions = ["A", "B", "C"];
 
 function DateDropdowns({ value, onChange, fromYear, toYear }: { value?: Date; onChange: (date: Date) => void; fromYear: number; toYear: number; }) {
   const day = value ? value.getDate().toString() : '';
@@ -80,17 +80,10 @@ function DateDropdowns({ value, onChange, fromYear, toYear }: { value?: Date; on
 }
 
 
-export default function AddEditStudentDialog({ isOpen, onOpenChange, student, onSave, isSaving, classes, sections, parents }: AddEditStudentDialogProps) {
+export default function AddEditStudentDialog({ isOpen, onOpenChange, student, onSave, isSaving }: AddEditStudentDialogProps) {
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
   });
-
-  const { watch, setValue } = form;
-  const watchedClassId = watch('classId');
-
-  const filteredSections = React.useMemo(() => {
-    return sections.filter(s => s.classId === watchedClassId);
-  }, [sections, watchedClassId]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -108,16 +101,16 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
           dob: undefined,
           gender: 'Male',
           admissionNumber: `ADM-${Date.now()}`.slice(0,10),
-          classId: '',
-          sectionId: '',
-          parentId: '',
+          className: '',
+          sectionName: '',
+          parentName: '',
           feeStatus: 'Due',
           status: 'Active',
           session: `${currentYear}-${currentYear + 1}`
         });
       }
     }
-  }, [isOpen, student, form, classes, sections, parents]);
+  }, [isOpen, student, form]);
   
   const onSubmit = (data: StudentFormData) => {
     const finalData: Student = {
@@ -160,20 +153,20 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
               <FormField name="lastName" control={form.control} render={({ field }) => (
                   <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input placeholder="Doe" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
+               <FormField name="parentName" control={form.control} render={({ field }) => (
+                  <FormItem><FormLabel>Parent Name</FormLabel><FormControl><Input placeholder="e.g. Jane Doe" {...field} /></FormControl><FormMessage /></FormItem>
+              )}/>
               <FormField name="gender" control={form.control} render={({ field }) => (
                 <FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Male">Male</SelectItem><SelectItem value="Female">Female</SelectItem><SelectItem value="Other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )}/>
               <FormField name="dob" control={form.control} render={({ field }) => (
                   <FormItem className="flex flex-col"><FormLabel>Date of Birth</FormLabel><DateDropdowns value={field.value} onChange={field.onChange} fromYear={1990} toYear={new Date().getFullYear() - 3} /><FormMessage /></FormItem>
               )}/>
-              <FormField name="classId" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Class</FormLabel><Select onValueChange={(value) => { field.onChange(value); setValue('sectionId', ''); }} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger></FormControl><SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+              <FormField name="className" control={form.control} render={({ field }) => (
+                <FormItem><FormLabel>Class</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger></FormControl><SelectContent>{classOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
               )}/>
-              <FormField name="sectionId" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Section</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Section" /></SelectTrigger></FormControl><SelectContent>{filteredSections.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-              )}/>
-              <FormField name="parentId" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Parent</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Parent" /></SelectTrigger></FormControl><SelectContent>{parents.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+              <FormField name="sectionName" control={form.control} render={({ field }) => (
+                <FormItem><FormLabel>Section</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Section" /></SelectTrigger></FormControl><SelectContent>{sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
               )}/>
                <FormField name="feeStatus" control={form.control} render={({ field }) => (
                 <FormItem><FormLabel>Fee Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Paid">Paid</SelectItem><SelectItem value="Due">Due</SelectItem><SelectItem value="Partial">Partial</SelectItem></SelectContent></Select><FormMessage /></FormItem>
