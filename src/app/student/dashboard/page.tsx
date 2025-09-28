@@ -95,11 +95,11 @@ export default function StudentDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-               <p>Your current fee status for class {student.className} is: 
+               <div>Your current fee status for class {student.className} is: 
                  <Badge variant={feeStatus === 'Paid' ? 'default' : feeStatus === 'Due' ? 'destructive' : 'secondary'} className="ml-2">
                     {feeStatus}
                  </Badge>
-               </p>
+               </div>
             </CardContent>
           </Card>
 
