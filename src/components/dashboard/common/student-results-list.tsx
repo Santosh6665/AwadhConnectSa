@@ -164,7 +164,9 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                             <div className="flex gap-1">
                                 <Button variant="ghost" size="icon" onClick={() => handleView(student)}><Eye className="h-4 w-4"/></Button>
                                 <Button variant="ghost" size="icon" onClick={() => handleEdit(student)}><Edit className="h-4 w-4"/></Button>
-                                <Button variant="ghost" size="icon" className="text-destructive"><Trash className="h-4 w-4"/></Button>
+                                {userRole === 'admin' && (
+                                    <Button variant="ghost" size="icon" className="text-destructive"><Trash className="h-4 w-4"/></Button>
+                                )}
                             </div>
                         </TableCell>
                     </TableRow>
