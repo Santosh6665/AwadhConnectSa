@@ -23,7 +23,7 @@ type StudentResultSummary = {
 };
 
 const examTypes: ExamType[] = ['Quarterly', 'Half-Yearly', 'Annual'];
-const classOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
+const allClassOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
 const sectionOptions = ["A", "B", "C"];
 
 
@@ -39,6 +39,13 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const { toast } = useToast();
+  
+  const classOptions = useMemo(() => {
+    if (userRole === 'teacher' && teacherClasses) {
+      return teacherClasses;
+    }
+    return allClassOptions;
+  }, [userRole, teacherClasses]);
 
   const handleEdit = (student: Student) => {
     setSelectedStudent(student);
@@ -62,7 +69,14 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
         student.lastName.toLowerCase().includes(searchLower) ||
         student.rollNo.toLowerCase().includes(searchLower);
 
-      const matchesClass = selectedClass === 'all' || student.className === selectedClass;
+      let matchesClass = selectedClass === 'all';
+      if (userRole === 'teacher' && selectedClass !== 'all') {
+        const classAndSection = `${student.className}${student.sectionName}`;
+        matchesClass = classAndSection === selectedClass;
+      } else if (userRole === 'admin') {
+         matchesClass = selectedClass === 'all' || student.className === selectedClass;
+      }
+
       const matchesSection = selectedSection === 'all' || student.sectionName === selectedSection;
 
       return matchesSearch && matchesClass && matchesSection;
@@ -80,7 +94,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     });
 
     return summaries;
-  }, [students, searchTerm, selectedClass, selectedSection]);
+  }, [students, searchTerm, selectedClass, selectedSection, userRole]);
 
 
   return (
@@ -106,16 +120,22 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                     <SelectTrigger className="w-40"><SelectValue placeholder="All Classes" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Classes</SelectItem>
-                        {classOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}
+                        {classOptions.map(c => 
+                            <SelectItem key={c} value={c}>
+                                {userRole === 'admin' ? `Class ${c}` : c}
+                            </SelectItem>
+                        )}
                     </SelectContent>
                  </Select>
-                 <Select onValueChange={setSelectedSection} value={selectedSection} disabled={selectedClass === 'all'}>
-                    <SelectTrigger className="w-40"><SelectValue placeholder="All Sections" /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Sections</SelectItem>
-                        {sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                </Select>
+                 {userRole === 'admin' && (
+                    <Select onValueChange={setSelectedSection} value={selectedSection} disabled={selectedClass === 'all'}>
+                        <SelectTrigger className="w-40"><SelectValue placeholder="All Sections" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Sections</SelectItem>
+                            {sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                 )}
             </div>
 
             <div className="border rounded-lg">
