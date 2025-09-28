@@ -52,13 +52,24 @@ export async function getEvents(): Promise<Event[]> {
 }
 
 export async function getStudents(): Promise<Student[]> {
-  const q = query(collection(db, 'students'), where('status', '==', 'Active'));
-  const studentSnapshot = await getDocs(q);
+  const studentSnapshot = await getDocs(collection(db, 'students'));
   const studentList = studentSnapshot.docs.map(doc =>
     ({ admissionNumber: doc.id, ...doc.data() })
   );
   return studentList as Student[];
 }
+
+export async function getStudentByAdmissionNumber(admissionNumber: string): Promise<Student | null> {
+  const studentDocRef = doc(db, 'students', admissionNumber);
+  const studentDocSnap = await getDoc(studentDocRef);
+
+  if (!studentDocSnap.exists()) {
+    return null;
+  }
+
+  return { admissionNumber: studentDocSnap.id, ...studentDocSnap.data() } as Student;
+}
+
 
 export async function addStudent(studentData: Omit<Student, 'admissionNumber'>, admissionNumber: string): Promise<void> {
     const studentDocRef = doc(db, 'students', admissionNumber);
@@ -79,8 +90,7 @@ export async function getTeachers(): Promise<Teacher[]> {
   return teacherList as Teacher[];
 }
 
-export async function addTeacher(teacher: Omit<Teacher, 'id'>): Promise<string> {
-    // ID is now provided in the form, so we use setDoc
+export async function addTeacher(teacher: Omit<Teacher, 'id'> & {id: string}): Promise<string> {
     const teacherRef = doc(db, 'teachers', teacher.id);
     await setDoc(teacherRef, teacher);
     return teacher.id;
@@ -107,19 +117,11 @@ export async function getAdminByEmail(email: string): Promise<Admin | null> {
 }
 
 export async function getTeacherById(id: string): Promise<Teacher | null> {
-  // Teachers are now stored with their ID as the document ID
   const teacherDocRef = doc(db, 'teachers', id);
   const teacherDocSnap = await getDoc(teacherDocRef);
 
   if (!teacherDocSnap.exists()) {
-      // Fallback for old data structure if needed, can be removed later
-      const q = query(collection(db, 'teachers'), where('id', '==', id), limit(1));
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) {
-          return null;
-      }
-      const doc = querySnapshot.docs[0];
-      return { id: doc.id, ...doc.data() } as Teacher;
+      return null;
   }
 
   return { id: teacherDocSnap.id, ...teacherDocSnap.data() } as Teacher;

@@ -61,6 +61,12 @@ export default function Header() {
               <DropdownMenuItem asChild>
                 <Link href="/login">Admin Portal</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/teacher/login">Teacher Portal</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/student/login">Student Portal</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -101,11 +107,15 @@ export default function Header() {
                       <DropdownMenuTrigger asChild>
                         <Button className="w-full justify-start">Login</Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent>
+                       <DropdownMenuContent>
                         <DropdownMenuItem asChild>
-                          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                            Admin Portal
-                          </Link>
+                            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Admin Portal</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/teacher/login" onClick={() => setMobileMenuOpen(false)}>Teacher Portal</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/student/login" onClick={() => setMobileMenuOpen(false)}>Student Portal</Link>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

@@ -1,15 +1,16 @@
+
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AppUser } from '@/lib/types';
-import { getAdminByEmail } from '@/lib/firebase/firestore';
+import { getAdminByEmail, getTeacherById, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import { sha256 } from 'js-sha256';
 
 interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
+  login: (credential: string, pass: string, role: 'admin' | 'teacher' | 'student') => Promise<void>;
   logout: () => void;
 }
 
@@ -17,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(true); // Start with loading true
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -34,35 +35,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, pass: string) => {
+  const login = async (credential: string, pass: string, role: 'admin' | 'teacher' | 'student') => {
     setLoading(true);
     try {
-      const admin = await getAdminByEmail(email);
-      if (!admin) {
-        throw new Error('Admin not found');
+      let appUser: AppUser | null = null;
+      if (role === 'admin') {
+        const admin = await getAdminByEmail(credential);
+        if (!admin) throw new Error('Admin not found');
+
+        const passwordHash = sha256(pass);
+        if (admin.password !== passwordHash) throw new Error('Invalid password');
+
+        appUser = { email: credential, role: 'admin' };
+        router.push('/dashboard');
+      } else if (role === 'teacher') {
+        const teacher = await getTeacherById(credential);
+        if (!teacher) throw new Error('Teacher not found');
+        if (teacher.password !== pass) throw new Error('Invalid password');
+        
+        appUser = { id: credential, name: teacher.name, role: 'teacher' };
+        router.push('/teacher/dashboard');
+      } else if (role === 'student') {
+        const student = await getStudentByAdmissionNumber(credential);
+        if (!student) throw new Error('Student not found');
+        if (student.password !== pass) throw new Error('Invalid password');
+        
+        appUser = { id: credential, name: `${student.firstName} ${student.lastName}`, role: 'student' };
+        router.push('/student/dashboard');
       }
 
-      const passwordHash = sha256(pass);
-      if (admin.password !== passwordHash) {
-        throw new Error('Invalid password');
+      if (appUser) {
+        sessionStorage.setItem('app-user', JSON.stringify(appUser));
+        setUser(appUser);
       }
-
-      const appUser: AppUser = {
-        email: email,
-        role: 'admin',
-      };
-      sessionStorage.setItem('app-user', JSON.stringify(appUser));
-      setUser(appUser);
-      router.push('/dashboard');
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
+    const role = user?.role;
     setUser(null);
     sessionStorage.removeItem('app-user');
-    router.push('/login');
+    if (role === 'admin') router.push('/login');
+    else if (role === 'teacher') router.push('/teacher/login');
+    else if (role === 'student') router.push('/student/login');
+    else router.push('/');
   };
 
   const value = {

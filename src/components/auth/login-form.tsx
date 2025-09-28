@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -8,6 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Loader2, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserRole } from '@/lib/types';
+
+const roleConfig = {
+    admin: { credentialLabel: 'Email', credentialType: 'email', placeholder: 'admin@example.com'},
+    teacher: { credentialLabel: 'Teacher ID', credentialType: 'text', placeholder: 'T01'},
+    student: { credentialLabel: 'Admission Number', credentialType: 'text', placeholder: 'ADM-123456'},
+    parent: { credentialLabel: 'Parent ID', credentialType: 'text', placeholder: 'P01' },
+}
+
 
 export default function LoginForm({ role }: { role: UserRole }) {
   const [credential, setCredential] = useState('');
@@ -21,13 +30,11 @@ export default function LoginForm({ role }: { role: UserRole }) {
     setLoading(true);
 
     try {
-      if (role === 'admin') {
-        await login(credential, password);
-      }
+      await login(credential, password, role);
     } catch (error: any) {
       let errorMessage = 'An unexpected error occurred. Please try again.';
       if (error.message.includes('not found') || error.message.includes('Invalid')) {
-          errorMessage = 'Invalid credentials. Please check your email and password and try again.';
+          errorMessage = 'Invalid credentials. Please check your details and try again.';
       }
       toast({
         title: 'Login Failed',
@@ -38,15 +45,17 @@ export default function LoginForm({ role }: { role: UserRole }) {
       setLoading(false);
     }
   };
+  
+  const { credentialLabel, credentialType, placeholder } = roleConfig[role];
 
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="credential">Email</Label>
+        <Label htmlFor="credential">{credentialLabel}</Label>
         <Input
           id="credential"
-          type="email"
-          placeholder={'admin@example.com'}
+          type={credentialType}
+          placeholder={placeholder}
           value={credential}
           onChange={(e) => setCredential(e.target.value)}
           required
