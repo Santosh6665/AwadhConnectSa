@@ -4,7 +4,7 @@
 import type { Student, AnnualResult, ExamResult, SubjectResult } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, User, BookOpen, BarChart, Award, Printer } from 'lucide-react';
+import { GraduationCap, User, BookOpen, BarChart, Award, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
@@ -18,7 +18,23 @@ const getGrade = (percentage: number): { grade: string; remarks: string; passed:
   return { grade: 'F', remarks: 'Fail', passed: false };
 };
 
-const subjects = ['Oral', 'English', 'Hindi', 'Mathematics', 'Science', 'Computer'];
+const subjectsByClass: { [key: string]: string[] } = {
+  '1': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '2': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '3': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '4': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '5': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '6': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '7': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '8': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '9': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '10': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
+  '11': ['English', 'Hindi', 'Physics', 'Chemistry', 'Biology', 'Computer'],
+  '12': ['English', 'Hindi', 'Physics', 'Chemistry', 'Biology', 'Computer'],
+  'Nursery': ['Oral', 'English', 'Hindi', 'Mathematics'],
+  'LKG': ['Oral', 'English', 'Hindi', 'Mathematics'],
+  'UKG': ['Oral', 'English', 'Hindi', 'Mathematics'],
+};
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div className="grid grid-cols-2 gap-4 items-start py-1">
@@ -36,6 +52,8 @@ export default function ResultCard({ student, annualResult }: { student: Student
   const qResult = annualResult.examResults.Quarterly;
   const hyResult = annualResult.examResults['Half-Yearly'];
   const anResult = annualResult.examResults.Annual;
+  
+  const subjects = subjectsByClass[student.className] || [];
 
   const calculateTotal = (result: ExamResult | undefined) => {
     if (!result) return { obtained: 0, max: 0 };
@@ -69,7 +87,7 @@ export default function ResultCard({ student, annualResult }: { student: Student
             @media print {
                 body * { visibility: hidden; }
                 .result-card, .result-card * { visibility: visible; }
-                .result-card { position: absolute; left: 0; top: 0; width: 100%; }
+                .result-card { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
                 .no-print { display: none; }
             }
         `}</style>
@@ -85,7 +103,7 @@ export default function ResultCard({ student, annualResult }: { student: Student
             </div>
             <div className="flex items-center gap-4">
                 <Badge variant="secondary" className="text-lg py-2 px-4">Annual Exam Result Card</Badge>
-                <Button onClick={handlePrint} variant="outline" size="icon" className="no-print"><Printer className="h-5 w-5"/></Button>
+                <Button onClick={handlePrint} variant="outline" size="icon" className="no-print"><Download className="h-5 w-5"/></Button>
             </div>
         </div>
         <Separator />
