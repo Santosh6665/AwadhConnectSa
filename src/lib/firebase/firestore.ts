@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import {
@@ -21,7 +20,7 @@ import {
   orderBy,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -56,7 +55,7 @@ export async function getEvents(): Promise<Event[]> {
   ) as Event[];
 }
 
-export async function getStudents(filters?: { className?: string; sectionName?: string; status?: 'Active' | 'Archived' }): Promise<Student[]> {
+export async function getStudents(filters?: { className?: string; sectionName?: string; status?: 'Active' | 'Archived', admissionNumber?: string }): Promise<Student[]> {
   let q = query(collection(db, 'students'));
 
   if (filters?.className) {
@@ -67,6 +66,9 @@ export async function getStudents(filters?: { className?: string; sectionName?: 
   }
    if (filters?.status) {
     q = query(q, where('status', '==', filters.status));
+  }
+  if (filters?.admissionNumber) {
+    q = query(q, where('admissionNumber', '==', filters.admissionNumber));
   }
 
   const studentSnapshot = await getDocs(q);
@@ -89,12 +91,23 @@ export async function getStudentByAdmissionNumber(admissionNumber: string): Prom
 }
 
 
-export async function addStudent(studentData: Omit<Student, 'admissionNumber'>, admissionNumber: string): Promise<void> {
-    const studentDocRef = doc(db, 'students', admissionNumber);
+export async function addStudent(studentData: Omit<Student, 'admissionNumber' | 'fees' | 'results' | 'dob'> & { dob: Date, admissionNumber: string }): Promise<void> {
+    const studentDocRef = doc(db, 'students', studentData.admissionNumber);
     const batch = writeBatch(db);
 
+    const birthYear = studentData.dob.getFullYear();
+    const password = `${studentData.firstName.charAt(0).toUpperCase() + studentData.firstName.slice(1)}@${birthYear}`;
+
+    const finalStudentData: Student = {
+        ...studentData,
+        dob: studentData.dob.toLocaleDateString('en-GB'),
+        password: password,
+        fees: { [studentData.className]: [] },
+        results: { [studentData.className]: [] },
+    }
+
     // 1. Set student document
-    batch.set(studentDocRef, studentData);
+    batch.set(studentDocRef, finalStudentData);
 
     // 2. Handle parent document creation/update
     if (studentData.parentMobile) {
@@ -104,7 +117,7 @@ export async function addStudent(studentData: Omit<Student, 'admissionNumber'>, 
         if (parentDocSnap.exists()) {
             // Parent exists, update their children array
             batch.update(parentDocRef, {
-                children: arrayUnion(admissionNumber)
+                children: arrayUnion(studentData.admissionNumber)
             });
         } else {
             // Parent does not exist, create new parent document
@@ -112,7 +125,7 @@ export async function addStudent(studentData: Omit<Student, 'admissionNumber'>, 
                 id: studentData.parentMobile,
                 name: studentData.parentName,
                 phone: studentData.parentMobile,
-                children: [admissionNumber],
+                children: [studentData.admissionNumber],
                 password: `${studentData.parentName.split(' ')[0]}@${new Date().getFullYear()}`, // Default password
             };
             batch.set(parentDocRef, newParent);
@@ -148,7 +161,7 @@ export async function promoteStudent(
   const lastReceipt = currentFees.length > 0 ? currentFees[currentFees.length - 1] : null;
   const dueFee = lastReceipt?.status === 'Due' ? lastReceipt.amount : 0;
 
-  const previousSessionRecord = {
+  const previousSessionRecord: PreviousSession = {
     sessionId: `${studentData.admissionNumber}-${studentData.session}`,
     className: studentData.className,
     sectionName: studentData.sectionName,
@@ -158,8 +171,8 @@ export async function promoteStudent(
     dueFee: dueFee,
   };
 
-  const newFees = { ...studentData.fees };
-  let newFeeReceipts = [];
+  const newFees: { [className: string]: FeeReceipt[] } = { ...studentData.fees };
+  let newFeeReceipts: FeeReceipt[] = [];
 
   if (carryForwardDues && dueFee > 0) {
     newFeeReceipts.push({
@@ -196,7 +209,7 @@ export async function getTeachers(): Promise<Teacher[]> {
   return teacherList as Teacher[];
 }
 
-export async function addTeacher(teacher: Omit<Teacher, 'id'> & {id: string}): Promise<string> {
+export async function addTeacher(teacher: Teacher): Promise<string> {
     const teacherRef = doc(db, 'teachers', teacher.id);
     await setDoc(teacherRef, teacher);
     return teacher.id;
@@ -311,3 +324,5 @@ export async function getAttendanceForMonth(studentId: string, year: number, mon
 
   return studentAttendanceRecords;
 }
+
+    

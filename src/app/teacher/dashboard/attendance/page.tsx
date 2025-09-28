@@ -1,8 +1,8 @@
 
 'use client';
 import { useState, useEffect, useTransition } from 'react';
-import { getStudents, saveAttendance, getAttendance } from '@/lib/firebase/firestore';
-import type { Student, AttendanceStatus, DailyAttendance, AttendanceRecord } from '@/lib/types';
+import { getStudents, saveAttendance, getAttendance, getTeacherById } from '@/lib/firebase/firestore';
+import type { Student, AttendanceStatus, DailyAttendance, Teacher } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,13 +17,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import Link from 'next/link';
 
-const classOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
-const sectionOptions = ["A", "B", "C"];
-
 export default function MarkAttendancePage() {
     const { user } = useAuth();
-    const [selectedClass, setSelectedClass] = useState<string>('');
-    const [selectedSection, setSelectedSection] = useState<string>('');
+    const [teacher, setTeacher] = useState<Teacher | null>(null);
+    const [selectedClassSection, setSelectedClassSection] = useState<string>('');
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [students, setStudents] = useState<Student[]>([]);
     const [attendanceRecords, setAttendanceRecords] = useState<Map<string, AttendanceStatus>>(new Map());
@@ -32,10 +29,23 @@ export default function MarkAttendancePage() {
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     const { toast } = useToast();
+    
+    useEffect(() => {
+        if (user?.id) {
+            const fetchTeacherData = async () => {
+                const teacherData = await getTeacherById(user.id);
+                setTeacher(teacherData);
+            }
+            fetchTeacherData();
+        }
+    }, [user]);
 
     useEffect(() => {
         const fetchStudentsAndAttendance = async () => {
-            if (!selectedClass || !selectedSection || !selectedDate) return;
+            if (!selectedClassSection || !selectedDate || !teacher) return;
+            
+            const [className, sectionName] = parseClassSection(selectedClassSection);
+            if (!className || !sectionName) return;
 
             setIsLoading(true);
             setAttendanceRecords(new Map());
@@ -44,8 +54,8 @@ export default function MarkAttendancePage() {
             try {
                 const dateStr = format(selectedDate, 'yyyy-MM-dd');
                 const [fetchedStudents, existingAttendance] = await Promise.all([
-                    getStudents({ className: selectedClass, sectionName: selectedSection, status: 'Active' }),
-                    getAttendance(dateStr, selectedClass, selectedSection)
+                    getStudents({ className, sectionName, status: 'Active' }),
+                    getAttendance(dateStr, className, sectionName)
                 ]);
 
                 setStudents(fetchedStudents);
@@ -59,7 +69,6 @@ export default function MarkAttendancePage() {
                     setIsSubmitted(true);
                     toast({ title: "Already Submitted", description: "Attendance for this date has already been recorded." });
                 } else {
-                    // Default to 'Present'
                     const newRecords = new Map<string, AttendanceStatus>();
                     fetchedStudents.forEach(student => {
                         newRecords.set(student.admissionNumber, 'Present');
@@ -76,26 +85,35 @@ export default function MarkAttendancePage() {
         };
 
         fetchStudentsAndAttendance();
-    }, [selectedClass, selectedSection, selectedDate, toast]);
+    }, [selectedClassSection, selectedDate, toast, teacher]);
 
+    const parseClassSection = (classSection: string) => {
+        if (!classSection) return ['', ''];
+        const classPartMatch = classSection.match(/^(\d+|[a-zA-Z]+)/);
+        const className = classPartMatch ? classPartMatch[0] : '';
+        const sectionName = classSection.replace(className, '');
+        return [className, sectionName];
+    };
 
     const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
         setAttendanceRecords(prev => new Map(prev).set(studentId, status));
     };
 
     const handleSubmit = () => {
-        if (!user || !user.id) {
-            toast({ title: "Authentication Error", description: "Could not verify teacher identity.", variant: "destructive" });
+        if (!user || !user.id || !selectedClassSection) {
+            toast({ title: "Authentication or Selection Error", description: "Could not verify teacher or class selection.", variant: "destructive" });
             return;
         }
+
+        const [className, sectionName] = parseClassSection(selectedClassSection);
 
         startTransition(async () => {
             try {
                 const attendanceData: Omit<DailyAttendance, 'id'> = {
                     date: format(selectedDate, 'yyyy-MM-dd'),
-                    className: selectedClass,
-                    sectionName: selectedSection,
-                    session: students[0]?.session, // Assuming all students in class have same session
+                    className: className,
+                    sectionName: sectionName,
+                    session: students[0]?.session, 
                     takenBy: user.id!,
                     records: Array.from(attendanceRecords.entries()).map(([studentId, status]) => ({ studentId, status })),
                 };
@@ -111,6 +129,7 @@ export default function MarkAttendancePage() {
     };
 
     const allMarked = students.length > 0 && students.every(s => attendanceRecords.has(s.admissionNumber));
+    const [className, sectionName] = parseClassSection(selectedClassSection);
 
     return (
         <div className="space-y-6">
@@ -132,13 +151,9 @@ export default function MarkAttendancePage() {
                     </div>
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center gap-4">
-                     <Select onValueChange={setSelectedClass} value={selectedClass}>
+                     <Select onValueChange={setSelectedClassSection} value={selectedClassSection}>
                         <SelectTrigger className="w-48"><SelectValue placeholder="Select Class" /></SelectTrigger>
-                        <SelectContent>{classOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}</SelectContent>
-                    </Select>
-                     <Select onValueChange={setSelectedSection} value={selectedSection}>
-                        <SelectTrigger className="w-48"><SelectValue placeholder="Select Section" /></SelectTrigger>
-                        <SelectContent>{sectionOptions.map(s => <SelectItem key={s} value={s}>Section {s}</SelectItem>)}</SelectContent>
+                        <SelectContent>{teacher?.classes?.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                     </Select>
                     <Popover>
                         <PopoverTrigger asChild>
@@ -159,7 +174,7 @@ export default function MarkAttendancePage() {
                     <CardHeader>
                         <CardTitle>Student List</CardTitle>
                         <CardDescription>
-                            Mark attendance for Class {selectedClass}-{selectedSection} on {format(selectedDate, 'PPP')}.
+                            Mark attendance for Class {className}-{sectionName} on {format(selectedDate, 'PPP')}.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -220,7 +235,7 @@ export default function MarkAttendancePage() {
                 </Card>
             )}
 
-             {!isLoading && students.length === 0 && selectedClass && selectedSection && (
+             {!isLoading && students.length === 0 && selectedClassSection && (
                  <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
                         No active students found for the selected class and section.
@@ -230,3 +245,5 @@ export default function MarkAttendancePage() {
         </div>
     );
 }
+
+    

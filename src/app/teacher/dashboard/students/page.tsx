@@ -24,18 +24,9 @@ export default function MyStudentsPage() {
 
           if (teacherData && teacherData.classes) {
             const studentPromises = teacherData.classes.map(classStr => {
-              // Assuming classStr is like "10A", "UKGB", "NurseryA"
-              const match = classStr.match(/(\d+|[A-Z]+)([A-Z])$/i);
-              let className, sectionName;
-              
-              if (classStr.length <= 3 && !/\d/.test(classStr.slice(0,-1))) { // LKG, UKG, Nursery
-                  className = classStr.slice(0, -1);
-                  sectionName = classStr.slice(-1);
-              } else {
-                  const classPartMatch = classStr.match(/^(\d+|[a-zA-Z]+)/);
-                  className = classPartMatch ? classPartMatch[0] : '';
-                  sectionName = classStr.replace(className, '');
-              }
+              const classPartMatch = classStr.match(/^(\d+|[a-zA-Z]+)/);
+              const className = classPartMatch ? classPartMatch[0] : '';
+              const sectionName = classStr.replace(className, '');
 
               if (!className || !sectionName) return Promise.resolve([]);
               
@@ -76,3 +67,5 @@ export default function MyStudentsPage() {
     </div>
   );
 }
+
+    

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type { UserRole, Student, Teacher, Parent, AttendanceRecord, AttendanceStatus } from '@/lib/types';
+import type { UserRole, Student, Teacher, Parent, AttendanceRecord } from '@/lib/types';
 import { getStudents, getTeacherById, getParentByMobile, getAttendanceForMonth } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -32,6 +32,9 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   
+  // Teacher-specific state
+  const [teacher, setTeacher] = useState<Teacher | null>(null);
+
   // Parent state
   const [children, setChildren] = useState<Student[]>([]);
 
@@ -41,8 +44,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
   useEffect(() => {
     async function getStudent() {
       if (studentId) {
-         const students = await getStudents({ admissionNumber: studentId, status: 'Active' });
-         const student = students[0] || null;
+         const student = await getStudentByAdmissionNumber(studentId);
          setSelectedStudent(student);
          if (student) {
            setSelectedClass(student.className);
@@ -59,20 +61,13 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
         const students = await getStudents({ status: 'Active' });
         setAllStudents(students);
       } else if (role === 'teacher' && teacherId) {
-        const teacher = await getTeacherById(teacherId);
-        if (teacher && teacher.classes) {
-          const studentPromises = teacher.classes.map(classStr => {
-             const match = classStr.match(/(\d+|[A-Z]+)([A-Z])$/i);
-              let className, sectionName;
-              
-              if (classStr.length <= 3 && !/\d/.test(classStr.slice(0,-1))) { // LKG, UKG, Nursery
-                  className = classStr.slice(0, -1);
-                  sectionName = classStr.slice(-1);
-              } else {
-                  const classPartMatch = classStr.match(/^(\d+|[a-zA-Z]+)/);
-                  className = classPartMatch ? classPartMatch[0] : '';
-                  sectionName = classStr.replace(className, '');
-              }
+        const teacherData = await getTeacherById(teacherId);
+        setTeacher(teacherData);
+        if (teacherData && teacherData.classes) {
+          const studentPromises = teacherData.classes.map(classStr => {
+              const classPartMatch = classStr.match(/^(\d+|[a-zA-Z]+)/);
+              const className = classPartMatch ? classPartMatch[0] : '';
+              const sectionName = classStr.replace(className, '');
             return getStudents({ className, sectionName, status: 'Active' });
           });
           const studentsByClass = await Promise.all(studentPromises);
@@ -89,9 +84,9 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
         if (role === 'parent' && parentId) {
             const parent = await getParentByMobile(parentId);
             if (parent && parent.children) {
-                const studentPromises = parent.children.map(id => getStudents({ admissionNumber: id }));
-                const studentsArrays = await Promise.all(studentPromises);
-                const parentChildren = studentsArrays.flat().filter(s => s.status === 'Active');
+                const studentPromises = parent.children.map(id => getStudentByAdmissionNumber(id));
+                const studentResults = await Promise.all(studentPromises);
+                const parentChildren = studentResults.filter((s): s is Student => s !== null && s.status === 'Active');
                 setChildren(parentChildren);
                 if (parentChildren.length > 0 && !studentId) {
                     setSelectedStudent(parentChildren[0]);
@@ -149,7 +144,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
 
   const { presentDays, absentDays, leaveDays, holidays } = useMemo(() => {
     const daysInMonth = getDaysInMonth(currentMonth);
-    const result = { presentDays: [], absentDays: [], leaveDays: [], holidays: [] };
+    const result = { presentDays: [] as Date[], absentDays: [] as Date[], leaveDays: [] as Date[], holidays: [] as Date[] };
 
     for (let i = 1; i <= daysInMonth; i++) {
         const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
@@ -175,6 +170,20 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
     const student = allStudents.find(s => s.admissionNumber === admissionNumber) || children.find(c => c.admissionNumber === admissionNumber);
     setSelectedStudent(student || null);
   }
+  
+  const parseClassSection = (classSection: string) => {
+        if (!classSection) return ['', ''];
+        const classPartMatch = classSection.match(/^(\d+|[a-zA-Z]+)/);
+        const className = classPartMatch ? classPartMatch[0] : '';
+        const sectionName = classSection.replace(className, '');
+        return [className, sectionName];
+  };
+  
+  const handleClassChange = (classSection: string) => {
+      const [className, sectionName] = parseClassSection(classSection);
+      setSelectedClass(className);
+      setSelectedSection(sectionName);
+  }
 
   return (
     <Card>
@@ -184,7 +193,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
-          {(role === 'admin' || role === 'teacher') && (
+          {role === 'admin' && (
             <>
               <Select value={selectedClass} onValueChange={setSelectedClass}>
                 <SelectTrigger className="w-40"><SelectValue placeholder="All Classes" /></SelectTrigger>
@@ -195,6 +204,13 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
                 <SelectContent>{sectionOptions.map(s => <SelectItem key={s} value={s}>Section {s}</SelectItem>)}</SelectContent>
               </Select>
             </>
+          )}
+
+          {role === 'teacher' && teacher?.classes && (
+             <Select onValueChange={handleClassChange}>
+                <SelectTrigger className="w-40"><SelectValue placeholder="All My Classes" /></SelectTrigger>
+                <SelectContent>{teacher.classes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
           )}
 
           {(role === 'admin' || role === 'teacher') && (
@@ -267,3 +283,5 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
     </Card>
   );
 }
+
+    
