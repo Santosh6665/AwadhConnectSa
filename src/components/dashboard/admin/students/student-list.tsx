@@ -196,6 +196,11 @@ export default function StudentList({
               </TableHead>
               <TableHead onClick={() => requestSort('admissionNumber')}>Admission No</TableHead>
               <TableHead>Class & Section</TableHead>
+              <TableHead onClick={() => requestSort('session')}>
+                 <div className="flex items-center gap-2 cursor-pointer">
+                  Session <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
               <TableHead>Parent</TableHead>
               <TableHead>Fee Status</TableHead>
               <TableHead>Status</TableHead>
@@ -212,6 +217,7 @@ export default function StudentList({
                 <TableCell>{`${student.firstName} ${student.lastName}`}</TableCell>
                 <TableCell>{student.admissionNumber}</TableCell>
                 <TableCell>{`${student.className || 'N/A'}-${student.sectionName || 'N/A'}`}</TableCell>
+                <TableCell>{student.session}</TableCell>
                 <TableCell>{student.parentName || 'N/A'}</TableCell>
                 <TableCell>
                   <Badge variant={
