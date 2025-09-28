@@ -11,10 +11,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
+import Link from 'next/link';
 
 const classOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
 const sectionOptions = ["A", "B", "C"];
@@ -134,8 +135,18 @@ export default function AdminAttendancePage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Filter Records</CardTitle>
-                    <CardDescription>Select class, section, and date to manage attendance.</CardDescription>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <CardTitle>Filter Records</CardTitle>
+                            <CardDescription>Select class, section, and date to manage attendance.</CardDescription>
+                        </div>
+                        <Button variant="outline" asChild>
+                           <Link href="/dashboard/attendance-history">
+                                <Eye className="mr-2 h-4 w-4" />
+                                View History
+                           </Link>
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center gap-4">
                      <Select onValueChange={setSelectedClass} value={selectedClass}>
