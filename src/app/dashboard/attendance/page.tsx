@@ -215,12 +215,12 @@ export default function AdminAttendancePage() {
                                                         <Label htmlFor={`absent-${student.admissionNumber}`}>Absent</Label>
                                                     </div>
                                                 </RadioGroup>
-                                                 <Button 
-                                                    variant="ghost" 
-                                                    size="sm" 
+                                                 <Button
+                                                    variant="secondary"
+                                                    size="sm"
                                                     onClick={() => handleStatusChange(student.admissionNumber, 'Unmarked')}
                                                     disabled={isSaving}
-                                                    className="text-muted-foreground hover:text-foreground"
+                                                    className="text-secondary-foreground/80 hover:text-secondary-foreground"
                                                 >
                                                     <XCircle className="mr-2 h-4 w-4" />
                                                     Clear
