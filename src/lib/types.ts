@@ -2,7 +2,7 @@ export interface Student {
   id: string;
   rollNo: string;
   firstName: string;
-  lastName: string;
+  lastName:string;
   dob: Date;
   gender: 'Male' | 'Female' | 'Other';
   admissionNumber: string;
@@ -27,15 +27,16 @@ export interface Teacher {
   name: string; // Full Name
   email: string;
   phone: string;
-  dob: Date;
+  dob: string;
   gender: 'Male' | 'Female' | 'Other';
-  hireDate: Date;
+  hireDate: string;
   designation: string;
   subjects: string[]; // array of subjectIds
   classes: string[]; // e.g., ['9A', '10B']
   status: 'Active' | 'Archived';
   salary?: number;
   attendance?: AttendanceRecord[];
+  password?: string;
 }
 
 export interface Class {

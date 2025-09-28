@@ -12,6 +12,7 @@ import AddEditTeacherDialog from './add-edit-teacher-dialog';
 import TeacherDetailDialog from './teacher-detail-dialog';
 import { addTeacher, updateTeacher } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 
 export default function TeacherList({ teachers: initialTeachers }: { teachers: Teacher[] }) {
@@ -54,24 +55,30 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
     setIsDetailDialogOpen(true);
   };
   
-  const handleSaveTeacher = async (data: Omit<Teacher, 'dob' | 'hireDate'> & { dob: string | Date, hireDate: string | Date }) => {
+  const handleSaveTeacher = async (data: Omit<Teacher, 'dob' | 'hireDate'> & { dob: Date, hireDate: Date }) => {
     startTransition(async () => {
       try {
-        const dataToSave: Teacher = {
+        const formattedData = {
           ...data,
-          dob: typeof data.dob === 'string' ? new Date(data.dob) : data.dob,
-          hireDate: typeof data.hireDate === 'string' ? new Date(data.hireDate) : data.hireDate,
+          dob: format(data.dob, 'dd/MM/yyyy'),
+          hireDate: format(data.hireDate, 'dd/MM/yyyy'),
         };
 
         if (selectedTeacher) {
           // Update existing teacher
-          await updateTeacher(data.id, dataToSave);
-          setTeachers(teachers.map(t => t.id === data.id ? { ...t, ...dataToSave } : t));
+          await updateTeacher(data.id, formattedData);
+          setTeachers(teachers.map(t => t.id === data.id ? { ...t, ...formattedData } : t));
           toast({ title: "Success", description: "Teacher profile updated." });
         } else {
-          // Add new teacher
-          await addTeacher(dataToSave);
-          setTeachers(prev => [...prev, dataToSave]);
+           // Add new teacher
+           const firstName = data.name.split(' ')[0];
+           const birthYear = data.dob.getFullYear();
+           const password = `${firstName}#${birthYear}`;
+ 
+           const finalData = { ...formattedData, password };
+           
+           await addTeacher(finalData);
+           setTeachers(prev => [...prev, finalData]);
            toast({ title: "Success", description: "New teacher added." });
         }
         setIsAddEditDialogOpen(false);

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import type { Teacher } from '@/lib/types';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 
 interface TeacherDetailDialogProps {
   isOpen: boolean;
@@ -46,8 +46,8 @@ export default function TeacherDetailDialog({ isOpen, onOpenChange, teacher }: T
             <DetailItem label="Email" value={teacher.email} />
             <DetailItem label="Phone Number" value={teacher.phone} />
             <DetailItem label="Gender" value={teacher.gender} />
-            <DetailItem label="Date of Birth" value={teacher.dob ? format(new Date(teacher.dob), 'PPP') : 'N/A'} />
-            <DetailItem label="Hire Date" value={teacher.hireDate ? format(new Date(teacher.hireDate), 'PPP') : 'N/A'} />
+            <DetailItem label="Date of Birth" value={teacher.dob} />
+            <DetailItem label="Hire Date" value={teacher.hireDate} />
             <DetailItem label="Designation" value={teacher.designation} />
             <DetailItem label="Salary" value={teacher.salary ? `₹${teacher.salary.toLocaleString()}` : 'N/A'} />
             <DetailItem 

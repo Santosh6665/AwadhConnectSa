@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -72,12 +72,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
   });
 
   const onSubmit = (data: TeacherFormData) => {
-    const dataToSave = {
-      ...data,
-      dob: data.dob.toISOString(),
-      hireDate: data.hireDate.toISOString(),
-    };
-    onSave(dataToSave as any);
+    onSave(data as any);
   };
   
   // Reset form when dialog opens with new data
@@ -86,8 +81,8 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
       if (teacher) {
         form.reset({
           ...teacher,
-          dob: typeof teacher.dob === 'string' ? new Date(teacher.dob) : teacher.dob,
-          hireDate: typeof teacher.hireDate === 'string' ? new Date(teacher.hireDate) : teacher.hireDate,
+          dob: typeof teacher.dob === 'string' ? parse(teacher.dob, 'dd/MM/yyyy', new Date()) : teacher.dob,
+          hireDate: typeof teacher.hireDate === 'string' ? parse(teacher.hireDate, 'dd/MM/yyyy', new Date()) : teacher.hireDate,
           subjects: teacher.subjects || [],
           classes: teacher.classes || [],
         });
@@ -213,7 +208,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              format(field.value, "dd/MM/yyyy")
                             ) : (
                               <span>Pick a date</span>
                             )}
@@ -224,6 +219,9 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          captionLayout="dropdown-nav"
+                          fromYear={1950}
+                          toYear={new Date().getFullYear() - 18}
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date) =>
@@ -254,7 +252,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              format(field.value, "dd/MM/yyyy")
                             ) : (
                               <span>Pick a date</span>
                             )}
@@ -265,6 +263,9 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          captionLayout="dropdown-nav"
+                          fromYear={2000}
+                          toYear={new Date().getFullYear()}
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date) => date > new Date()}
