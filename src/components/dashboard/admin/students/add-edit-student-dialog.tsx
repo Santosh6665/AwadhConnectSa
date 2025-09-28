@@ -26,11 +26,10 @@ const studentSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   dob: z.date({ required_error: 'Date of birth is required' }),
   gender: z.enum(['Male', 'Female', 'Other']),
-  admissionNumber: z.string().min(1, 'Admission number is required'),
+  admissionNumber: z.string().optional(),
   className: z.string().min(1, 'Class is required'),
   sectionName: z.string().min(1, 'Section is required'),
   parentName: z.string().min(1, 'Parent Name is required'),
-  feeStatus: z.enum(['Paid', 'Due', 'Partial']),
   status: z.enum(['Active', 'Archived']),
   session: z.string().min(1, 'Session is required'),
 });
@@ -100,11 +99,10 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
           lastName: '',
           dob: undefined,
           gender: 'Male',
-          admissionNumber: `ADM-${Date.now()}`.slice(0,10),
+          admissionNumber: '',
           className: '',
           sectionName: '',
           parentName: '',
-          feeStatus: 'Due',
           status: 'Active',
           session: `${currentYear}-${currentYear + 1}`
         });
@@ -113,16 +111,25 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
   }, [isOpen, student, form]);
   
   const onSubmit = (data: StudentFormData) => {
+    
+    const admissionNumber = data.admissionNumber || `ADM-${Date.now().toString().slice(-6)}`;
+    
     const finalData: Student = {
-        ...(student || { id: '' }), // Keep existing id if editing
         ...data,
+        admissionNumber: admissionNumber,
         dob: format(data.dob, 'dd/MM/yyyy'),
+        fees: student?.fees || {}, // Preserve existing fees on edit
+        results: student?.results || {}, // Preserve existing results on edit
     };
+
     if (!student) {
         // For new students, create a password
         const birthYear = data.dob.getFullYear();
         finalData.password = `${data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1)}@${birthYear}`;
+        finalData.fees = { [data.session]: [] };
+        finalData.results = { [data.session]: [] };
     }
+    
     onSave(finalData);
   };
 
@@ -139,7 +146,7 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField name="admissionNumber" control={form.control} render={({ field }) => (
-                  <FormItem><FormLabel>Admission Number</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Admission Number</FormLabel><FormControl><Input placeholder="Auto-generates if empty" {...field} disabled={!!student} /></FormControl><FormMessage /></FormItem>
               )}/>
               <FormField name="rollNo" control={form.control} render={({ field }) => (
                   <FormItem><FormLabel>Roll No.</FormLabel><FormControl><Input placeholder="e.g., 10A01" {...field} /></FormControl><FormMessage /></FormItem>
@@ -167,9 +174,6 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
               )}/>
               <FormField name="sectionName" control={form.control} render={({ field }) => (
                 <FormItem><FormLabel>Section</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Section" /></SelectTrigger></FormControl><SelectContent>{sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-              )}/>
-               <FormField name="feeStatus" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Fee Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Paid">Paid</SelectItem><SelectItem value="Due">Due</SelectItem><SelectItem value="Partial">Partial</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )}/>
                <FormField name="status" control={form.control} render={({ field }) => (
                 <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Archived">Archived</SelectItem></SelectContent></Select><FormMessage /></FormItem>

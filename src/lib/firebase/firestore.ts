@@ -55,18 +55,18 @@ export async function getStudents(): Promise<Student[]> {
   const q = query(collection(db, 'students'), where('status', '==', 'Active'));
   const studentSnapshot = await getDocs(q);
   const studentList = studentSnapshot.docs.map(doc =>
-    ({ id: doc.id, ...doc.data() })
+    ({ admissionNumber: doc.id, ...doc.data() })
   );
   return studentList as Student[];
 }
 
-export async function addStudent(studentData: Omit<Student, 'id'>): Promise<string> {
-    const docRef = await addDoc(collection(db, 'students'), studentData);
-    return docRef.id;
+export async function addStudent(studentData: Omit<Student, 'admissionNumber'>, admissionNumber: string): Promise<void> {
+    const studentDocRef = doc(db, 'students', admissionNumber);
+    await setDoc(studentDocRef, studentData);
 }
 
-export async function updateStudent(id: string, studentData: Partial<Student>): Promise<void> {
-    const studentDoc = doc(db, 'students', id);
+export async function updateStudent(admissionNumber: string, studentData: Partial<Student>): Promise<void> {
+    const studentDoc = doc(db, 'students', admissionNumber);
     await updateDoc(studentDoc, studentData);
 }
 

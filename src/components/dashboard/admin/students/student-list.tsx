@@ -20,6 +20,14 @@ type SortConfig = {
   direction: 'ascending' | 'descending';
 };
 
+const getFeeStatus = (student: Student) => {
+    const sessionFees = student.fees[student.session] || [];
+    if (sessionFees.length === 0) return 'Due';
+    const lastReceipt = sessionFees[sessionFees.length - 1];
+    return lastReceipt.status;
+};
+
+
 export default function StudentList({
   initialStudents,
   classes,
@@ -55,10 +63,13 @@ export default function StudentList({
 
     if (sortConfig !== null) {
       filtered.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        const aValue = a[sortConfig.key as keyof Student] ?? '';
+        const bValue = b[sortConfig.key as keyof Student] ?? '';
+        
+        if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (aValue > bValue) {
           return sortConfig.direction === 'ascending' ? 1 : -1;
         }
         return 0;
@@ -89,13 +100,14 @@ export default function StudentList({
   const handleSaveStudent = (data: Student) => {
       startTransition(async () => {
         try {
+            const { admissionNumber, ...studentData } = data;
             if (selectedStudent) {
-                await updateStudent(selectedStudent.id, data);
-                setStudents(students.map(s => s.id === selectedStudent.id ? data : s));
+                await updateStudent(admissionNumber, studentData);
+                setStudents(students.map(s => s.admissionNumber === admissionNumber ? data : s));
                 toast({ title: "Success", description: "Student record updated." });
             } else {
-                const newId = await addStudent(data);
-                setStudents(prev => [...prev, { ...data, id: newId }]);
+                await addStudent(studentData, admissionNumber);
+                setStudents(prev => [...prev, data]);
                 toast({ title: "Success", description: "New student admitted." });
             }
             setIsAddEditDialogOpen(false);
@@ -137,7 +149,7 @@ export default function StudentList({
                   Name <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead>Admission No</TableHead>
+              <TableHead onClick={() => requestSort('admissionNumber')}>Admission No</TableHead>
               <TableHead>Class & Section</TableHead>
               <TableHead>Parent</TableHead>
               <TableHead>Fee Status</TableHead>
@@ -146,8 +158,10 @@ export default function StudentList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredStudents.map((student) => (
-              <TableRow key={student.id}>
+            {filteredStudents.map((student) => {
+              const feeStatus = getFeeStatus(student);
+              return (
+              <TableRow key={student.admissionNumber}>
                 <TableCell className="font-medium">{student.rollNo}</TableCell>
                 <TableCell>{`${student.firstName} ${student.lastName}`}</TableCell>
                 <TableCell>{student.admissionNumber}</TableCell>
@@ -155,11 +169,11 @@ export default function StudentList({
                 <TableCell>{student.parentName || 'N/A'}</TableCell>
                 <TableCell>
                   <Badge variant={
-                      student.feeStatus === 'Paid' ? 'default' 
-                      : student.feeStatus === 'Due' ? 'destructive' 
+                      feeStatus === 'Paid' ? 'default' 
+                      : feeStatus === 'Due' ? 'destructive' 
                       : 'secondary'
                   }>
-                    {student.feeStatus}
+                    {feeStatus}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -181,7 +195,7 @@ export default function StudentList({
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
+            )})}
           </TableBody>
         </Table>
       </div>

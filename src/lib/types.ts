@@ -1,23 +1,23 @@
 export interface Student {
-  id: string; // Auto-generated Firestore ID
+  admissionNumber: string; // Document ID
   rollNo: string;
   firstName: string;
   lastName: string;
   dob: string; // Stored as 'dd/MM/yyyy'
   gender: 'Male' | 'Female' | 'Other';
-  admissionNumber: string;
   className: string;
   sectionName: string;
   parentName: string;
-  feeStatus: 'Paid' | 'Due' | 'Partial';
   status: 'Active' | 'Archived';
   session: string; // e.g., '2024-25'
   
+  // New structured data for fees and results
+  fees: { [session: string]: FeeReceipt[] };
+  results: { [session: string]: Result[] };
+
   // Optional fields
   password?: string;
   previousSessions?: PreviousSession[];
-  attendance?: AttendanceRecord[];
-  results?: Result[];
 }
 
 export interface PreviousSession {
@@ -85,7 +85,8 @@ export interface Fee {
 export interface FeeReceipt {
   id: string;
   amount: number;
-  date: Date;
+  date: string; // dd/MM/yyyy
+  status: 'Paid' | 'Due' | 'Partial';
 }
 
 export interface Result {
@@ -140,4 +141,7 @@ export interface Admin {
 export interface AppUser {
   email: string;
   role: UserRole;
+  // For teacher role
+  id?: string; 
+  name?: string;
 }
