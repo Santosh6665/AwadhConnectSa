@@ -51,18 +51,28 @@ export default function EnterResultsPage() {
   }, [selectedClass]);
 
   useEffect(() => {
-    if (selectedStudent) {
-      const subjectsForClass = subjectsByClass[selectedStudent.className] || subjectsByClass['10'];
-      const initialMarks = subjectsForClass.map(subjectName => ({
-        subjectName,
-        maxMarks: 100,
-        obtainedMarks: 0,
-      }));
-      setSubjectMarks(initialMarks);
+    if (selectedStudent && selectedExam) {
+      const sessionResults = selectedStudent.results?.[selectedStudent.session];
+      const existingExamResults = sessionResults?.examResults?.[selectedExam];
+
+      if (existingExamResults) {
+        // Load existing marks for this exam
+        setSubjectMarks(existingExamResults.subjects);
+        toast({ title: "Existing Marks Loaded", description: `Editing marks for ${selectedExam} exam.` });
+      } else {
+        // Initialize with empty marks for a new exam entry
+        const subjectsForClass = subjectsByClass[selectedStudent.className] || subjectsByClass['10'];
+        const initialMarks = subjectsForClass.map(subjectName => ({
+          subjectName,
+          maxMarks: 100,
+          obtainedMarks: 0,
+        }));
+        setSubjectMarks(initialMarks);
+      }
     } else {
       setSubjectMarks([]);
     }
-  }, [selectedStudent]);
+  }, [selectedStudent, selectedExam, toast]);
 
   const handleMarksChange = (subjectName: string, obtainedMarks: number) => {
     setSubjectMarks(prevMarks =>
