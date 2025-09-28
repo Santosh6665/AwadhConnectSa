@@ -18,7 +18,7 @@ import {
   arrayUnion,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -88,8 +88,38 @@ export async function getStudentByAdmissionNumber(admissionNumber: string): Prom
 
 export async function addStudent(studentData: Omit<Student, 'admissionNumber'>, admissionNumber: string): Promise<void> {
     const studentDocRef = doc(db, 'students', admissionNumber);
-    await setDoc(studentDocRef, studentData);
+    const batch = writeBatch(db);
+
+    // 1. Set student document
+    batch.set(studentDocRef, studentData);
+
+    // 2. Handle parent document creation/update
+    if (studentData.parentMobile) {
+        const parentDocRef = doc(db, 'parents', studentData.parentMobile);
+        const parentDocSnap = await getDoc(parentDocRef);
+
+        if (parentDocSnap.exists()) {
+            // Parent exists, update their children array
+            batch.update(parentDocRef, {
+                children: arrayUnion(admissionNumber)
+            });
+        } else {
+            // Parent does not exist, create new parent document
+            const newParent: Parent = {
+                id: studentData.parentMobile,
+                name: studentData.parentName,
+                phone: studentData.parentMobile,
+                children: [admissionNumber],
+                password: `${studentData.parentName.split(' ')[0]}@${new Date().getFullYear()}`, // Default password
+            };
+            batch.set(parentDocRef, newParent);
+        }
+    }
+    
+    // 3. Commit batch
+    await batch.commit();
 }
+
 
 export async function updateStudent(admissionNumber: string, studentData: Partial<Student>): Promise<void> {
     const studentDoc = doc(db, 'students', admissionNumber);

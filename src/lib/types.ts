@@ -35,11 +35,12 @@ export interface PreviousSession {
 
 
 export interface Parent {
-  id: string;
+  id: string; // mobile number
   name: string;
-  email: string;
   phone: string;
-  children: string[]; // array of studentIds
+  children: string[]; // array of student admission numbers
+  password?: string;
+  email?: string;
 }
 
 export interface Teacher {
