@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, ArrowUpCircle, History } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, ArrowUpCircle, History, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -15,6 +15,7 @@ import AddEditStudentDialog from './add-edit-student-dialog';
 import PromoteStudentDialog from './promote-student-dialog';
 import ViewPreviousRecordsDialog from './view-previous-records-dialog';
 import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
+import StudentDetailDialog from './student-detail-dialog';
 
 type StudentWithDetails = Student;
 
@@ -44,6 +45,7 @@ export default function StudentList({
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
   const [isPromoteDialogOpen, setIsPromoteDialogOpen] = useState(false);
   const [isViewRecordsDialogOpen, setIsViewRecordsDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
@@ -98,6 +100,11 @@ export default function StudentList({
   const handleEdit = (student: Student) => {
     setSelectedStudent(student);
     setIsAddEditDialogOpen(true);
+  };
+  
+  const handleViewDetails = (student: Student) => {
+    setSelectedStudent(student);
+    setIsDetailDialogOpen(true);
   };
 
   const handlePromote = (student: Student) => {
@@ -233,6 +240,10 @@ export default function StudentList({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                       <DropdownMenuItem onClick={() => handleViewDetails(student)}>
+                        <User className="mr-2 h-4 w-4" />
+                        View Details
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleEdit(student)}>Edit Details</DropdownMenuItem>
                        {hasPreviousRecords && (
                           <DropdownMenuItem onClick={() => handleViewRecords(student)}>
@@ -277,6 +288,11 @@ export default function StudentList({
           <ViewPreviousRecordsDialog
             isOpen={isViewRecordsDialogOpen}
             onOpenChange={setIsViewRecordsDialogOpen}
+            student={selectedStudent}
+          />
+          <StudentDetailDialog
+            isOpen={isDetailDialogOpen}
+            onOpenChange={setIsDetailDialogOpen}
             student={selectedStudent}
           />
         </>
