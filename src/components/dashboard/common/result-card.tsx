@@ -83,14 +83,6 @@ export default function ResultCard({ student, annualResult }: { student: Student
 
   return (
     <Card className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
-        <style jsx global>{`
-            @media print {
-                body * { visibility: hidden; }
-                .result-card, .result-card * { visibility: visible; }
-                .result-card { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
-                .no-print { display: none; }
-            }
-        `}</style>
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -212,3 +204,5 @@ export default function ResultCard({ student, annualResult }: { student: Student
     </Card>
   );
 }
+
+    
