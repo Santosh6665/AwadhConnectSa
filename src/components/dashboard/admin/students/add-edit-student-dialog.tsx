@@ -49,23 +49,21 @@ interface AddEditStudentDialogProps {
 
 
 function DateDropdowns({ value, onChange, fromYear, toYear }: { value?: Date; onChange: (date: Date) => void; fromYear: number; toYear: number; }) {
-  const [day, setDay] = React.useState(value ? value.getDate().toString() : '');
-  const [month, setMonth] = React.useState(value ? value.getMonth().toString() : '');
-  const [year, setYear] = React.useState(value ? value.getFullYear().toString() : '');
+  const day = value ? value.getDate().toString() : '';
+  const month = value ? value.getMonth().toString() : '';
+  const year = value ? value.getFullYear().toString() : '';
 
-  React.useEffect(() => {
-    if (day && month !== '' && year) {
-      onChange(new Date(Number(year), Number(month), Number(day)));
-    }
-  }, [day, month, year, onChange]);
+  const handleDateChange = (part: 'day' | 'month' | 'year', newValue: string) => {
+    const newDay = part === 'day' ? Number(newValue) : Number(day) || 1;
+    const newMonth = part === 'month' ? Number(newValue) : Number(month) || 0;
+    const newYear = part === 'year' ? Number(newValue) : Number(year) || fromYear;
 
-  React.useEffect(() => {
-    if (value) {
-      setDay(value.getDate().toString());
-      setMonth(value.getMonth().toString());
-      setYear(value.getFullYear().toString());
-    }
-  }, [value]);
+    const daysInNewMonth = new Date(newYear, newMonth + 1, 0).getDate();
+    const finalDay = Math.min(newDay, daysInNewMonth);
+
+    onChange(new Date(newYear, newMonth, finalDay));
+  };
+
 
   const years = Array.from({ length: toYear - fromYear + 1 }, (_, i) => toYear - i);
   const months = Array.from({ length: 12 }, (_, i) => ({ value: i.toString(), label: format(new Date(0, i), 'MMMM') }));
@@ -74,9 +72,9 @@ function DateDropdowns({ value, onChange, fromYear, toYear }: { value?: Date; on
 
   return (
     <div className="flex gap-2">
-      <Select value={day} onValueChange={setDay}><SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger><SelectContent>{days.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>
-      <Select value={month} onValueChange={setMonth}><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
-      <Select value={year} onValueChange={setYear}><SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}</SelectContent></Select>
+      <Select value={day} onValueChange={(v) => handleDateChange('day', v)}><SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger><SelectContent>{days.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>
+      <Select value={month} onValueChange={(v) => handleDateChange('month', v)}><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select>
+      <Select value={year} onValueChange={(v) => handleDateChange('year', v)}><SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}</SelectContent></Select>
     </div>
   );
 }
