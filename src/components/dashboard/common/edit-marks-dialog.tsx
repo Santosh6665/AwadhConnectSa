@@ -19,24 +19,7 @@ import type { Student, ExamResult, ExamType } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { saveStudentResults } from '@/lib/firebase/firestore';
-
-const subjectsByClass: { [key: string]: string[] } = {
-  '1': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '2': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '3': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '4': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '5': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '6': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '7': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '8': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '9': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '10': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '11': ['English', 'Hindi', 'Physics', 'Chemistry', 'Biology', 'Computer'],
-  '12': ['English', 'Hindi', 'Physics', 'Chemistry', 'Biology', 'Computer'],
-  'Nursery': ['Oral', 'English', 'Hindi', 'Mathematics'],
-  'LKG': ['Oral', 'English', 'Hindi', 'Mathematics'],
-  'UKG': ['Oral', 'English', 'Hindi', 'Mathematics'],
-};
+import { subjectsByClass } from './subjects-schema';
 
 interface EditMarksDialogProps {
   isOpen: boolean;
@@ -65,14 +48,21 @@ export default function EditMarksDialog({ isOpen, onOpenChange, student, examTyp
   });
 
   React.useEffect(() => {
-    if (student && examType) {
+    if (isOpen && student && examType) {
       const sessionResults = student.results?.[student.session];
       const existingExamResults = sessionResults?.examResults?.[examType];
+      
+      const subjectsForClass = subjectsByClass[student.className as keyof typeof subjectsByClass] || [];
 
-      if (existingExamResults) {
-        replace(existingExamResults.subjects);
+      if (existingExamResults && existingExamResults.subjects.length > 0) {
+        // If results exist, map them to the schema to ensure order and completeness
+        const orderedSubjects = subjectsForClass.map(subjectName => {
+          const existingSubject = existingExamResults.subjects.find(s => s.subjectName === subjectName);
+          return existingSubject || { subjectName, maxMarks: 100, obtainedMarks: 0 };
+        });
+        replace(orderedSubjects);
       } else {
-        const subjectsForClass = subjectsByClass[student.className] || [];
+        // If no results exist, create a fresh slate from the schema
         const initialMarks = subjectsForClass.map(subjectName => ({
           subjectName,
           maxMarks: 100,

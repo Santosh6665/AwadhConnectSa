@@ -4,9 +4,10 @@
 import type { Student, AnnualResult, ExamResult, SubjectResult } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, User, BookOpen, BarChart, Award, Download } from 'lucide-react';
+import { GraduationCap, User, BookOpen, BarChart, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { subjectsByClass } from './subjects-schema';
 
 const getGrade = (percentage: number): { grade: string; remarks: string; passed: boolean } => {
   if (percentage >= 90) return { grade: 'A+', remarks: 'Outstanding', passed: true };
@@ -16,24 +17,6 @@ const getGrade = (percentage: number): { grade: string; remarks: string; passed:
   if (percentage >= 50) return { grade: 'D', remarks: 'Satisfactory', passed: true };
   if (percentage >= 33) return { grade: 'E', remarks: 'Needs Improvement', passed: true };
   return { grade: 'F', remarks: 'Fail', passed: false };
-};
-
-const subjectsByClass: { [key: string]: string[] } = {
-  '1': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '2': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '3': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '4': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '5': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '6': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '7': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '8': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '9': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '10': ['English', 'Hindi', 'Mathematics', 'Science', 'Social Science', 'Computer'],
-  '11': ['English', 'Hindi', 'Physics', 'Chemistry', 'Biology', 'Computer'],
-  '12': ['English', 'Hindi', 'Physics', 'Chemistry', 'Biology', 'Computer'],
-  'Nursery': ['Oral', 'English', 'Hindi', 'Mathematics'],
-  'LKG': ['Oral', 'English', 'Hindi', 'Mathematics'],
-  'UKG': ['Oral', 'English', 'Hindi', 'Mathematics'],
 };
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -53,7 +36,7 @@ export default function ResultCard({ student, annualResult }: { student: Student
   const hyResult = annualResult.examResults['Half-Yearly'];
   const anResult = annualResult.examResults.Annual;
   
-  const subjects = subjectsByClass[student.className] || [];
+  const subjects = subjectsByClass[student.className as keyof typeof subjectsByClass] || [];
 
   const calculateTotal = (result: ExamResult | undefined) => {
     if (!result) return { obtained: 0, max: 0 };
