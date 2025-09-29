@@ -31,7 +31,7 @@ export default function StudyMaterialPage() {
       setIsLoading(true);
       try {
         const [materialData, teacherData] = await Promise.all([
-          getStudyMaterials(),
+          getStudyMaterials({ uploadedBy: user.id }),
           getTeacherById(user.id)
         ]);
         setMaterials(materialData);
@@ -75,7 +75,7 @@ export default function StudyMaterialPage() {
     });
   };
 
-  const handleSave = async (data: Omit<StudyMaterial, 'id' | 'fileUrl' | 'createdAt' | 'updatedAt' | 'uploadedBy'>, file?: File | null) => {
+  const handleSave = async (data: Omit<StudyMaterial, 'id' | 'createdAt' | 'updatedAt' | 'uploadedBy'>, file?: File | null) => {
     if (!user?.id) {
       toast({ title: "Error", description: "User not authenticated.", variant: "destructive" });
       return;
@@ -83,7 +83,7 @@ export default function StudyMaterialPage() {
 
     startTransition(async () => {
       try {
-        let fileUrl = data.materialType === 'link' ? data.topic : ''; // Using topic field for link URL
+        let fileUrl = data.fileUrl;
 
         if (data.materialType === 'file' && file) {
           fileUrl = await uploadStudyMaterialFile(file, user.id);
@@ -92,7 +92,7 @@ export default function StudyMaterialPage() {
         }
 
         if (selectedItem) { // Editing
-          const updatedItem = {
+          const updatedItem: StudyMaterial = {
             ...selectedItem,
             ...data,
             fileUrl,
@@ -112,7 +112,7 @@ export default function StudyMaterialPage() {
             completedBy: [],
           };
           const id = await addStudyMaterial(newItem);
-          setMaterials(prev => [{ id, ...newItem }, ...prev]);
+          setMaterials(prev => [{ id, ...newItem } as StudyMaterial, ...prev]);
           toast({ title: "Success", description: "Material added successfully." });
         }
         setIsDialogOpen(false);

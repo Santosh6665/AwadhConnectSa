@@ -28,9 +28,22 @@ const materialSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   classSection: z.string().min(1, 'Class is required'),
   subject: z.string().min(1, 'Subject is required'),
-  topic: z.string().min(1, 'Topic/Link is required'),
+  topic: z.string().optional(),
+  fileUrl: z.string().optional(),
   materialType: z.enum(['file', 'link']),
-});
+}).refine(data => {
+    if (data.materialType === 'link') {
+        return !!data.fileUrl && data.fileUrl.length > 0;
+    }
+    return true;
+}, { message: "URL is required for link type", path: ['fileUrl']})
+.refine(data => {
+    if (data.materialType === 'file') {
+        return !!data.topic && data.topic.length > 0;
+    }
+    return true;
+}, { message: "Topic is required for file type", path: ['topic']});
+
 
 type FormData = z.infer<typeof materialSchema>;
 
@@ -66,7 +79,8 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
           description: item.description,
           classSection: `${item.className}${item.sectionName}`,
           subject: item.subject,
-          topic: item.materialType === 'link' ? item.fileUrl : item.topic,
+          topic: item.topic,
+          fileUrl: item.fileUrl,
           materialType: item.materialType,
         });
       } else {
@@ -76,6 +90,7 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
           classSection: '',
           subject: '',
           topic: '',
+          fileUrl: '',
           materialType: 'file',
         });
       }
@@ -92,7 +107,8 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
       className: className,
       sectionName: sectionName,
       subject: data.subject,
-      topic: data.topic,
+      topic: data.topic || '',
+      fileUrl: data.fileUrl || '',
       materialType: data.materialType,
       visibleTo: ['student', 'parent'],
     };
@@ -125,11 +141,18 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField name="title" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Chapter 1 Notes" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Chapter 1 Notes" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
-                <FormField name="topic" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>{materialType === 'file' ? 'Topic' : 'URL'}</FormLabel><FormControl><Input placeholder={materialType === 'file' ? "e.g., Photosynthesis" : "https://youtube.com/watch?v=..."} {...field} /></FormControl><FormMessage /></FormItem>
-                )}/>
+                
+                {materialType === 'file' ? (
+                     <FormField name="topic" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Topic</FormLabel><FormControl><Input placeholder="e.g., Photosynthesis" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                ) : (
+                    <FormField name="fileUrl" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>URL</FormLabel><FormControl><Input placeholder="https://youtube.com/watch?v=..." {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                )}
             </div>
              <FormField name="description" control={form.control} render={({ field }) => (
               <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief overview of the material." {...field} rows={3} /></FormControl><FormMessage /></FormItem>
