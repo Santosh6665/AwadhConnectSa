@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect, useTransition } from 'react';
 import { useAuth } from '@/contexts/auth-context';
@@ -83,8 +82,7 @@ export default function AdminStudyMaterialPage() {
         let fileUrl = data.fileUrl;
         
         if (data.materialType === 'file' && file) {
-          const uploadPathId = userId.replace(/[@.]/g, '_');
-          fileUrl = await uploadStudyMaterialFile(file, uploadPathId);
+          fileUrl = await uploadStudyMaterialFile(file);
         } else if (selectedItem?.materialType === 'file' && !file) {
           fileUrl = selectedItem.fileUrl;
         }

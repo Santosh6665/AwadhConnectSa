@@ -522,8 +522,8 @@ export async function updateStudentFeeStructure(admissionNumber: string, classNa
 
 // STUDY MATERIALS
 
-export async function uploadStudyMaterialFile(file: File, teacherId: string): Promise<string> {
-    const storageRef = ref(storage, `study_materials/${teacherId}/${Date.now()}_${file.name}`);
+export async function uploadStudyMaterialFile(file: File): Promise<string> {
+    const storageRef = ref(storage, `study_materials/${Date.now()}_${file.name}`);
     const snapshot = await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(snapshot.ref);
     return downloadURL;
