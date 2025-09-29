@@ -1,6 +1,7 @@
 
 
 
+
 'use server';
 
 import {
@@ -25,7 +26,7 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice } from '../types';
+import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -475,4 +476,19 @@ export async function saveSalaryPayment(paymentData: SalaryPayment): Promise<voi
     const docId = `${paymentData.teacherId}_${paymentData.year}-${paymentData.month}`;
     const paymentRef = doc(db, 'salaryPayments', docId);
     await setDoc(paymentRef, paymentData, { merge: true });
+}
+
+// SETTINGS
+export async function saveFeeStructure(feeStructure: FeeStructure): Promise<void> {
+    const settingsRef = doc(db, 'settings', 'feeStructure');
+    await setDoc(settingsRef, feeStructure);
+}
+
+export async function getFeeStructure(): Promise<FeeStructure | null> {
+    const settingsRef = doc(db, 'settings', 'feeStructure');
+    const docSnap = await getDoc(settingsRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as FeeStructure;
+    }
+    return null;
 }

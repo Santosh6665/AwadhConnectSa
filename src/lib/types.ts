@@ -2,6 +2,7 @@
 
 
 
+
 export interface Student {
   admissionNumber: string; // Document ID
   rollNo: string;
@@ -206,4 +207,15 @@ export interface SalaryPayment {
   paymentDate?: string;
   paymentMode?: 'Bank Transfer' | 'Cheque' | 'Cash';
   amount: number;
+}
+
+export interface FeeHead {
+    amount: number;
+    months: number; // 0-12
+}
+
+export interface FeeStructure {
+    [className: string]: {
+        [feeHead: string]: FeeHead;
+    };
 }
