@@ -1,8 +1,4 @@
 
-
-
-
-
 export interface Student {
   admissionNumber: string; // Document ID
   rollNo: string;
@@ -17,13 +13,18 @@ export interface Student {
   status: 'Active' | 'Archived';
   session: string; // e.g., '2024-25'
   
-  // New structured data for fees and results, keyed by class name
-  fees: { [className: string]: FeeReceipt[] };
+  fees: { [session: string]: FeeSessionData };
   results: { [session: string]: AnnualResult };
 
   // Optional fields
   password?: string;
   previousSessions?: PreviousSession[];
+}
+
+export interface FeeSessionData {
+  structure?: FeeStructure; // Optional override for this student
+  concession?: number; // Optional concession amount
+  transactions: FeeReceipt[];
 }
 
 export interface AnnualResult {
@@ -68,6 +69,11 @@ export interface Parent {
   password?: string;
   email?: string;
 }
+
+export interface Family extends Parent {
+    students: Student[];
+}
+
 
 export interface Teacher {
   id: string; // Teacher ID / Employee ID
@@ -116,7 +122,8 @@ export interface FeeReceipt {
   id: string;
   amount: number;
   date: string; // dd/MM/yyyy
-  status: 'Paid' | 'Due' | 'Partial';
+  remarks?: string;
+  mode: 'Cash' | 'Cheque' | 'Online';
 }
 
 export type AttendanceStatus = 'Present' | 'Absent' | 'Unmarked';
@@ -161,7 +168,7 @@ export interface Notice {
 }
 
 export interface Event {
-  id: string;
+  id:string;
   title: string;
   description: string;
   targetAudience: NoticeAudience[];
@@ -215,7 +222,5 @@ export interface FeeHead {
 }
 
 export interface FeeStructure {
-    [className: string]: {
-        [feeHead: string]: FeeHead;
-    };
+    [feeHead: string]: FeeHead;
 }

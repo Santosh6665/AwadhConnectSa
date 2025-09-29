@@ -152,7 +152,7 @@ export default function FeeStructureForm({ initialData }: { initialData: FeeStru
                                                 <SelectValue />
                                             </SelectTrigger>
                                         </FormControl>
-                                        <SelectContent>
+                                        <SelectContent className='h-[300px]'>
                                             {monthOptions.map(m => (
                                                 <SelectItem key={m} value={m.toString()}>x {m} mo</SelectItem>
                                             ))}

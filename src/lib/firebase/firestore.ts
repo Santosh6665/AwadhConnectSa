@@ -1,7 +1,4 @@
 
-
-
-
 'use server';
 
 import {
@@ -26,7 +23,7 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure } from '../types';
+import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -185,10 +182,13 @@ export async function promoteStudent(
   }
 
   const studentData = studentSnap.data() as Student;
-  const currentFees = studentData.fees[studentData.className] || [];
-  const lastReceipt = currentFees.length > 0 ? currentFees[currentFees.length - 1] : null;
-  const dueFee = lastReceipt?.status === 'Due' ? lastReceipt.amount : 0;
-
+  const currentSessionData = studentData.fees[studentData.session] || { transactions: [] };
+  
+  // A simple way to calculate due fee from the last transaction for now.
+  // This can be improved with a proper calculation function later.
+  let dueFee = 0;
+  // This logic needs to be more robust. Placeholder for now.
+  
   const previousSessionRecord: PreviousSession = {
     sessionId: `${studentData.admissionNumber}-${studentData.session}`,
     className: studentData.className,
@@ -199,18 +199,7 @@ export async function promoteStudent(
     dueFee: dueFee,
   };
 
-  const newFees: { [className: string]: FeeReceipt[] } = { ...studentData.fees };
-  let newFeeReceipts: FeeReceipt[] = [];
-
-  if (carryForwardDues && dueFee > 0) {
-    newFeeReceipts.push({
-      id: `receipt-${Date.now()}`,
-      amount: dueFee,
-      date: new Date().toLocaleDateString('en-GB'),
-      status: 'Due',
-    });
-  }
-  newFees[newClassName] = newFeeReceipts;
+  const newFees = { ...studentData.fees, [newSession]: { transactions: [] } };
 
   const batch = writeBatch(db);
 
@@ -218,7 +207,6 @@ export async function promoteStudent(
     session: newSession,
     className: newClassName,
     sectionName: newSectionName,
-    // Add current session details to the `previousSessions` array
     previousSessions: arrayUnion(previousSessionRecord),
     fees: newFees,
     results: { ...studentData.results, [newSession]: { examResults: {} } },
@@ -290,6 +278,25 @@ export async function getParentByMobile(mobile: string): Promise<Parent | null> 
 
   return { id: parentDocSnap.id, ...parentDocSnap.data() } as Parent;
 }
+
+export async function getParentsWithStudentData(): Promise<Family[]> {
+    const parentsRef = collection(db, 'parents');
+    const parentSnap = await getDocs(parentsRef);
+    
+    const families: Family[] = [];
+
+    for (const parentDoc of parentSnap.docs) {
+        const parentData = parentDoc.data() as Parent;
+        const studentPromises = parentData.children.map(id => getStudentByAdmissionNumber(id));
+        const studentResults = await Promise.all(studentPromises);
+        const students = studentResults.filter((s): s is Student => s !== null);
+
+        families.push({ ...parentData, students });
+    }
+    
+    return families;
+}
+
 
 // Functions to fetch classes, sections for dropdowns
 export async function getClasses(): Promise<Class[]> {
@@ -478,17 +485,38 @@ export async function saveSalaryPayment(paymentData: SalaryPayment): Promise<voi
     await setDoc(paymentRef, paymentData, { merge: true });
 }
 
-// SETTINGS
-export async function saveFeeStructure(feeStructure: FeeStructure): Promise<void> {
+// SETTINGS & FEES
+export async function saveFeeStructure(feeStructure: {[className: string]: FeeStructure}): Promise<void> {
     const settingsRef = doc(db, 'settings', 'feeStructure');
-    await setDoc(settingsRef, feeStructure);
+    await setDoc(settingsRef, { classes: feeStructure });
 }
 
-export async function getFeeStructure(): Promise<FeeStructure | null> {
+export async function getFeeStructure(): Promise<{[className: string]: FeeStructure} | null> {
     const settingsRef = doc(db, 'settings', 'feeStructure');
     const docSnap = await getDoc(settingsRef);
     if (docSnap.exists()) {
-        return docSnap.data() as FeeStructure;
+        const data = docSnap.data();
+        return data.classes as {[className: string]: FeeStructure};
     }
     return null;
+}
+
+export async function addFeePayment(admissionNumber: string, session: string, transaction: FeeReceipt): Promise<void> {
+    const studentRef = doc(db, 'students', admissionNumber);
+    const path = `fees.${session}.transactions`;
+    await updateDoc(studentRef, {
+        [path]: arrayUnion(transaction)
+    });
+}
+
+export async function updateStudentFeeStructure(admissionNumber: string, session: string, structure?: FeeStructure, concession?: number): Promise<void> {
+    const studentRef = doc(db, 'students', admissionNumber);
+    const updates: any = {};
+    if (structure) {
+        updates[`fees.${session}.structure`] = structure;
+    }
+    if (concession !== undefined) {
+        updates[`fees.${session}.concession`] = concession;
+    }
+    await updateDoc(studentRef, updates);
 }
