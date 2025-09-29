@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import type { Student, AnnualResult } from '@/lib/types';
@@ -9,12 +9,18 @@ import { Loader2 } from 'lucide-react';
 import ResultCard from '@/components/dashboard/common/result-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { useReactToPrint } from 'react-to-print';
 
 export default function MyResultsPage() {
   const { user, loading: authLoading } = useAuth();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState<string>('');
+
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
 
   useEffect(() => {
     if (user?.id) {
@@ -70,7 +76,7 @@ export default function MyResultsPage() {
       </div>
 
       {annualResult && student ? (
-        <ResultCard student={student} annualResult={annualResult} />
+        <ResultCard ref={componentRef} student={student} annualResult={annualResult} onDownload={handlePrint}/>
       ) : (
         <Card>
             <CardContent className="p-8 text-center text-muted-foreground">
@@ -82,4 +88,3 @@ export default function MyResultsPage() {
     </div>
   );
 }
-

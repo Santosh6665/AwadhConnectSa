@@ -1,6 +1,7 @@
 
 'use client';
 
+import * as React from 'react';
 import type { Student, AnnualResult, ExamResult, SubjectResult } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,12 +27,15 @@ const DetailItem = ({ label, value }: { label: string; value: React.ReactNode })
     </div>
   );
 
-export default function ResultCard({ student, annualResult }: { student: Student, annualResult: AnnualResult }) {
-    
-  const handlePrint = () => {
-    window.print();
-  };
+type ResultCardProps = {
+  student: Student;
+  annualResult: AnnualResult;
+  onDownload: () => void;
+};
 
+const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
+  ({ student, annualResult, onDownload }, ref) => {
+    
   const qResult = annualResult.examResults.Quarterly;
   const hyResult = annualResult.examResults['Half-Yearly'];
   const anResult = annualResult.examResults.Annual;
@@ -65,6 +69,7 @@ export default function ResultCard({ student, annualResult }: { student: Student
   }
 
   return (
+    <div ref={ref} className="print-container">
     <Card className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
         
         {/* Header */}
@@ -78,7 +83,7 @@ export default function ResultCard({ student, annualResult }: { student: Student
             </div>
             <div className="flex items-center gap-4">
                 <Badge variant="secondary" className="text-lg py-2 px-4">Annual Exam Result Card</Badge>
-                <Button onClick={handlePrint} variant="outline" size="icon" className="no-print"><Download className="h-5 w-5"/></Button>
+                <Button onClick={onDownload} variant="outline" size="icon" className="no-print"><Download className="h-5 w-5"/></Button>
             </div>
         </div>
         <Separator />
@@ -185,5 +190,9 @@ export default function ResultCard({ student, annualResult }: { student: Student
             </div>
         </div>
     </Card>
+    </div>
   );
-}
+});
+
+ResultCard.displayName = 'ResultCard';
+export default ResultCard;

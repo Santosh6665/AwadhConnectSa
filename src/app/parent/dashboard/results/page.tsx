@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { getParentByMobile, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import type { Student, AnnualResult } from '@/lib/types';
@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 import ResultCard from '@/components/dashboard/common/result-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useReactToPrint } from 'react-to-print';
 
 export default function ParentResultsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -16,6 +17,11 @@ export default function ParentResultsPage() {
   const [selectedChild, setSelectedChild] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState<string>('');
+
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
 
   useEffect(() => {
     if (user?.id) {
@@ -96,7 +102,7 @@ export default function ParentResultsPage() {
       </Card>
       
       {annualResult && selectedChild ? (
-        <ResultCard student={selectedChild} annualResult={annualResult} />
+        <ResultCard ref={componentRef} student={selectedChild} annualResult={annualResult} onDownload={handlePrint}/>
       ) : (
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">

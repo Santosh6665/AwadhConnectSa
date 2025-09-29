@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useRef } from 'react';
 import type { Student, ExamType, AnnualResult, UserRole } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { deleteStudentResults } from '@/lib/firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useReactToPrint } from 'react-to-print';
 
 type StudentResultSummary = {
   student: Student;
@@ -44,6 +45,11 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const { toast } = useToast();
+
+  const componentRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
   
   const classOptions = useMemo(() => {
     if (userRole === 'teacher' && teacherClasses) {
@@ -233,7 +239,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                 onSave={handleSaveMarks}
             />
             <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-                <DialogContent className="max-w-4xl p-0 border-0 print-container">
+                <DialogContent className="max-w-4xl p-0 border-0">
                    <DialogHeader className="sr-only">
                         <DialogTitle>Student Report Card</DialogTitle>
                         <DialogDescription>
@@ -242,7 +248,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                    </DialogHeader>
                    <ScrollArea className="max-h-[90vh]">
                      {selectedStudent.results?.[selectedStudent.session] ? (
-                       <ResultCard student={selectedStudent} annualResult={selectedStudent.results[selectedStudent.session]}/>
+                       <ResultCard ref={componentRef} student={selectedStudent} annualResult={selectedStudent.results[selectedStudent.session]} onDownload={handlePrint}/>
                      ): (
                       <div className="p-8 text-center">No results found for the current session.</div>
                      )}
