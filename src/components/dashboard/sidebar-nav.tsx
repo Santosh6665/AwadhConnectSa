@@ -58,7 +58,7 @@ const navItems: NavItem[] = [
   { href: '/teacher/dashboard/results', label: 'Enter Results', icon: PenSquare, roles: ['teacher'] },
   { href: '/teacher/dashboard/salary', label: 'My Salary', icon: DollarSign, roles: ['teacher'] },
   { href: '/teacher/dashboard/materials', label: 'Study Materials', icon: BookCopy, roles: ['teacher'] },
-  { href: '/teacher/dashboard/notices', label: 'View Notices', icon: CalendarDays, roles: ['teacher'] },
+  { href: '/teacher/dashboard/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['teacher'] },
   
   // Student Links
   { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['student'] },
