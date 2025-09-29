@@ -7,15 +7,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { Student, FeeStructure, FeeReceipt, PreviousSession } from '@/lib/types';
-import { Download, GraduationCap, Mail, Phone } from 'lucide-react';
+import { Download, GraduationCap, Mail, Phone, Printer } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import SingleReceiptDialog from './single-receipt-dialog';
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
     <div className={cn("grid grid-cols-2 gap-4 items-start py-1", className)}>
       <span className="font-medium text-muted-foreground">{label}</span>
-      <span className="font-semibold">{value || 'N/A'}</span>
+      <span className="font-semibold text-end">{value || 'N/A'}</span>
     </div>
 );
 
@@ -25,6 +26,15 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
   const handlePrint = useReactToPrint({
       contentRef: () => receiptRef.current,
   });
+
+  const [selectedReceipt, setSelectedReceipt] = React.useState<FeeReceipt | null>(null);
+  const [isSingleReceiptOpen, setIsSingleReceiptOpen] = React.useState(false);
+
+  const handlePrintSingle = (receipt: FeeReceipt) => {
+    setSelectedReceipt(receipt);
+    setIsSingleReceiptOpen(true);
+  };
+
 
   if (!student) return null;
   
@@ -40,9 +50,10 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
   const balanceDue = Math.max(0, annualFee - concession - totalPaid + previousDue);
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl p-0">
-        <div ref={receiptRef} className="p-8 print:p-0">
+        <div ref={receiptRef} className="p-8 max-h-[90vh] print:max-h-none overflow-y-scroll no-scrollbar">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-4">
                   <GraduationCap className="h-12 w-12 text-primary" />
@@ -59,18 +70,18 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
             <Separator className="my-6" />
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid sm:grid-cols-2 gap-8">
                 <div>
                     <h3 className="font-semibold text-muted-foreground mb-2">Student Details</h3>
-                    <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} />
-                    <DetailItem label="Class:" value={`${student.className}-${student.sectionName}`} />
-                    <DetailItem label="Roll No:" value={student.rollNo} />
-                    <DetailItem label="Father's Name:" value={student.parentName} />
+                    <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Class:" value={`${student.className}-${student.sectionName}`} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Roll No:" value={student.rollNo} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Father's Name:" value={student.parentName} className="grid-cols-[auto_1fr] text-left" />
                 </div>
                  <div className="text-right">
                     <h3 className="font-semibold text-muted-foreground mb-2">Receipt Details</h3>
-                    <DetailItem label="Receipt Date:" value={new Date().toLocaleDateString('en-GB')} className="grid-cols-[auto_1fr] justify-end gap-2" />
-                    <DetailItem label="Student ID:" value={student.admissionNumber} className="grid-cols-[auto_1fr] justify-end gap-2" />
+                    <DetailItem label="Receipt Date:" value={new Date().toLocaleDateString('en-GB')} />
+                    <DetailItem label="Student ID:" value={student.admissionNumber} />
                 </div>
             </div>
             
@@ -78,7 +89,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                 <h3 className="font-semibold text-muted-foreground mb-2">Payment History for {student.session}</h3>
                 <div className="border rounded-lg">
                   <Table>
-                    <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
+                    <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Remarks</TableHead><TableHead className="no-print">Actions</TableHead></TableRow></TableHeader>
                     <TableBody>
                         {currentTransactions.length > 0 ? (
                             currentTransactions.map(tx => (
@@ -87,17 +98,22 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                                     <TableCell>₹{tx.amount.toLocaleString()}</TableCell>
                                     <TableCell><Badge variant="secondary">{tx.mode}</Badge></TableCell>
                                     <TableCell>{tx.remarks}</TableCell>
+                                    <TableCell className="no-print">
+                                        <Button variant="ghost" size="icon" onClick={() => handlePrintSingle(tx)}>
+                                            <Printer className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))
                         ) : (
-                            <TableRow><TableCell colSpan={4} className="text-center h-24">No payments recorded for this session.</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={5} className="text-center h-24">No payments recorded for this session.</TableCell></TableRow>
                         )}
                     </TableBody>
                   </Table>
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 mt-8">
+            <div className="grid sm:grid-cols-2 gap-8 mt-8">
                 <div>
                     <h3 className="font-semibold text-muted-foreground mb-2">Fee Structure Details</h3>
                     <div className="border rounded-lg p-4 space-y-2">
@@ -133,9 +149,19 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
         <DialogFooter className="p-4 border-t no-print">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-          <Button onClick={handlePrint}><Download className="mr-2 h-4 w-4" />Print Receipt</Button>
+          <Button onClick={handlePrint}><Download className="mr-2 h-4 w-4" />Print Summary</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    {selectedReceipt && (
+        <SingleReceiptDialog
+            isOpen={isSingleReceiptOpen}
+            onOpenChange={setIsSingleReceiptOpen}
+            student={student}
+            receipt={selectedReceipt}
+            balanceDue={balanceDue}
+        />
+    )}
+    </>
   );
 }
