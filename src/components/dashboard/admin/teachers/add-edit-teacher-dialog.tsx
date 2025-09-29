@@ -48,8 +48,10 @@ interface AddEditTeacherDialogProps {
   isSaving: boolean;
 }
 
-const allSubjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Geography', 'Computer Science'];
-const allclasses = ['6A', '6B', '7A', '7B', '8A', '8B', '9A', '9B', '10A', '10B', '11A', '12A'];
+const allSubjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Geography', 'Computer Science', 'Hindi', 'Art', 'EnglishOral', 'HindiOral', 'MathematicsOral', 'Oral', 'Social Science', 'Mathematics/Home Science'];
+const classLevels = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
+const sections = ["A", "B", "C"];
+const allclasses = classLevels.flatMap(level => sections.map(section => `${level}${section}`));
 const months = Array.from({ length: 12 }, (_, i) => ({ value: i, label: format(new Date(0, i), 'MMMM') }));
 
 interface DateDropdownsProps {
