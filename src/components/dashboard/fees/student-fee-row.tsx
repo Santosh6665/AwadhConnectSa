@@ -8,7 +8,7 @@ import { Banknote, FileCog, FileText, MoreVertical } from 'lucide-react';
 import FeeDetailsDialog from './fee-details-dialog';
 import AddPaymentDialog from './add-payment-dialog';
 import CustomizeStructureDialog from './customize-structure-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const calculateDues = (student: Student, defaultStructure: { [key: string]: FeeStructure } | null) => {
     const studentFeeData = student.fees?.[student.className];
