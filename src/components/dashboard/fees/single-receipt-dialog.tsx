@@ -20,14 +20,14 @@ interface SingleReceiptDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   student: Student;
-  receipt: FeeReceipt;
+  receipt: FeeReceipt & { className?: string };
   balanceDue: number;
 }
 
 export default function SingleReceiptDialog({ isOpen, onOpenChange, student, receipt, balanceDue }: SingleReceiptDialogProps) {
   const receiptRef = React.useRef(null);
   const handlePrint = useReactToPrint({
-    contentRef: receiptRef,
+    content: () => receiptRef.current,
   });
 
   return (
@@ -54,7 +54,7 @@ export default function SingleReceiptDialog({ isOpen, onOpenChange, student, rec
                 <div>
                     <h3 className="font-semibold text-muted-foreground mb-2">Student Details</h3>
                     <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} className="grid-cols-[auto_1fr] text-left" />
-                    <DetailItem label="Class:" value={`${student.className}-${student.sectionName}`} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Class:" value={`${receipt.className || student.className}-${student.sectionName}`} className="grid-cols-[auto_1fr] text-left" />
                     <DetailItem label="Father's Name:" value={student.parentName} className="grid-cols-[auto_1fr] text-left" />
                 </div>
                  <div className="text-right">
@@ -71,7 +71,7 @@ export default function SingleReceiptDialog({ isOpen, onOpenChange, student, rec
                     {receipt.remarks && <DetailItem label="Remarks:" value={receipt.remarks} />}
                     <Separator/>
                     <div className="flex justify-between items-center py-2">
-                        <span className="text-base font-bold">Remaining Balance:</span>
+                        <span className="text-base font-bold">Remaining Balance after this transaction:</span>
                         <span className="text-xl font-bold text-destructive">₹{balanceDue.toLocaleString()}</span>
                     </div>
                  </div>

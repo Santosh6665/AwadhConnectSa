@@ -12,6 +12,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import SingleReceiptDialog from './single-receipt-dialog';
+import { parse } from 'date-fns';
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
     <div className={cn("grid grid-cols-2 gap-4 items-start py-1", className)}>
@@ -21,7 +22,7 @@ const DetailItem = ({ label, value, className }: { label: string; value: React.R
 );
 
 
-export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaultFeeStructure }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: FeeStructure | null }) {
+export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaultFeeStructure }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: { [key: string]: FeeStructure } | null }) {
   const receiptRef = React.useRef(null);
   const handlePrint = useReactToPrint({
       contentRef: receiptRef,
@@ -38,21 +39,30 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
   if (!student) return null;
   
-  const currentTransactions = student.fees?.[student.className]?.transactions || [];
+  // Aggregate transactions from all classes
+  const allTransactions = Object.entries(student.fees || {}).flatMap(([className, feeData]) => 
+    (feeData.transactions || []).map(tx => ({ ...tx, className }))
+  ).sort((a, b) => parse(a.date, 'dd/MM/yyyy', new Date()).getTime() - parse(b.date, 'dd/MM/yyyy', new Date()).getTime());
   
   const studentFeeData = student.fees?.[student.className];
   const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[student.className] || {};
 
   const annualFee = Object.values(studentStructure).reduce((sum, head) => sum + (head.amount * head.months), 0);
   const concession = studentFeeData?.concession || 0;
-  const totalPaid = currentTransactions.reduce((sum, tx) => sum + tx.amount, 0);
-  const previousDue = (student.previousSessions || []).reduce((sum, session) => sum + session.dueFee, 0);
-  const balanceDue = Math.max(0, annualFee - concession - totalPaid + previousDue);
+  
+  const currentClassTransactions = student.fees?.[student.className]?.transactions || [];
+  const currentClassPaid = currentClassTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+
+  const previousDue = student.previousDue || 0;
+  const currentClassDue = Math.max(0, annualFee - concession - currentClassPaid);
+  const totalBalanceDue = currentClassDue + previousDue;
+  
+  const totalPaidAllTime = allTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl p-0">
+      <DialogContent className="max-w-4xl p-0">
         <div ref={receiptRef} className="p-8 max-h-[90vh] print:max-h-none overflow-y-scroll no-scrollbar">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-4">
@@ -86,15 +96,16 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
             </div>
             
             <div className="mt-8">
-                <h3 className="font-semibold text-muted-foreground mb-2">Payment History for Class {student.className}</h3>
+                <h3 className="font-semibold text-muted-foreground mb-2">Full Payment History</h3>
                 <div className="border rounded-lg">
                   <Table>
-                    <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Remarks</TableHead><TableHead className="no-print">Actions</TableHead></TableRow></TableHeader>
+                    <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Class</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Remarks</TableHead><TableHead className="no-print">Actions</TableHead></TableRow></TableHeader>
                     <TableBody>
-                        {currentTransactions.length > 0 ? (
-                            currentTransactions.map(tx => (
+                        {allTransactions.length > 0 ? (
+                            allTransactions.map(tx => (
                                 <TableRow key={tx.id}>
                                     <TableCell>{tx.date}</TableCell>
+                                    <TableCell>{tx.className}</TableCell>
                                     <TableCell>₹{tx.amount.toLocaleString()}</TableCell>
                                     <TableCell><Badge variant="secondary">{tx.mode}</Badge></TableCell>
                                     <TableCell>{tx.remarks}</TableCell>
@@ -106,7 +117,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                                 </TableRow>
                             ))
                         ) : (
-                            <TableRow><TableCell colSpan={5} className="text-center h-24">No payments recorded for this class.</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={6} className="text-center h-24">No payments recorded for this student.</TableCell></TableRow>
                         )}
                     </TableBody>
                   </Table>
@@ -115,7 +126,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
             <div className="grid sm:grid-cols-2 gap-8 mt-8">
                 <div>
-                    <h3 className="font-semibold text-muted-foreground mb-2">Fee Structure Details</h3>
+                    <h3 className="font-semibold text-muted-foreground mb-2">Fee Structure (Class {student.className})</h3>
                     <div className="border rounded-lg p-4 space-y-2">
                         {Object.entries(studentStructure).map(([key, value]) => (
                             <DetailItem key={key} label={`${key}:`} value={`₹${value.amount.toLocaleString()}`} />
@@ -127,12 +138,13 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                 <div className="space-y-4">
                      <h3 className="font-semibold text-muted-foreground mb-2">Summary</h3>
                      <div className="border rounded-lg p-4 space-y-3">
-                        <DetailItem label="Annual Fee:" value={`₹${annualFee.toLocaleString()}`} />
-                        <DetailItem label="Total Paid:" value={`₹${totalPaid.toLocaleString()}`} />
+                        <DetailItem label={`Annual Fee (Class ${student.className}):`} value={`₹${annualFee.toLocaleString()}`} />
+                        <DetailItem label="Total Paid (All Time):" value={`₹${totalPaidAllTime.toLocaleString()}`} />
+                        <DetailItem label="Previous Dues:" value={`₹${previousDue.toLocaleString()}`} />
                         <Separator/>
                         <div className="flex justify-between items-center py-2">
-                            <span className="text-lg font-bold">Balance Due:</span>
-                            <span className="text-2xl font-bold text-destructive">₹{balanceDue.toLocaleString()}</span>
+                            <span className="text-lg font-bold">Total Balance Due:</span>
+                            <span className="text-2xl font-bold text-destructive">₹{totalBalanceDue.toLocaleString()}</span>
                         </div>
                      </div>
                 </div>
@@ -159,7 +171,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
             onOpenChange={setIsSingleReceiptOpen}
             student={student}
             receipt={selectedReceipt}
-            balanceDue={balanceDue}
+            balanceDue={totalBalanceDue}
         />
     )}
     </>

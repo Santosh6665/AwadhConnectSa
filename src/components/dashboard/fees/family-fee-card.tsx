@@ -61,7 +61,7 @@ export default function FamilyFeeCard({
                             <p className="font-bold text-lg">{family.name}</p>
                             <p className="text-sm text-muted-foreground">{family.phone}</p>
                         </div>
-                        <div className="text-sm text-muted-foreground data-[state=closed]:block hidden">
+                        <div className="text-sm text-muted-foreground self-end">
                             ({childCount} {childLabel}: {studentNames})
                         </div>
                     </div>
