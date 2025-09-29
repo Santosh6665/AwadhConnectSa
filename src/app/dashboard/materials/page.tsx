@@ -72,7 +72,8 @@ export default function AdminStudyMaterialPage() {
   };
 
   const handleSave = async (data: Omit<StudyMaterial, 'id' | 'createdAt' | 'updatedAt' | 'uploadedBy'>, file?: File | null) => {
-    if (!user?.id) {
+    const userId = user?.id || user?.email;
+    if (!userId) {
       toast({ title: "Error", description: "User not authenticated.", variant: "destructive" });
       return;
     }
@@ -80,10 +81,9 @@ export default function AdminStudyMaterialPage() {
     startTransition(async () => {
       try {
         let fileUrl = data.fileUrl;
-        const uploadPathId = user.id!;
-
+        
         if (data.materialType === 'file' && file) {
-          fileUrl = await uploadStudyMaterialFile(file, uploadPathId);
+          fileUrl = await uploadStudyMaterialFile(file, userId);
         } else if (selectedItem?.materialType === 'file' && !file) {
           fileUrl = selectedItem.fileUrl;
         }
@@ -102,7 +102,7 @@ export default function AdminStudyMaterialPage() {
           const newItem: Omit<StudyMaterial, 'id'> = {
             ...data,
             fileUrl,
-            uploadedBy: user.id,
+            uploadedBy: userId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             viewedBy: [],
