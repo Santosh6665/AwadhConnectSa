@@ -182,7 +182,7 @@ export async function promoteStudent(
   }
 
   const studentData = studentSnap.data() as Student;
-  const currentSessionData = studentData.fees[studentData.session] || { transactions: [] };
+  const currentSessionData = studentData.fees?.[studentData.session] || { transactions: [] };
   
   // A simple way to calculate due fee from the last transaction for now.
   // This can be improved with a proper calculation function later.
@@ -487,16 +487,19 @@ export async function saveSalaryPayment(paymentData: SalaryPayment): Promise<voi
 
 // SETTINGS & FEES
 export async function saveFeeStructure(feeStructure: {[className: string]: FeeStructure}): Promise<void> {
+    const docData: any = {};
+    Object.keys(feeStructure).forEach(className => {
+      docData[className] = feeStructure[className];
+    });
     const settingsRef = doc(db, 'settings', 'feeStructure');
-    await setDoc(settingsRef, { classes: feeStructure });
+    await setDoc(settingsRef, docData);
 }
 
 export async function getFeeStructure(): Promise<{[className: string]: FeeStructure} | null> {
     const settingsRef = doc(db, 'settings', 'feeStructure');
     const docSnap = await getDoc(settingsRef);
     if (docSnap.exists()) {
-        const data = docSnap.data();
-        return data.classes as {[className: string]: FeeStructure};
+        return docSnap.data() as {[className: string]: FeeStructure};
     }
     return null;
 }
@@ -509,14 +512,10 @@ export async function addFeePayment(admissionNumber: string, session: string, tr
     });
 }
 
-export async function updateStudentFeeStructure(admissionNumber: string, session: string, structure?: FeeStructure, concession?: number): Promise<void> {
+export async function updateStudentFeeStructure(admissionNumber: string, session: string, structure: FeeStructure, concession: number): Promise<void> {
     const studentRef = doc(db, 'students', admissionNumber);
     const updates: any = {};
-    if (structure) {
-        updates[`fees.${session}.structure`] = structure;
-    }
-    if (concession !== undefined) {
-        updates[`fees.${session}.concession`] = concession;
-    }
+    updates[`fees.${session}.structure`] = structure;
+    updates[`fees.${session}.concession`] = concession;
     await updateDoc(studentRef, updates);
 }
