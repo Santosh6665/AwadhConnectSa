@@ -80,8 +80,8 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
     }
 
     return (
-      <div ref={ref} className="print-container">
-      <Card className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
+      <div ref={ref}>
+      <Card className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none print:min-h-screen">
           
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -109,7 +109,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
           {/* Student Details */}
           <div>
               <h2 className="flex items-center gap-2 text-lg font-semibold mb-2"><User className="w-5 h-5 text-primary"/>Student Details</h2>
-              <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+              <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
                   <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} />
                   <DetailItem label="Roll No.:" value={student.rollNo} />
                   <DetailItem label="Class/Section:" value={`${student.className}-${student.sectionName}`} />
@@ -194,7 +194,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
           </div>
 
           {/* Signatures */}
-          <div className="pt-24 print:pt-32">
+          <div className="pt-12">
               <h2 className="sr-only">Signatures</h2>
               <div className="flex justify-between items-center text-center">
                   <div className="w-48">

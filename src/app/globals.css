@@ -106,6 +106,7 @@
   @media print {
     body {
       background: white !important;
+      --background: 99, 100%, 64%;
     }
     .no-print {
       display: none !important;

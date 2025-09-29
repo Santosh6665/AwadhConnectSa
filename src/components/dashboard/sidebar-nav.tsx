@@ -24,6 +24,7 @@ import {
   Shield,
   HeartHandshake,
   History,
+  DollarSign,
 } from 'lucide-react';
 import Link from 'next/link';
 import { UserRole } from '@/lib/types';
@@ -44,6 +45,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/teacher-attendance', label: 'Teacher Attendance', icon: UserCheck, roles: ['admin'] },
   { href: '/dashboard/results', label: 'Manage Results', icon: PenSquare, roles: ['admin'] },
   { href: '/dashboard/fees', label: 'Fee Management', icon: Banknote, roles: ['admin'] },
+  { href: '/dashboard/salary', label: 'Manage Salary', icon: DollarSign, roles: ['admin'] },
   { href: '/dashboard/events', label: 'Events & Notices', icon: CalendarDays, roles: ['admin'] },
   { href: '/dashboard/reports', label: 'Reports', icon: Presentation, roles: ['admin'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['admin'] },
@@ -54,6 +56,7 @@ const navItems: NavItem[] = [
   { href: '/teacher/dashboard/attendance', label: 'Mark Attendance', icon: UserCheck, roles: ['teacher'] },
   { href: '/teacher/dashboard/my-attendance', label: 'My Attendance', icon: History, roles: ['teacher'] },
   { href: '/teacher/dashboard/results', label: 'Enter Results', icon: PenSquare, roles: ['teacher'] },
+  { href: '/teacher/dashboard/salary', label: 'My Salary', icon: DollarSign, roles: ['teacher'] },
   { href: '/teacher/dashboard/materials', label: 'Study Materials', icon: BookCopy, roles: ['teacher'] },
   { href: '/teacher/dashboard/notices', label: 'View Notices', icon: CalendarDays, roles: ['teacher'] },
   

@@ -45,7 +45,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
 
   const resultRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
-    content: () => resultRef.current,
+    contentRef: resultRef
   });
 
   const { toast } = useToast();
