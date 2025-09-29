@@ -9,7 +9,6 @@ import { Loader2 } from 'lucide-react';
 import ResultCard from '@/components/dashboard/common/result-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useReactToPrint } from 'react-to-print';
 
 export default function ParentResultsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -17,11 +16,6 @@ export default function ParentResultsPage() {
   const [selectedChild, setSelectedChild] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState<string>('');
-
-  const componentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
 
   useEffect(() => {
     if (user?.id) {
@@ -101,15 +95,17 @@ export default function ParentResultsPage() {
         </CardContent>
       </Card>
       
-      {annualResult && selectedChild ? (
-        <ResultCard ref={componentRef} student={selectedChild} annualResult={annualResult} onDownload={handlePrint}/>
-      ) : (
-        <Card>
-          <CardContent className="p-8 text-center text-muted-foreground">
-            {selectedChild ? 'No results found for the selected session.' : 'Please select a child to view results.'}
-          </CardContent>
-        </Card>
-      )}
+      <div className="print-container">
+        {annualResult && selectedChild ? (
+          <ResultCard student={selectedChild} annualResult={annualResult} onDownload={() => window.print()}/>
+        ) : (
+          <Card className="no-print">
+            <CardContent className="p-8 text-center text-muted-foreground">
+              {selectedChild ? 'No results found for the selected session.' : 'Please select a child to view results.'}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

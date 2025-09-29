@@ -17,7 +17,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { deleteStudentResults } from '@/lib/firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useReactToPrint } from 'react-to-print';
 
 type StudentResultSummary = {
   student: Student;
@@ -45,11 +44,6 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const { toast } = useToast();
-
-  const componentRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
   
   const classOptions = useMemo(() => {
     if (userRole === 'teacher' && teacherClasses) {
@@ -240,19 +234,15 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
             />
             <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
                 <DialogContent className="max-w-4xl p-0 border-0">
-                   <DialogHeader className="sr-only">
-                        <DialogTitle>Student Report Card</DialogTitle>
-                        <DialogDescription>
-                            Detailed report card for {selectedStudent.firstName} {selectedStudent.lastName}.
-                        </DialogDescription>
-                   </DialogHeader>
-                   <ScrollArea className="max-h-[90vh]">
-                     {selectedStudent.results?.[selectedStudent.session] ? (
-                       <ResultCard ref={componentRef} student={selectedStudent} annualResult={selectedStudent.results[selectedStudent.session]} onDownload={handlePrint}/>
-                     ): (
-                      <div className="p-8 text-center">No results found for the current session.</div>
-                     )}
-                   </ScrollArea>
+                    <div className="print-container">
+                       <ScrollArea className="max-h-[90vh]">
+                         {selectedStudent.results?.[selectedStudent.session] ? (
+                           <ResultCard student={selectedStudent} annualResult={selectedStudent.results[selectedStudent.session]} onDownload={() => window.print()}/>
+                         ): (
+                          <div className="p-8 text-center">No results found for the current session.</div>
+                         )}
+                       </ScrollArea>
+                    </div>
                 </DialogContent>
             </Dialog>
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -277,5 +267,3 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     </>
   );
 }
-
-    

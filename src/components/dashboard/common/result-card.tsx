@@ -35,10 +35,8 @@ type ResultCardProps = {
   onDownload: () => void;
 };
 
-// Converted to a class component to reliably handle the ref for react-to-print
-class ResultCard extends React.Component<ResultCardProps> {
-  render() {
-    const { student, annualResult, onDownload } = this.props;
+const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
+  ({ student, annualResult, onDownload }, ref) => {
 
     const qResult = annualResult.examResults.Quarterly;
     const hyResult = annualResult.examResults['Half-Yearly'];
@@ -73,6 +71,7 @@ class ResultCard extends React.Component<ResultCardProps> {
     }
 
     return (
+      <div ref={ref}>
       <Card className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
           
           {/* Header */}
@@ -86,12 +85,14 @@ class ResultCard extends React.Component<ResultCardProps> {
               </div>
               <div className="flex items-center gap-4">
                   <Badge variant="secondary" className="text-lg py-2 px-4">Annual Exam Result Card</Badge>
-                  <button
+                  <Button
                       onClick={onDownload}
-                      className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'no-print')}
+                      variant="outline"
+                      size="icon"
+                      className="no-print"
                   >
                       <Download className="h-5 w-5"/>
-                  </button>
+                  </Button>
               </div>
           </div>
           <Separator className="no-print"/>
@@ -198,8 +199,11 @@ class ResultCard extends React.Component<ResultCardProps> {
               </div>
           </div>
       </Card>
+      </div>
     );
   }
-}
+);
+ResultCard.displayName = 'ResultCard';
+
 
 export default ResultCard;
