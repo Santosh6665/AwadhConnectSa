@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import type { Student, FeeStructure, FeeReceipt } from '@/lib/types';
@@ -89,19 +88,7 @@ export default function StudentFeeRow({
         <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsStructureOpen(true)}><FileCog className="mr-2 h-4 w-4"/>Structure</Button>
             <Button size="sm" onClick={() => setIsPaymentOpen(true)}><Banknote className="mr-2 h-4 w-4"/>Pay</Button>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9">
-                        <MoreVertical className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem onSelect={() => setIsDetailsOpen(true)}>
-                        <FileText className="mr-2 h-4 w-4" />
-                        Full Fee History
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="outline" size="sm" onClick={() => setIsDetailsOpen(true)}><FileText className="mr-2 h-4 w-4"/>Payment Receipt</Button>
         </div>
       </div>
       
@@ -122,7 +109,7 @@ export default function StudentFeeRow({
         isOpen={isStructureOpen}
         onOpenChange={setIsStructureOpen}
         student={student}
-        defaultFeeStructure={defaultFeeStructure}
+        defaultFeeStructure={defaultFeeStructure?.[student.className] || null}
         onSave={(newStructure, newConcession) => onSaveStructure(student, newStructure, newConcession)}
         isSaving={isSaving}
       />

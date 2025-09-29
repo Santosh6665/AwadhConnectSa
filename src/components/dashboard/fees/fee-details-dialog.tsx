@@ -1,4 +1,3 @@
-
 'use client';
 import * as React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -13,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import SingleReceiptDialog from './single-receipt-dialog';
 import { parse } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
     <div className={cn("grid grid-cols-2 gap-4 items-start py-1", className)}>
@@ -25,11 +25,19 @@ const DetailItem = ({ label, value, className }: { label: string; value: React.R
 export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaultFeeStructure }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: { [key: string]: FeeStructure } | null }) {
   const receiptRef = React.useRef(null);
   const handlePrint = useReactToPrint({
-      contentRef: receiptRef,
+      content: receiptRef,
   });
 
   const [selectedReceipt, setSelectedReceipt] = React.useState<FeeReceipt | null>(null);
   const [isSingleReceiptOpen, setIsSingleReceiptOpen] = React.useState(false);
+  const [classFilter, setClassFilter] = React.useState<string>('all');
+
+  React.useEffect(() => {
+    if (student) {
+        setClassFilter(student.className);
+    }
+  }, [student]);
+
 
   const handlePrintSingle = (receipt: FeeReceipt) => {
     setSelectedReceipt(receipt);
@@ -39,11 +47,16 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
   if (!student) return null;
   
-  // Aggregate transactions from all classes
   const allTransactions = Object.entries(student.fees || {}).flatMap(([className, feeData]) => 
     (feeData.transactions || []).map(tx => ({ ...tx, className }))
   ).sort((a, b) => parse(a.date, 'dd/MM/yyyy', new Date()).getTime() - parse(b.date, 'dd/MM/yyyy', new Date()).getTime());
+
+  const filteredTransactions = classFilter === 'all' 
+    ? allTransactions 
+    : allTransactions.filter(tx => tx.className === classFilter);
   
+  const classOptions = ['all', ...Object.keys(student.fees || {})];
+
   const studentFeeData = student.fees?.[student.className];
   const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[student.className] || {};
 
@@ -96,16 +109,25 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
             </div>
             
             <div className="mt-8">
-                <h3 className="font-semibold text-muted-foreground mb-2">Full Payment History</h3>
+                <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-semibold text-muted-foreground">Payment History</h3>
+                    <Select value={classFilter} onValueChange={setClassFilter} >
+                        <SelectTrigger className="w-48 no-print"><SelectValue/></SelectTrigger>
+                        <SelectContent>
+                            {classOptions.map(c => (
+                                <SelectItem key={c} value={c}>{c === 'all' ? 'All Classes' : `Class ${c}`}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
                 <div className="border rounded-lg">
                   <Table>
-                    <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Class</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Remarks</TableHead><TableHead className="no-print">Actions</TableHead></TableRow></TableHeader>
+                    <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Remarks</TableHead><TableHead className="no-print">Actions</TableHead></TableRow></TableHeader>
                     <TableBody>
-                        {allTransactions.length > 0 ? (
-                            allTransactions.map(tx => (
+                        {filteredTransactions.length > 0 ? (
+                            filteredTransactions.map(tx => (
                                 <TableRow key={tx.id}>
                                     <TableCell>{tx.date}</TableCell>
-                                    <TableCell>{tx.className}</TableCell>
                                     <TableCell>₹{tx.amount.toLocaleString()}</TableCell>
                                     <TableCell><Badge variant="secondary">{tx.mode}</Badge></TableCell>
                                     <TableCell>{tx.remarks}</TableCell>
@@ -117,7 +139,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                                 </TableRow>
                             ))
                         ) : (
-                            <TableRow><TableCell colSpan={6} className="text-center h-24">No payments recorded for this student.</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={5} className="text-center h-24">No payments recorded for this selection.</TableCell></TableRow>
                         )}
                     </TableBody>
                   </Table>
