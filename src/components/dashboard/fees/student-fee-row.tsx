@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState } from 'react';
 import type { Student, FeeStructure, FeeReceipt } from '@/lib/types';
@@ -10,7 +9,7 @@ import FeeDetailsDialog from './fee-details-dialog';
 import AddPaymentDialog from './add-payment-dialog';
 import CustomizeStructureDialog from './customize-structure-dialog';
 
-const calculateDues = (student: Student, defaultStructure: FeeStructure | null) => {
+const calculateDues = (student: Student, defaultStructure: { [key: string]: FeeStructure } | null) => {
     const studentFeeData = student.fees?.[student.className];
     const studentStructure = studentFeeData?.structure || defaultStructure?.[student.className];
 
@@ -23,11 +22,14 @@ const calculateDues = (student: Student, defaultStructure: FeeStructure | null) 
     const totalPaid = (studentFeeData?.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
 
     const currentDue = Math.max(0, annualFee - concession - totalPaid);
+    const previousDue = student.previousDue || 0;
+    const totalDue = currentDue + previousDue;
     
     return {
         annualFee,
         currentDue,
-        previousDue: student.previousDue || 0,
+        previousDue,
+        totalDue
     };
 };
 
@@ -39,7 +41,7 @@ export default function StudentFeeRow({
   isSaving,
 }: {
   student: Student;
-  defaultFeeStructure: FeeStructure | null;
+  defaultFeeStructure: { [key: string]: FeeStructure } | null;
   onSavePayment: (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string, onPaymentSaved: () => void) => void;
   onSaveStructure: (student: Student, newStructure: FeeStructure, newConcession: number) => void;
   isSaving: boolean;
@@ -48,7 +50,7 @@ export default function StudentFeeRow({
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isStructureOpen, setIsStructureOpen] = useState(false);
 
-  const { annualFee, currentDue, previousDue } = calculateDues(student, defaultFeeStructure);
+  const { annualFee, currentDue, previousDue, totalDue } = calculateDues(student, defaultFeeStructure);
 
   const handlePaymentSaved = () => {
     setIsPaymentOpen(false);
@@ -67,17 +69,21 @@ export default function StudentFeeRow({
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <div>
-            <p className="text-sm text-muted-foreground text-right">Annual Fee</p>
-            <p className="font-mono text-lg font-semibold text-right">₹{annualFee.toLocaleString()}</p>
+        <div className="text-right">
+            <p className="text-sm text-muted-foreground">Annual Fee</p>
+            <p className="font-mono text-lg font-semibold">₹{annualFee.toLocaleString()}</p>
         </div>
-        <div>
-            <p className="text-sm text-muted-foreground text-right">Current Due</p>
-            <p className="font-mono text-lg font-semibold text-right">₹{currentDue.toLocaleString()}</p>
+        <div className="text-right">
+            <p className="text-sm text-muted-foreground">Current Due</p>
+            <p className="font-mono text-lg font-semibold">₹{currentDue.toLocaleString()}</p>
         </div>
-         <div>
-            <p className="text-sm text-muted-foreground text-right">Previous Due</p>
-            <p className="font-mono text-lg font-semibold text-right text-destructive">₹{previousDue.toLocaleString()}</p>
+         <div className="text-right">
+            <p className="text-sm text-muted-foreground">Previous Due</p>
+            <p className="font-mono text-lg font-semibold text-destructive">₹{previousDue.toLocaleString()}</p>
+        </div>
+        <div className="text-right">
+            <p className="text-sm text-muted-foreground">Total Due</p>
+            <p className="font-mono text-lg font-bold text-destructive">₹{totalDue.toLocaleString()}</p>
         </div>
         <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsDetailsOpen(true)}><FileText className="mr-2 h-4 w-4"/>Details</Button>

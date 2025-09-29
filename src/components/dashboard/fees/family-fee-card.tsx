@@ -11,7 +11,7 @@ import {
 import StudentFeeRow from './student-fee-row';
 import { Separator } from '@/components/ui/separator';
 
-const calculateTotalDueForFamily = (family: Family, defaultFeeStructure: FeeStructure | null): number => {
+const calculateTotalDueForFamily = (family: Family, defaultFeeStructure: { [key: string]: FeeStructure } | null): number => {
     return family.students.reduce((total, student) => {
         const studentFeeData = student.fees?.[student.className];
         const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[student.className];
@@ -24,7 +24,7 @@ const calculateTotalDueForFamily = (family: Family, defaultFeeStructure: FeeStru
         const concession = studentFeeData?.concession || 0;
         const totalPaid = (studentFeeData?.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
         
-        const previousDue = (student.previousSessions || []).reduce((sum, session) => sum + session.dueFee, 0);
+        const previousDue = student.previousDue || 0;
 
         const currentDue = Math.max(0, annualFee - concession - totalPaid);
         
@@ -41,12 +41,13 @@ export default function FamilyFeeCard({
   isSaving,
 }: {
   family: Family;
-  defaultFeeStructure: FeeStructure | null;
+  defaultFeeStructure: { [key: string]: FeeStructure } | null;
   onSavePayment: (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string, onPaymentSaved: () => void) => void;
   onSaveStructure: (student: Student, newStructure: FeeStructure, newConcession: number) => void;
   isSaving: boolean;
 }) {
     const totalDue = calculateTotalDueForFamily(family, defaultFeeStructure);
+    const studentNames = family.students.map(s => s.firstName).join(', ');
     
     return (
         <AccordionItem value={family.id} className="border-none">
@@ -56,6 +57,9 @@ export default function FamilyFeeCard({
                     <div className="text-left">
                         <p className="font-bold text-lg">{family.name}</p>
                         <p className="text-sm text-muted-foreground">{family.phone}</p>
+                        <div className="text-xs text-muted-foreground mt-1 data-[state=closed]:block hidden">
+                            {studentNames} ({family.students.length} children)
+                        </div>
                     </div>
                      <div className="text-right">
                          <p className="text-sm text-muted-foreground">Total Family Due</p>
