@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import type { Teacher } from '@/lib/types';
 import { format, parse } from 'date-fns';
+import { Check, X } from 'lucide-react';
 
 interface TeacherDetailDialogProps {
   isOpen: boolean;
@@ -74,6 +75,9 @@ export default function TeacherDetailDialog({ isOpen, onOpenChange, teacher }: T
                     </Badge>
                 } 
             />
+            <h4 className="font-semibold text-muted-foreground mt-4">Permissions</h4>
+            <DetailItem label="Can Mark Attendance" value={teacher.canMarkAttendance ? <Check className="w-5 h-5 text-green-600" /> : <X className="w-5 h-5 text-red-600" />} />
+            <DetailItem label="Can Edit Results" value={teacher.canEditResults ? <Check className="w-5 h-5 text-green-600" /> : <X className="w-5 h-5 text-red-600" />} />
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Close</Button>

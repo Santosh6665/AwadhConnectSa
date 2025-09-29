@@ -22,6 +22,7 @@ import * as z from 'zod';
 import type { Teacher } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 
 const teacherSchema = z.object({
   id: z.string().min(1, 'Teacher ID is required'),
@@ -36,6 +37,8 @@ const teacherSchema = z.object({
   classes: z.array(z.string()).min(1, 'At least one class is required'),
   status: z.enum(['Active', 'Archived']),
   salary: z.coerce.number().optional(),
+  canMarkAttendance: z.boolean().optional(),
+  canEditResults: z.boolean().optional(),
 });
 
 type TeacherFormData = z.infer<typeof teacherSchema>;
@@ -122,6 +125,8 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
       salary: 0,
       dob: undefined,
       hireDate: undefined,
+      canMarkAttendance: true,
+      canEditResults: true,
     },
   });
 
@@ -138,6 +143,8 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
           hireDate: typeof teacher.hireDate === 'string' ? parse(teacher.hireDate, 'dd/MM/yyyy', new Date()) : teacher.hireDate,
           subjects: teacher.subjects || [],
           classes: teacher.classes || [],
+          canMarkAttendance: teacher.canMarkAttendance ?? true,
+          canEditResults: teacher.canEditResults ?? true,
         });
       } else {
         form.reset({
@@ -153,6 +160,8 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
             dob: undefined,
             hireDate: undefined,
             salary: 0,
+            canMarkAttendance: true,
+            canEditResults: true,
         });
       }
     }
@@ -160,11 +169,11 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{teacher ? 'Edit Teacher' : 'Add New Teacher'}</DialogTitle>
           <DialogDescription>
-            {teacher ? "Update the teacher's profile." : 'Fill in the details to add a new teacher.'}
+            {teacher ? "Update the teacher's profile and permissions." : 'Fill in the details to add a new teacher.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -411,6 +420,41 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                     </FormItem>
                     )}
                 />
+            </div>
+             <div className="space-y-4 border-t pt-4">
+              <h3 className="text-base font-medium">Permissions</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="canMarkAttendance"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <div className="space-y-0.5">
+                        <FormLabel>Mark Attendance</FormLabel>
+                        <FormMessage />
+                      </div>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="canEditResults"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <div className="space-y-0.5">
+                        <FormLabel>Edit Results</FormLabel>
+                        <FormMessage />
+                      </div>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>Cancel</Button>

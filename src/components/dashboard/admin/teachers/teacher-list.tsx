@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,6 +14,8 @@ import TeacherDetailDialog from './teacher-detail-dialog';
 import { addTeacher, updateTeacher } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 
 export default function TeacherList({ teachers: initialTeachers }: { teachers: Teacher[] }) {
@@ -88,6 +91,21 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
         toast({ title: "Error", description: "Failed to save teacher data.", variant: "destructive" });
       }
     });
+  };
+
+  const handlePermissionChange = (teacherId: string, permission: 'canMarkAttendance' | 'canEditResults', value: boolean) => {
+    startTransition(async () => {
+        try {
+            await updateTeacher(teacherId, { [permission]: value });
+            setTeachers(prev => prev.map(t => t.id === teacherId ? { ...t, [permission]: value } : t));
+            toast({ title: "Success", description: "Permission updated." });
+        } catch (error) {
+            console.error("Failed to update permission:", error);
+            toast({ title: "Error", description: "Could not update permission.", variant: "destructive" });
+            // Revert UI on failure
+            setTeachers(prev => prev.map(t => t.id === teacherId ? { ...t, [permission]: !value } : t));
+        }
+    });
   }
 
 
@@ -126,9 +144,9 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
             <TableRow>
               <TableHead>Teacher ID</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Attendance Access</TableHead>
+              <TableHead>Results Access</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -137,12 +155,26 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
               <TableRow key={teacher.id}>
                 <TableCell className="font-medium">{teacher.id}</TableCell>
                 <TableCell>{teacher.name}</TableCell>
-                <TableCell>{teacher.email}</TableCell>
-                <TableCell>{teacher.phone}</TableCell>
                 <TableCell>
                   <Badge variant={teacher.status === 'Active' ? 'default' : 'secondary'}>
                     {teacher.status}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                    <Switch
+                        checked={teacher.canMarkAttendance ?? true}
+                        onCheckedChange={(value) => handlePermissionChange(teacher.id, 'canMarkAttendance', value)}
+                        disabled={isSaving}
+                        aria-label="Toggle attendance marking permission"
+                    />
+                </TableCell>
+                <TableCell>
+                     <Switch
+                        checked={teacher.canEditResults ?? true}
+                        onCheckedChange={(value) => handlePermissionChange(teacher.id, 'canEditResults', value)}
+                        disabled={isSaving}
+                        aria-label="Toggle results editing permission"
+                    />
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

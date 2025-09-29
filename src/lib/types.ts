@@ -91,6 +91,8 @@ export interface Teacher {
   status: 'Active' | 'Archived';
   salary?: number;
   password?: string;
+  canMarkAttendance?: boolean;
+  canEditResults?: boolean;
 }
 
 export interface Class {
