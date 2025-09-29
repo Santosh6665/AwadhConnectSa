@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Bell,
@@ -29,12 +30,12 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserRole, Notice, Event } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { useAuth } from '@/contexts/auth-context';
-import { getNotices, getEvents } from '@/lib/firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
+import { useNotifications } from '@/hooks/use-notifications';
 
 function capitalize(str: string) {
     if(!str) return "";
@@ -45,28 +46,8 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
   const { user, logout } = useAuth();
-  const [notifications, setNotifications] = useState<(Notice | Event)[]>([]);
-
-  useEffect(() => {
-    async function fetchNotifications() {
-      if (!user) return;
-      try {
-        const [noticeData, eventData] = await Promise.all([getNotices(), getEvents()]);
-        
-        const filteredNotices = noticeData.filter(n => n.targetAudience.includes('all') || n.targetAudience.includes(user.role));
-        const filteredEvents = eventData.filter(e => e.targetAudience.includes('all') || e.targetAudience.includes(user.role));
-
-        const allNotifications = [...filteredNotices, ...filteredEvents];
-        allNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-        setNotifications(allNotifications.slice(0, 10)); // Limit to 10 most recent
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    }
-    fetchNotifications();
-  }, [user]);
-
+  const { notifications, unreadCount, markAllAsRead } = useNotifications(user?.role);
+  
   const userAvatarFallback = user?.name ? user.name.charAt(0).toUpperCase() : (user?.email ? user.email.charAt(0).toUpperCase() : "U");
   const userDisplayName = user?.name || user?.email;
   const avatarSeed = user?.id || user?.email || 'default';
@@ -107,12 +88,12 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
       <div className="relative ml-auto flex-1 md:grow-0">
          {/* Optional Search bar can go here */}
       </div>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={(open) => { if (open) markAllAsRead(); }}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon" className="relative">
             <Bell className="h-5 w-5" />
-            {notifications.length > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{notifications.length}</Badge>
+            {unreadCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{unreadCount}</Badge>
             )}
           </Button>
         </DropdownMenuTrigger>

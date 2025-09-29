@@ -1,50 +1,22 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import type { Notice, Event, UserRole } from '@/lib/types';
-import { getNotices, getEvents } from '@/lib/firebase/firestore';
+import type { UserRole } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Bell, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { useNotifications } from '@/hooks/use-notifications';
 
 interface NoticeBoardProps {
   role: UserRole;
 }
 
 export default function NoticeBoard({ role }: NoticeBoardProps) {
-  const [notices, setNotices] = useState<Notice[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { notices, events, loading } = useNotifications(role);
 
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const [noticeData, eventData] = await Promise.all([getNotices(), getEvents()]);
-        setNotices(noticeData);
-        setEvents(eventData);
-      } catch (error) {
-        console.error("Failed to fetch notices and events:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  const filteredNotices = useMemo(() => {
-    return notices.filter(notice => notice.targetAudience.includes('all') || notice.targetAudience.includes(role));
-  }, [notices, role]);
-
-  const filteredEvents = useMemo(() => {
-    return events.filter(event => event.targetAudience.includes('all') || event.targetAudience.includes(role));
-  }, [events, role]);
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -60,7 +32,7 @@ export default function NoticeBoard({ role }: NoticeBoardProps) {
       </TabsList>
       <TabsContent value="notices">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredNotices.length > 0 ? filteredNotices.map((notice) => (
+          {notices.length > 0 ? notices.map((notice) => (
             <Card key={notice.id} className="flex flex-col">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -83,7 +55,7 @@ export default function NoticeBoard({ role }: NoticeBoardProps) {
       </TabsContent>
       <TabsContent value="events">
          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.length > 0 ? filteredEvents.map((event) => (
+          {events.length > 0 ? events.map((event) => (
             <Card key={event.id} className="flex flex-col">
               <CardHeader>
                  <div className="flex items-start justify-between">
