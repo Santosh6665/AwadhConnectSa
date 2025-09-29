@@ -3,15 +3,21 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import type { StudyMaterial } from '@/lib/types';
-import { getStudyMaterials, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, uploadStudyMaterialFile, getTeacherById } from '@/lib/firebase/firestore';
+import { getStudyMaterials, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, uploadStudyMaterialFile } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MaterialList from '@/components/dashboard/materials/material-list';
 import AddEditMaterialDialog from '@/components/dashboard/materials/add-edit-material-dialog';
+import { subjectsByClass } from '@/components/dashboard/common/subjects-schema';
 
-export default function StudyMaterialPage() {
+const allSubjects = Array.from(new Set(Object.values(subjectsByClass).flat()));
+const allClassLevels = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
+const allSections = ["A", "B", "C"];
+const allClassOptions = allClassLevels.flatMap(level => allSections.map(section => `${level}${section}`));
+
+export default function AdminStudyMaterialPage() {
   const { user } = useAuth();
   const [materials, setMaterials] = useState<StudyMaterial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,26 +25,16 @@ export default function StudyMaterialPage() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<StudyMaterial | null>(null);
-  
-  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
-  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
 
   const { toast } = useToast();
 
   useEffect(() => {
     async function fetchData() {
-      if (user?.role !== 'teacher' || !user.id) return;
+      if (user?.role !== 'admin') return;
       setIsLoading(true);
       try {
-        const [materialData, teacherData] = await Promise.all([
-          getStudyMaterials({ uploadedBy: user.id }),
-          getTeacherById(user.id)
-        ]);
+        const materialData = await getStudyMaterials();
         setMaterials(materialData);
-        if (teacherData) {
-          setAvailableClasses(teacherData.classes || []);
-          setAvailableSubjects(teacherData.subjects || []);
-        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
         toast({ title: "Error", description: "Could not fetch study materials.", variant: "destructive" });
@@ -130,7 +126,7 @@ export default function StudyMaterialPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold">Study Material Management</h1>
-          <p className="text-muted-foreground">Upload and manage learning resources for your students.</p>
+          <p className="text-muted-foreground">Manage learning resources for the entire school.</p>
         </div>
         <Button onClick={handleAddNew}>
           <PlusCircle className="mr-2 h-4 w-4" />
@@ -139,8 +135,8 @@ export default function StudyMaterialPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Uploaded Materials</CardTitle>
-          <CardDescription>A list of all study materials you have uploaded.</CardDescription>
+          <CardTitle>All Uploaded Materials</CardTitle>
+          <CardDescription>A list of all study materials uploaded by all teachers.</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : <MaterialList materials={materials} onEdit={handleEdit} onDelete={handleDelete} isSaving={isSaving} />}
@@ -153,8 +149,8 @@ export default function StudyMaterialPage() {
         item={selectedItem}
         onSave={handleSave}
         isSaving={isSaving}
-        teacherClasses={availableClasses}
-        teacherSubjects={availableSubjects}
+        teacherClasses={allClassOptions}
+        teacherSubjects={allSubjects}
       />
     </div>
   );
