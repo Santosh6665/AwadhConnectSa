@@ -1,4 +1,5 @@
 
+
 'use client';
 import * as React from 'react';
 import {
@@ -21,13 +22,11 @@ import * as z from 'zod';
 import type { StudyMaterial } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { subjectsByClass } from '../common/subjects-schema';
 
 const materialSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
-  className: z.string().min(1, 'Class is required'),
-  sectionName: z.string().min(1, 'Section is required'),
+  classSection: z.string().min(1, 'Class is required'),
   subject: z.string().min(1, 'Subject is required'),
   topic: z.string().min(1, 'Topic/Link is required'),
   materialType: z.enum(['file', 'link']),
@@ -65,8 +64,7 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
         form.reset({
           title: item.title,
           description: item.description,
-          className: item.className,
-          sectionName: item.sectionName,
+          classSection: `${item.className}${item.sectionName}`,
           subject: item.subject,
           topic: item.materialType === 'link' ? item.fileUrl : item.topic,
           materialType: item.materialType,
@@ -75,8 +73,7 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
         form.reset({
           title: '',
           description: '',
-          className: '',
-          sectionName: '',
+          classSection: '',
           subject: '',
           topic: '',
           materialType: 'file',
@@ -87,12 +84,12 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
   }, [isOpen, item, form]);
 
   const onSubmit = (data: FormData) => {
-    const { className: parsedClassName, sectionName } = parseClassSection(data.className);
+    const { className, sectionName } = parseClassSection(data.classSection);
     
     const saveData = {
       title: data.title,
       description: data.description,
-      className: parsedClassName,
+      className: className,
       sectionName: sectionName,
       subject: data.subject,
       topic: data.topic,
@@ -103,7 +100,6 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
     onSave(saveData, file);
   };
   
-  const selectedClass = form.watch('className');
   const materialType = form.watch('materialType');
 
   return (
@@ -139,11 +135,11 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
               <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief overview of the material." {...field} rows={3} /></FormControl><FormMessage /></FormItem>
             )}/>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField name="className" control={form.control} render={({ field }) => (
+                <FormField name="classSection" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Class</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger></FormControl><SelectContent>{teacherClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                 )}/>
                 <FormField name="subject" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Subject</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!selectedClass}><FormControl><SelectTrigger><SelectValue placeholder="Select Subject" /></SelectTrigger></FormControl>
+                    <FormItem><FormLabel>Subject</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Subject" /></SelectTrigger></FormControl>
                     <SelectContent>
                       {teacherSubjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                     </SelectContent>

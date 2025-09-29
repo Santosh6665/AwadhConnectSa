@@ -524,17 +524,19 @@ export async function uploadStudyMaterialFile(file: File, teacherId: string): Pr
 }
 
 export async function getStudyMaterials(filters?: { className?: string, subject?: string }): Promise<StudyMaterial[]> {
-    let q = query(collection(db, 'study_materials'), orderBy('createdAt', 'desc'));
-
-    if (filters?.className) {
-        q = query(q, where('className', '==', filters.className));
-    }
-     if (filters?.subject) {
-        q = query(q, where('subject', '==', filters.subject));
-    }
-    
+    const q = query(collection(db, 'study_materials'), orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as StudyMaterial));
+    let materials = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as StudyMaterial));
+
+    if (filters) {
+        materials = materials.filter(material => {
+            const classMatch = !filters.className || material.className === filters.className;
+            const subjectMatch = !filters.subject || material.subject === filters.subject;
+            return classMatch && subjectMatch;
+        });
+    }
+
+    return materials;
 }
 
 export async function addStudyMaterial(materialData: Omit<StudyMaterial, 'id'>): Promise<string> {
@@ -588,3 +590,4 @@ export async function toggleMaterialCompleted(materialId: string, studentId: str
         return true;
     }
 }
+
