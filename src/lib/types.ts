@@ -1,5 +1,6 @@
 
 
+
 export interface Student {
   admissionNumber: string; // Document ID
   rollNo: string;
@@ -184,4 +185,15 @@ export interface AppUser {
   // For teacher/student/parent role
   id?: string; 
   name?: string;
+}
+
+export interface SalaryPayment {
+  id: string; // e.g., T01_2024-08
+  teacherId: string;
+  month: number;
+  year: number;
+  status: 'Paid' | 'Pending';
+  paymentDate?: string;
+  paymentMode?: 'Bank Transfer' | 'Cheque' | 'Cash';
+  amount: number;
 }

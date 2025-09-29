@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import {
@@ -19,9 +20,10 @@ import {
   endAt,
   orderBy,
   deleteField,
+  collectionGroup,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType } from '../types';
+import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -411,4 +413,36 @@ export async function deleteStudentResults(admissionNumber: string, session: str
   await updateDoc(studentRef, {
     [updatePath]: deleteField(),
   });
+}
+
+
+// SALARY MANAGEMENT
+
+export async function getSalaryPaymentsForMonth(year: number, month: number): Promise<SalaryPayment[]> {
+    const salaryPaymentsCol = collection(db, 'salaryPayments');
+    const q = query(salaryPaymentsCol, where('year', '==', year), where('month', '==', month));
+    
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+        return [];
+    }
+
+    return querySnapshot.docs.map(doc => doc.data() as SalaryPayment);
+}
+
+export async function getSalaryPaymentForTeacher(teacherId: string, year: number, month: number): Promise<SalaryPayment | null> {
+    const docId = `${teacherId}_${year}-${month}`;
+    const paymentRef = doc(db, 'salaryPayments', docId);
+    const docSnap = await getDoc(paymentRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as SalaryPayment;
+    }
+    return null;
+}
+
+
+export async function saveSalaryPayment(paymentData: SalaryPayment): Promise<void> {
+    const docId = `${paymentData.teacherId}_${paymentData.year}-${paymentData.month}`;
+    const paymentRef = doc(db, 'salaryPayments', docId);
+    await setDoc(paymentRef, paymentData, { merge: true });
 }

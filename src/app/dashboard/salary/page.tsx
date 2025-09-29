@@ -1,17 +1,19 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import type { Teacher, AttendanceRecord } from '@/lib/types';
-import { getTeachers, getTeacherAttendanceForMonth } from '@/lib/firebase/firestore';
+import { useState, useEffect, useMemo, useRef, useTransition } from 'react';
+import type { Teacher, AttendanceRecord, SalaryPayment } from '@/lib/types';
+import { getTeachers, getTeacherAttendanceForMonth, getSalaryPaymentsForMonth } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Download, Edit } from 'lucide-react';
 import { format, getDaysInMonth, addMonths, subMonths, isSunday } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useReactToPrint } from 'react-to-print';
 import SalarySlip from '@/components/dashboard/common/salary-slip';
+import ManagePaymentDialog from '@/components/dashboard/admin/salary/manage-payment-dialog';
+import { Badge } from '@/components/ui/badge';
 
 type SalaryDetails = {
   totalDays: number;
@@ -27,10 +29,12 @@ export default function AdminSalaryPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [teacherAttendance, setTeacherAttendance] = useState<Map<string, AttendanceRecord[]>>(new Map());
+  const [salaryPayments, setSalaryPayments] = useState<Map<string, SalaryPayment>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [isSlipOpen, setIsSlipOpen] = useState(false);
+  const [isManageOpen, setIsManageOpen] = useState(false);
   const slipRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
@@ -40,20 +44,32 @@ export default function AdminSalaryPage() {
   useEffect(() => {
     async function fetchAllData() {
       setIsLoading(true);
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
       try {
         const activeTeachers = await getTeachers({ status: 'Active' });
         setTeachers(activeTeachers);
 
         const attendancePromises = activeTeachers.map(teacher =>
-          getTeacherAttendanceForMonth(teacher.id, currentMonth.getFullYear(), currentMonth.getMonth())
+          getTeacherAttendanceForMonth(teacher.id, year, month)
         );
-        const attendanceResults = await Promise.all(attendancePromises);
+        
+        const [attendanceResults, paymentResults] = await Promise.all([
+           Promise.all(attendancePromises),
+           getSalaryPaymentsForMonth(year, month)
+        ]);
 
         const attendanceMap = new Map<string, AttendanceRecord[]>();
         activeTeachers.forEach((teacher, index) => {
           attendanceMap.set(teacher.id, attendanceResults[index]);
         });
         setTeacherAttendance(attendanceMap);
+
+        const paymentMap = new Map<string, SalaryPayment>();
+        paymentResults.forEach(payment => {
+            paymentMap.set(payment.teacherId, payment);
+        });
+        setSalaryPayments(paymentMap);
 
       } catch (error) {
         console.error("Failed to fetch teacher or attendance data", error);
@@ -83,13 +99,24 @@ export default function AdminSalaryPage() {
     return teachers.map(teacher => {
       const attendance = teacherAttendance.get(teacher.id) || [];
       const salaryDetails = calculateSalary(teacher, attendance);
-      return { teacher, salaryDetails };
+      const payment = salaryPayments.get(teacher.id);
+      return { teacher, salaryDetails, payment };
     });
-  }, [teachers, teacherAttendance, currentMonth]);
+  }, [teachers, teacherAttendance, salaryPayments, currentMonth]);
 
   const handleViewSlip = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
     setIsSlipOpen(true);
+  }
+  
+  const handleManagePayment = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setIsManageOpen(true);
+  }
+  
+  const handlePaymentSaved = (payment: SalaryPayment) => {
+    setSalaryPayments(prev => new Map(prev).set(payment.teacherId, payment));
+    setIsManageOpen(false);
   }
 
   return (
@@ -129,25 +156,34 @@ export default function AdminSalaryPage() {
                     <TableHead>Teacher ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Base Salary</TableHead>
-                    <TableHead>Present</TableHead>
-                    <TableHead>Absent</TableHead>
-                    <TableHead>Payable Days</TableHead>
                     <TableHead>Payable Salary</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {salaryData.map(({ teacher, salaryDetails }) => (
+                  {salaryData.map(({ teacher, salaryDetails, payment }) => (
                     <TableRow key={teacher.id}>
                       <TableCell>{teacher.id}</TableCell>
                       <TableCell>{teacher.name}</TableCell>
                       <TableCell>₹{teacher.salary?.toLocaleString() || 'N/A'}</TableCell>
-                      <TableCell>{salaryDetails.presentDays}</TableCell>
-                      <TableCell>{salaryDetails.absentDays}</TableCell>
-                      <TableCell>{salaryDetails.payableDays}</TableCell>
                       <TableCell className="font-semibold">₹{salaryDetails.payableSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                       <TableCell>
+                         <Badge variant={payment?.status === 'Paid' ? 'default' : 'destructive'}>
+                           {payment?.status || 'Pending'}
+                         </Badge>
+                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm" onClick={() => handleViewSlip(teacher)}>Generate Slip</Button>
+                         <div className="flex gap-2">
+                           <Button variant="outline" size="sm" onClick={() => handleViewSlip(teacher)}>
+                              <Download className="mr-2 h-4 w-4" />
+                              Slip
+                           </Button>
+                           <Button variant="secondary" size="sm" onClick={() => handleManagePayment(teacher)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Manage
+                           </Button>
+                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -159,17 +195,28 @@ export default function AdminSalaryPage() {
       )}
 
       {selectedTeacher && (
-        <Dialog open={isSlipOpen} onOpenChange={setIsSlipOpen}>
-            <DialogContent className="max-w-4xl p-0 border-0">
-                <SalarySlip
-                    ref={slipRef}
-                    teacher={selectedTeacher}
-                    month={currentMonth}
-                    salaryDetails={calculateSalary(selectedTeacher, teacherAttendance.get(selectedTeacher.id))}
-                    onDownload={handlePrint}
-                />
-            </DialogContent>
-        </Dialog>
+        <>
+            <Dialog open={isSlipOpen} onOpenChange={setIsSlipOpen}>
+                <DialogContent className="max-w-4xl p-0 border-0">
+                    <SalarySlip
+                        ref={slipRef}
+                        teacher={selectedTeacher}
+                        month={currentMonth}
+                        salaryDetails={calculateSalary(selectedTeacher, teacherAttendance.get(selectedTeacher.id))}
+                        onDownload={handlePrint}
+                    />
+                </DialogContent>
+            </Dialog>
+            <ManagePaymentDialog
+                isOpen={isManageOpen}
+                onOpenChange={setIsManageOpen}
+                teacher={selectedTeacher}
+                month={currentMonth}
+                payableAmount={calculateSalary(selectedTeacher, teacherAttendance.get(selectedTeacher.id)).payableSalary}
+                existingPayment={salaryPayments.get(selectedTeacher.id) || null}
+                onSave={handlePaymentSaved}
+            />
+        </>
       )}
     </div>
   );

@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import type { Teacher, AttendanceRecord } from '@/lib/types';
-import { getTeacherById, getTeacherAttendanceForMonth } from '@/lib/firebase/firestore';
+import type { Teacher, AttendanceRecord, SalaryPayment } from '@/lib/types';
+import { getTeacherById, getTeacherAttendanceForMonth, getSalaryPaymentForTeacher } from '@/lib/firebase/firestore';
 import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, getDaysInMonth, addMonths, subMonths, isSunday } from 'date-fns';
 import { useReactToPrint } from 'react-to-print';
 import SalarySlip from '@/components/dashboard/common/salary-slip';
+import { Badge } from '@/components/ui/badge';
 
 type SalaryDetails = {
   totalDays: number;
@@ -27,6 +28,7 @@ export default function TeacherSalaryPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+  const [payment, setPayment] = useState<SalaryPayment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   const slipRef = useRef<HTMLDivElement>(null);
@@ -38,13 +40,19 @@ export default function TeacherSalaryPage() {
     async function fetchTeacherData() {
       if (user?.id) {
         setIsLoading(true);
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
         try {
           const teacherData = await getTeacherById(user.id);
           setTeacher(teacherData);
 
           if (teacherData) {
-            const attendanceRecords = await getTeacherAttendanceForMonth(teacherData.id, currentMonth.getFullYear(), currentMonth.getMonth());
+            const [attendanceRecords, paymentRecord] = await Promise.all([
+               getTeacherAttendanceForMonth(teacherData.id, year, month),
+               getSalaryPaymentForTeacher(teacherData.id, year, month)
+            ]);
             setAttendance(attendanceRecords);
+            setPayment(paymentRecord);
           }
         } catch (error) {
           console.error("Failed to fetch teacher data", error);
@@ -90,8 +98,18 @@ export default function TeacherSalaryPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Select Month</CardTitle>
-          <CardDescription>Choose the month for which you want to view your salary slip.</CardDescription>
+            <div className="flex justify-between items-center">
+                <div>
+                    <CardTitle>Select Month</CardTitle>
+                    <CardDescription>Choose the month for which you want to view your salary slip.</CardDescription>
+                </div>
+                <div>
+                    <p className="text-sm">Status</p>
+                    <Badge variant={payment?.status === 'Paid' ? 'default' : 'destructive'}>
+                        {payment?.status || 'Pending'}
+                    </Badge>
+                </div>
+            </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
