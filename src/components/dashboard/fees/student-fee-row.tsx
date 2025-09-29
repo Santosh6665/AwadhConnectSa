@@ -25,6 +25,7 @@ const calculateDues = (student: Student, defaultStructure: FeeStructure | null) 
     const previousDue = (student.previousSessions || []).reduce((sum, session) => sum + session.dueFee, 0);
     
     return {
+        annualFee,
         currentDue,
         previousDue
     };
@@ -39,7 +40,7 @@ export default function StudentFeeRow({
 }: {
   student: Student;
   defaultFeeStructure: FeeStructure | null;
-  onSavePayment: (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string) => void;
+  onSavePayment: (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string, onPaymentSaved: () => void) => void;
   onSaveStructure: (student: Student, newStructure: FeeStructure, newConcession: number) => void;
   isSaving: boolean;
 }) {
@@ -47,7 +48,11 @@ export default function StudentFeeRow({
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isStructureOpen, setIsStructureOpen] = useState(false);
 
-  const { currentDue, previousDue } = calculateDues(student, defaultFeeStructure);
+  const { annualFee, currentDue, previousDue } = calculateDues(student, defaultFeeStructure);
+
+  const handlePaymentSaved = () => {
+    setIsPaymentOpen(false);
+  };
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 py-3 border-b last:border-none">
@@ -62,6 +67,10 @@ export default function StudentFeeRow({
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-4">
+        <div>
+            <p className="text-sm text-muted-foreground text-right">Annual Fee</p>
+            <p className="font-mono text-lg font-semibold text-right">₹{annualFee.toLocaleString()}</p>
+        </div>
         <div>
             <p className="text-sm text-muted-foreground text-right">Current Due</p>
             <p className="font-mono text-lg font-semibold text-right">₹{currentDue.toLocaleString()}</p>
@@ -87,7 +96,7 @@ export default function StudentFeeRow({
         isOpen={isPaymentOpen}
         onOpenChange={setIsPaymentOpen}
         student={student}
-        onSave={(amount, mode, remarks) => onSavePayment(student, amount, mode, remarks)}
+        onSave={(amount, mode, remarks) => onSavePayment(student, amount, mode, remarks, handlePaymentSaved)}
         isSaving={isSaving}
       />
       <CustomizeStructureDialog 

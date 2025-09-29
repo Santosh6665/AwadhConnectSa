@@ -42,7 +42,7 @@ export default function FamilyFeeList({
     setFamilies(newFamilies);
   };
   
-  const handleSavePayment = async (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string) => {
+  const handleSavePayment = async (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string, onPaymentSaved: () => void) => {
     startTransition(async () => {
         try {
             const receipt: FeeReceipt = {
@@ -67,6 +67,7 @@ export default function FamilyFeeList({
 
             handleUpdateStudent(updatedStudent);
             toast({ title: 'Success', description: 'Payment recorded successfully.' });
+            onPaymentSaved(); // Callback to close dialog
 
         } catch (error) {
             console.error("Error saving payment", error);
