@@ -1,5 +1,3 @@
-
-
 'use server';
 
 import {
@@ -123,6 +121,14 @@ export async function getStudentByAdmissionNumber(admissionNumber: string): Prom
 
   return { admissionNumber: studentDocSnap.id, ...studentDocSnap.data() } as Student;
 }
+
+export async function getStudentsByAdmissionNumbers(admissionNumbers: string[]): Promise<Student[]> {
+    if (admissionNumbers.length === 0) return [];
+    const studentPromises = admissionNumbers.map(id => getStudentByAdmissionNumber(id));
+    const results = await Promise.all(studentPromises);
+    return results.filter((s): s is Student => s !== null);
+}
+
 
 
 export async function addStudent(studentData: Student): Promise<void> {
@@ -523,21 +529,24 @@ export async function uploadStudyMaterialFile(file: File, teacherId: string): Pr
     return downloadURL;
 }
 
-export async function getStudyMaterials(filters?: { className?: string, subject?: string }): Promise<StudyMaterial[]> {
+export async function getStudyMaterials(filters?: { uploadedBy?: string; className?: string, subject?: string }): Promise<StudyMaterial[]> {
     const q = query(collection(db, 'study_materials'), orderBy('createdAt', 'desc'));
+    
     const snapshot = await getDocs(q);
     let materials = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as StudyMaterial));
 
     if (filters) {
         materials = materials.filter(material => {
+            const uploadedByMatch = !filters.uploadedBy || material.uploadedBy === filters.uploadedBy;
             const classMatch = !filters.className || material.className === filters.className;
             const subjectMatch = !filters.subject || material.subject === filters.subject;
-            return classMatch && subjectMatch;
+            return uploadedByMatch && classMatch && subjectMatch;
         });
     }
 
     return materials;
 }
+
 
 export async function addStudyMaterial(materialData: Omit<StudyMaterial, 'id'>): Promise<string> {
     const docRef = await addDoc(collection(db, 'study_materials'), materialData);
@@ -590,4 +599,3 @@ export async function toggleMaterialCompleted(materialId: string, studentId: str
         return true;
     }
 }
-
