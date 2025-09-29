@@ -72,7 +72,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
     <Card ref={ref} className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 no-print">
             <div className="flex items-center gap-4">
                 <GraduationCap className="h-12 w-12 text-primary" />
                 <div>
@@ -82,10 +82,10 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
             </div>
             <div className="flex items-center gap-4">
                 <Badge variant="secondary" className="text-lg py-2 px-4">Annual Exam Result Card</Badge>
-                <Button onClick={onDownload} variant="outline" size="icon" className="no-print"><Download className="h-5 w-5"/></Button>
+                <Button onClick={onDownload} variant="outline" size="icon"><Download className="h-5 w-5"/></Button>
             </div>
         </div>
-        <Separator />
+        <Separator className="no-print"/>
 
         {/* Student Details */}
         <div>
