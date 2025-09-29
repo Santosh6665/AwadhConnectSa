@@ -2,13 +2,14 @@
 'use client';
 
 import * as React from 'react';
-import type { Teacher } from '@/lib/types';
+import type { Teacher, SalaryPayment } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { GraduationCap, User, Download, Calendar } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { useReactToPrint } from 'react-to-print';
+import { Badge } from '@/components/ui/badge';
 
 type SalaryDetails = {
   totalDays: number;
@@ -31,9 +32,10 @@ type SalarySlipProps = {
   teacher: Teacher;
   month: Date;
   salaryDetails: SalaryDetails;
+  payment: SalaryPayment | null;
 };
 
-export default function SalarySlip({ teacher, month, salaryDetails }: SalarySlipProps) {
+export default function SalarySlip({ teacher, month, salaryDetails, payment }: SalarySlipProps) {
     const slipRef = React.useRef<HTMLDivElement>(null);
     const handlePrint = useReactToPrint({
       content: () => slipRef.current,
@@ -54,7 +56,12 @@ export default function SalarySlip({ teacher, month, salaryDetails }: SalarySlip
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
-                    <p className="font-semibold text-lg">Salary Slip</p>
+                    <div className="text-right">
+                        <p className="font-semibold text-lg">Salary Slip</p>
+                        <Badge variant={payment?.status === 'Paid' ? 'default' : 'destructive'}>
+                           {payment?.status || 'Pending'}
+                        </Badge>
+                    </div>
                     <Button
                         onClick={handlePrint}
                         variant="outline"

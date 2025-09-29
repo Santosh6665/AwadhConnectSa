@@ -118,6 +118,7 @@ export default function TeacherSalaryPage() {
         teacher={teacher}
         month={currentMonth}
         salaryDetails={salaryDetails}
+        payment={payment}
       />
     </div>
   );

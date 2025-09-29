@@ -196,6 +196,7 @@ export default function AdminSalaryPage() {
                         teacher={selectedTeacher}
                         month={currentMonth}
                         salaryDetails={calculateSalary(selectedTeacher, teacherAttendance.get(selectedTeacher.id))}
+                        payment={salaryPayments.get(selectedTeacher.id) || null}
                     />
                 </DialogContent>
             </Dialog>
