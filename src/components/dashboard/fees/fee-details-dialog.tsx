@@ -10,6 +10,7 @@ import type { Student, FeeStructure, FeeReceipt, PreviousSession } from '@/lib/t
 import { Download, GraduationCap, Mail, Phone } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
     <div className={cn("grid grid-cols-2 gap-4 items-start py-1", className)}>
