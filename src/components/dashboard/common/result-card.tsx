@@ -9,6 +9,8 @@ import { GraduationCap, User, BookOpen, BarChart, Download } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { subjectsByClass } from './subjects-schema';
+import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
 
 const getGrade = (percentage: number): { grade: string; remarks: string; passed: boolean } => {
   if (percentage >= 90) return { grade: 'A+', remarks: 'Outstanding', passed: true };
@@ -72,7 +74,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
     <Card ref={ref} className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 no-print">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div className="flex items-center gap-4">
                 <GraduationCap className="h-12 w-12 text-primary" />
                 <div>
@@ -82,7 +84,12 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
             </div>
             <div className="flex items-center gap-4">
                 <Badge variant="secondary" className="text-lg py-2 px-4">Annual Exam Result Card</Badge>
-                <Button onClick={onDownload} variant="outline" size="icon"><Download className="h-5 w-5"/></Button>
+                <button
+                    onClick={onDownload}
+                    className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'no-print')}
+                >
+                    <Download className="h-5 w-5"/>
+                </button>
             </div>
         </div>
         <Separator className="no-print"/>
