@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Bell,
@@ -6,8 +5,9 @@ import {
   LogOut,
   Settings,
   User,
+  Calendar,
 } from 'lucide-react';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import {
   Breadcrumb,
@@ -28,10 +29,12 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserRole } from '@/lib/types';
+import { UserRole, Notice, Event } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { useAuth } from '@/contexts/auth-context';
+import { getNotices, getEvents } from '@/lib/firebase/firestore';
+import { formatDistanceToNow } from 'date-fns';
 
 function capitalize(str: string) {
     if(!str) return "";
@@ -42,10 +45,32 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const segments = pathname.split('/').filter(Boolean);
   const { user, logout } = useAuth();
+  const [notifications, setNotifications] = useState<(Notice | Event)[]>([]);
+
+  useEffect(() => {
+    async function fetchNotifications() {
+      if (!user) return;
+      try {
+        const [noticeData, eventData] = await Promise.all([getNotices(), getEvents()]);
+        
+        const filteredNotices = noticeData.filter(n => n.targetAudience.includes('all') || n.targetAudience.includes(user.role));
+        const filteredEvents = eventData.filter(e => e.targetAudience.includes('all') || e.targetAudience.includes(user.role));
+
+        const allNotifications = [...filteredNotices, ...filteredEvents];
+        allNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        setNotifications(allNotifications.slice(0, 10)); // Limit to 10 most recent
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    }
+    fetchNotifications();
+  }, [user]);
 
   const userAvatarFallback = user?.name ? user.name.charAt(0).toUpperCase() : (user?.email ? user.email.charAt(0).toUpperCase() : "U");
   const userDisplayName = user?.name || user?.email;
   const avatarSeed = user?.id || user?.email || 'default';
+  const noticePath = `/${role}/dashboard/notices`;
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -82,10 +107,47 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
       <div className="relative ml-auto flex-1 md:grow-0">
          {/* Optional Search bar can go here */}
       </div>
-      <Button variant="outline" size="icon" className="relative">
-        <Bell className="h-5 w-5" />
-        <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">3</Badge>
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            {notifications.length > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{notifications.length}</Badge>
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup className="max-h-96 overflow-y-auto">
+                {notifications.length > 0 ? (
+                    notifications.map(item => {
+                        const isEvent = 'startDate' in item;
+                        return (
+                            <DropdownMenuItem key={item.id} asChild>
+                                <Link href={noticePath} className="flex items-start gap-3">
+                                    <div className="bg-primary/10 p-2 rounded-full mt-1">
+                                        {isEvent ? <Calendar className="w-4 h-4 text-primary" /> : <Bell className="w-4 h-4 text-primary" />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-sm whitespace-normal">{item.title}</p>
+                                        <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}</p>
+                                    </div>
+                                </Link>
+                            </DropdownMenuItem>
+                        )
+                    })
+                ) : (
+                    <div className="p-4 text-center text-sm text-muted-foreground">No new notifications</div>
+                )}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+                <Link href={noticePath} className="justify-center">View All Notifications</Link>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
