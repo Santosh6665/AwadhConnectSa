@@ -3,13 +3,19 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import type { StudyMaterial } from '@/lib/types';
-import { getStudyMaterials, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, uploadStudyMaterialFile, getTeacherById } from '@/lib/firebase/firestore';
+import { getStudyMaterials, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, uploadStudyMaterialFile, getTeacherById, getClasses } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MaterialList from '@/components/dashboard/materials/material-list';
 import AddEditMaterialDialog from '@/components/dashboard/materials/add-edit-material-dialog';
+import { subjectsByClass } from '@/components/dashboard/common/subjects-schema';
+
+const allSubjects = Array.from(new Set(Object.values(subjectsByClass).flat()));
+const allClassLevels = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, (_, i) => (i + 1).toString())];
+const allSections = ["A", "B", "C"];
+const allClassOptions = allClassLevels.flatMap(level => allSections.map(section => `${level}${section}`));
 
 export default function StudyMaterialPage() {
   const { user } = useAuth();
@@ -20,24 +26,31 @@ export default function StudyMaterialPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<StudyMaterial | null>(null);
   
-  const [teacherClasses, setTeacherClasses] = useState<string[]>([]);
-  const [teacherSubjects, setTeacherSubjects] = useState<string[]>([]);
+  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
 
   const { toast } = useToast();
 
   useEffect(() => {
     async function fetchData() {
-      if (!user?.id) return;
+      if (!user) return;
       setIsLoading(true);
       try {
-        const [materialData, teacherData] = await Promise.all([
-          getStudyMaterials({ uploadedBy: user.id }),
-          getTeacherById(user.id)
-        ]);
-        setMaterials(materialData);
-        if (teacherData) {
-          setTeacherClasses(teacherData.classes || []);
-          setTeacherSubjects(teacherData.subjects || []);
+        if (user.role === 'admin') {
+          const materialData = await getStudyMaterials();
+          setMaterials(materialData);
+          setAvailableClasses(allClassOptions);
+          setAvailableSubjects(allSubjects);
+        } else if (user.role === 'teacher' && user.id) {
+          const [materialData, teacherData] = await Promise.all([
+            getStudyMaterials({ uploadedBy: user.id }),
+            getTeacherById(user.id)
+          ]);
+          setMaterials(materialData);
+          if (teacherData) {
+            setAvailableClasses(teacherData.classes || []);
+            setAvailableSubjects(teacherData.subjects || []);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -85,8 +98,11 @@ export default function StudyMaterialPage() {
       try {
         let fileUrl = data.fileUrl;
 
+        // Use a generic upload path for admins, or teacher-specific for teachers
+        const uploadPathId = user.role === 'admin' ? 'admin' : user.id!;
+
         if (data.materialType === 'file' && file) {
-          fileUrl = await uploadStudyMaterialFile(file, user.id);
+          fileUrl = await uploadStudyMaterialFile(file, uploadPathId);
         } else if (selectedItem?.materialType === 'file' && !file) {
           fileUrl = selectedItem.fileUrl; // Keep old file if not changed
         }
@@ -105,7 +121,7 @@ export default function StudyMaterialPage() {
           const newItem: Omit<StudyMaterial, 'id'> = {
             ...data,
             fileUrl,
-            uploadedBy: user.id,
+            uploadedBy: user.id, // Always track who uploaded it
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             viewedBy: [],
@@ -129,7 +145,9 @@ export default function StudyMaterialPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-headline font-bold">Study Material Management</h1>
-          <p className="text-muted-foreground">Upload and manage learning resources for your students.</p>
+          <p className="text-muted-foreground">
+            {user?.role === 'admin' ? 'Manage learning resources for the entire school.' : 'Upload and manage learning resources for your students.'}
+          </p>
         </div>
         <Button onClick={handleAddNew}>
           <PlusCircle className="mr-2 h-4 w-4" />
@@ -152,8 +170,8 @@ export default function StudyMaterialPage() {
         item={selectedItem}
         onSave={handleSave}
         isSaving={isSaving}
-        teacherClasses={teacherClasses}
-        teacherSubjects={teacherSubjects}
+        teacherClasses={availableClasses}
+        teacherSubjects={availableSubjects}
       />
     </div>
   );
