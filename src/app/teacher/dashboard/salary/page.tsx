@@ -56,23 +56,19 @@ export default function TeacherSalaryPage() {
     fetchTeacherData();
   }, [user, currentMonth]);
 
-  const salaryDetails = useMemo(() => {
+  const salaryDetails = useMemo((): SalaryDetails | null => {
     if (!teacher) return null;
 
     const totalDays = getDaysInMonth(currentMonth);
-    const sundays = Array.from({ length: totalDays }, (_, i) => new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i + 1)).filter(isSunday).length;
-    
     const presentDays = attendance.filter(r => r.status === 'Present').length;
     const absentDays = attendance.filter(r => r.status === 'Absent').length;
     
-    const allowedAbsent = 1;
-    const daysToDeduct = Math.max(0, absentDays - allowedAbsent);
-    const payableDays = totalDays - sundays - daysToDeduct;
+    const payableDays = Math.min(31 - absentDays, 30);
 
     const baseSalary = teacher.salary || 0;
-    const perDaySalary = baseSalary / (totalDays - sundays);
-    const deduction = daysToDeduct * perDaySalary;
-    const payableSalary = baseSalary - deduction;
+    const perDaySalary = baseSalary / 30; // Assuming salary is calculated for 30 days
+    const deduction = (30 - payableDays) * perDaySalary;
+    const payableSalary = baseSalary - Math.max(0, deduction);
 
     return { totalDays, presentDays, absentDays, payableDays, perDaySalary, deduction, payableSalary };
   }, [teacher, attendance, currentMonth]);

@@ -66,19 +66,15 @@ export default function AdminSalaryPage() {
 
   const calculateSalary = (teacher: Teacher, attendance: AttendanceRecord[] = []): SalaryDetails => {
     const totalDays = getDaysInMonth(currentMonth);
-    const sundays = Array.from({ length: totalDays }, (_, i) => new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i + 1)).filter(isSunday).length;
-
     const presentDays = attendance.filter(r => r.status === 'Present').length;
     const absentDays = attendance.filter(r => r.status === 'Absent').length;
     
-    const allowedAbsent = 1;
-    const daysToDeduct = Math.max(0, absentDays - allowedAbsent);
-    const payableDays = totalDays - sundays - daysToDeduct;
+    const payableDays = Math.min(31 - absentDays, 30);
 
     const baseSalary = teacher.salary || 0;
-    const perDaySalary = baseSalary / (totalDays - sundays);
-    const deduction = daysToDeduct * perDaySalary;
-    const payableSalary = baseSalary - deduction;
+    const perDaySalary = baseSalary / 30; // Assuming salary is calculated for 30 days
+    const deduction = (30 - payableDays) * perDaySalary;
+    const payableSalary = baseSalary - Math.max(0, deduction);
 
     return { totalDays, presentDays, absentDays, payableDays, perDaySalary, deduction, payableSalary };
   };
@@ -135,6 +131,7 @@ export default function AdminSalaryPage() {
                     <TableHead>Base Salary</TableHead>
                     <TableHead>Present</TableHead>
                     <TableHead>Absent</TableHead>
+                    <TableHead>Payable Days</TableHead>
                     <TableHead>Payable Salary</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -147,6 +144,7 @@ export default function AdminSalaryPage() {
                       <TableCell>₹{teacher.salary?.toLocaleString() || 'N/A'}</TableCell>
                       <TableCell>{salaryDetails.presentDays}</TableCell>
                       <TableCell>{salaryDetails.absentDays}</TableCell>
+                      <TableCell>{salaryDetails.payableDays}</TableCell>
                       <TableCell className="font-semibold">₹{salaryDetails.payableSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                       <TableCell>
                         <Button variant="outline" size="sm" onClick={() => handleViewSlip(teacher)}>Generate Slip</Button>
