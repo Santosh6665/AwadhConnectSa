@@ -115,13 +115,15 @@
       left: 0;
       top: 0;
       width: 100%;
+      box-shadow: none;
+      border: none;
     }
     .no-print {
       display: none !important;
     }
     .result-card {
-      box-shadow: none;
-      border: none;
+      box-shadow: none !important;
+      border: none !important;
     }
   }
 }

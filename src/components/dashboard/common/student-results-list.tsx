@@ -233,7 +233,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                 onSave={handleSaveMarks}
             />
             <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-                <DialogContent className="max-w-4xl p-0 border-0">
+                <DialogContent className="max-w-4xl p-0 border-0 print:p-0">
                     <div className="print-container">
                        <ScrollArea className="max-h-[90vh]">
                          {selectedStudent.results?.[selectedStudent.session] ? (
