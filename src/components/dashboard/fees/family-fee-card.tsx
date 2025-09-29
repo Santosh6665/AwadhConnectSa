@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 
 const calculateTotalDueForFamily = (family: Family, defaultFeeStructure: FeeStructure | null): number => {
     return family.students.reduce((total, student) => {
-        const studentFeeData = student.fees?.[student.session];
+        const studentFeeData = student.fees?.[student.className];
         const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[student.className];
 
         let annualFee = 0;
@@ -42,7 +42,7 @@ export default function FamilyFeeCard({
 }: {
   family: Family;
   defaultFeeStructure: FeeStructure | null;
-  onSavePayment: (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string) => void;
+  onSavePayment: (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string, onPaymentSaved: () => void) => void;
   onSaveStructure: (student: Student, newStructure: FeeStructure, newConcession: number) => void;
   isSaving: boolean;
 }) {

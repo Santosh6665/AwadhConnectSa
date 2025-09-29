@@ -24,7 +24,7 @@ const DetailItem = ({ label, value, className }: { label: string; value: React.R
 export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaultFeeStructure }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: FeeStructure | null }) {
   const receiptRef = React.useRef(null);
   const handlePrint = useReactToPrint({
-      contentRef: () => receiptRef.current,
+      contentRef: receiptRef,
   });
 
   const [selectedReceipt, setSelectedReceipt] = React.useState<FeeReceipt | null>(null);
@@ -38,9 +38,9 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
   if (!student) return null;
   
-  const currentTransactions = student.fees?.[student.session]?.transactions || [];
+  const currentTransactions = student.fees?.[student.className]?.transactions || [];
   
-  const studentFeeData = student.fees?.[student.session];
+  const studentFeeData = student.fees?.[student.className];
   const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[student.className] || {};
 
   const annualFee = Object.values(studentStructure).reduce((sum, head) => sum + (head.amount * head.months), 0);
@@ -86,7 +86,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
             </div>
             
             <div className="mt-8">
-                <h3 className="font-semibold text-muted-foreground mb-2">Payment History for {student.session}</h3>
+                <h3 className="font-semibold text-muted-foreground mb-2">Payment History for Class {student.className}</h3>
                 <div className="border rounded-lg">
                   <Table>
                     <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Remarks</TableHead><TableHead className="no-print">Actions</TableHead></TableRow></TableHeader>
@@ -106,7 +106,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                                 </TableRow>
                             ))
                         ) : (
-                            <TableRow><TableCell colSpan={5} className="text-center h-24">No payments recorded for this session.</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={5} className="text-center h-24">No payments recorded for this class.</TableCell></TableRow>
                         )}
                     </TableBody>
                   </Table>

@@ -14,7 +14,7 @@ export default function MyResultsPage() {
   const { user, loading: authLoading } = useAuth();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedSession, setSelectedSession] = useState<string>('');
+  const [selectedClass, setSelectedClass] = useState<string>('');
 
   useEffect(() => {
     if (user?.id) {
@@ -22,8 +22,8 @@ export default function MyResultsPage() {
         setLoading(true);
         const studentData = await getStudentByAdmissionNumber(user.id!);
         setStudent(studentData);
-        if (studentData?.session) {
-          setSelectedSession(studentData.session);
+        if (studentData?.className) {
+          setSelectedClass(studentData.className);
         }
         setLoading(false);
       };
@@ -43,8 +43,8 @@ export default function MyResultsPage() {
     return <p>Could not load student data.</p>;
   }
 
-  const sessionOptions = Object.keys(student.results || {}).sort().reverse();
-  const annualResult = student.results?.[selectedSession];
+  const classOptions = Object.keys(student.results || {}).sort().reverse();
+  const annualResult = student.results?.[selectedClass];
 
   return (
     <div className="space-y-6">
@@ -55,14 +55,14 @@ export default function MyResultsPage() {
             View your academic performance and report cards.
           </p>
         </div>
-        {sessionOptions.length > 0 && (
-            <Select onValueChange={setSelectedSession} value={selectedSession}>
+        {classOptions.length > 0 && (
+            <Select onValueChange={setSelectedClass} value={selectedClass}>
                 <SelectTrigger className="w-full md:w-48">
-                    <SelectValue placeholder="Select Session" />
+                    <SelectValue placeholder="Select Class" />
                 </SelectTrigger>
                 <SelectContent>
-                    {sessionOptions.map(session => (
-                        <SelectItem key={session} value={session}>Session {session}</SelectItem>
+                    {classOptions.map(c => (
+                        <SelectItem key={c} value={c}>Class {c}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
@@ -75,8 +75,8 @@ export default function MyResultsPage() {
         ) : (
           <Card className="no-print">
               <CardContent className="p-8 text-center text-muted-foreground">
-                  <p>No results found for the selected session.</p>
-                  <p>Please select a different session or contact your teacher.</p>
+                  <p>No results found for the selected class.</p>
+                  <p>Please select a different class or contact your teacher.</p>
               </CardContent>
           </Card>
         )}

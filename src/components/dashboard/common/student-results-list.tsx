@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useTransition, useRef } from 'react';
 import type { Student, ExamType, AnnualResult, UserRole } from '@/lib/types';
@@ -73,21 +74,21 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   };
 
   const handleConfirmDelete = () => {
-    if (!selectedStudent || !selectedStudent.session) {
-      toast({ title: "Error", description: "Cannot delete results without a selected student or session.", variant: "destructive" });
+    if (!selectedStudent || !selectedStudent.className) {
+      toast({ title: "Error", description: "Cannot delete results without a selected student or class.", variant: "destructive" });
       return;
     }
 
     startDeleteTransition(async () => {
       try {
-        await deleteStudentResults(selectedStudent.admissionNumber, selectedStudent.session, selectedExam);
+        await deleteStudentResults(selectedStudent.admissionNumber, selectedStudent.className, selectedExam);
         
         // Optimistically update the UI
         const updatedStudents = students.map(s => {
           if (s.admissionNumber === selectedStudent.admissionNumber) {
             const newStudent = { ...s };
-            if (newStudent.results?.[s.session]?.examResults) {
-              delete newStudent.results[s.session].examResults[selectedExam];
+            if (newStudent.results?.[s.className]?.examResults) {
+              delete newStudent.results[s.className].examResults[selectedExam];
             }
             return newStudent;
           }
@@ -132,7 +133,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     });
 
     const summaries = filtered.map(student => {
-        const annualResult = student.results?.[student.session] || { examResults: {} };
+        const annualResult = student.results?.[student.className] || { examResults: {} };
         const { percentage, grade } = calculateOverallResult(annualResult);
         return { student, percentage, grade, rank: 0 };
     });
@@ -243,7 +244,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                        <ResultCard 
                             ref={resultRef}
                             student={selectedStudent} 
-                            annualResult={selectedStudent.results?.[selectedStudent.session]} 
+                            annualResult={selectedStudent.results?.[selectedStudent.className]} 
                             onDownload={handlePrint}
                         />
                     </ScrollArea>

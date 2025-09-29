@@ -49,20 +49,18 @@ export default function EditMarksDialog({ isOpen, onOpenChange, student, examTyp
 
   React.useEffect(() => {
     if (isOpen && student && examType) {
-      const sessionResults = student.results?.[student.session];
-      const existingExamResults = sessionResults?.examResults?.[examType];
+      const classResults = student.results?.[student.className];
+      const existingExamResults = classResults?.examResults?.[examType];
       
       const subjectsForClass = subjectsByClass[student.className as keyof typeof subjectsByClass] || [];
 
       if (existingExamResults && existingExamResults.subjects.length > 0) {
-        // If results exist, map them to the schema to ensure order and completeness
         const orderedSubjects = subjectsForClass.map(subjectName => {
           const existingSubject = existingExamResults.subjects.find(s => s.subjectName === subjectName);
           return existingSubject || { subjectName, maxMarks: 100, obtainedMarks: 0 };
         });
         replace(orderedSubjects);
       } else {
-        // If no results exist, create a fresh slate from the schema
         const initialMarks = subjectsForClass.map(subjectName => ({
           subjectName,
           maxMarks: 100,
@@ -74,8 +72,8 @@ export default function EditMarksDialog({ isOpen, onOpenChange, student, examTyp
   }, [isOpen, student, examType, replace]);
 
   const onSubmit = (data: MarksFormData) => {
-    if (!student?.session) {
-      toast({ title: "Error", description: "Student session not found.", variant: "destructive" });
+    if (!student?.className) {
+      toast({ title: "Error", description: "Student class not found.", variant: "destructive" });
       return;
     }
     
@@ -91,15 +89,14 @@ export default function EditMarksDialog({ isOpen, onOpenChange, student, examTyp
           examType: examType,
           subjects: data.subjects,
         };
-        await saveStudentResults(student.admissionNumber, student.session, resultData);
+        await saveStudentResults(student.admissionNumber, student.className, resultData);
         
-        // Optimistically update the student object to reflect in the UI
         const updatedStudent = { ...student };
         if (!updatedStudent.results) updatedStudent.results = {};
-        if (!updatedStudent.results[student.session]) updatedStudent.results[student.session] = { examResults: {} };
-        if (!updatedStudent.results[student.session].examResults) updatedStudent.results[student.session].examResults = {};
+        if (!updatedStudent.results[student.className]) updatedStudent.results[student.className] = { examResults: {} };
+        if (!updatedStudent.results[student.className].examResults) updatedStudent.results[student.className].examResults = {};
         
-        updatedStudent.results[student.session].examResults[examType] = resultData;
+        updatedStudent.results[student.className].examResults[examType] = resultData;
 
         onSave(updatedStudent);
         onOpenChange(false);

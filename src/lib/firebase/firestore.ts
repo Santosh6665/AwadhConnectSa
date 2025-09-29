@@ -130,6 +130,13 @@ export async function addStudent(studentData: Student): Promise<void> {
     const finalStudentData: Omit<Student, 'admissionNumber'> = {
         ...data,
     };
+    
+    // For new students, create a password and initialize fees/results
+    const birthYear = new Date(data.dob).getFullYear();
+    finalStudentData.password = `${data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1)}@${birthYear}`;
+    finalStudentData.fees = { [data.className]: { transactions: [] } };
+    finalStudentData.results = { [data.className]: { examResults: {} } };
+
 
     // 1. Set student document
     batch.set(studentDocRef, finalStudentData);
@@ -182,12 +189,13 @@ export async function promoteStudent(
   }
 
   const studentData = studentSnap.data() as Student;
-  const currentSessionData = studentData.fees?.[studentData.session] || { transactions: [] };
+  const currentClassFeeData = studentData.fees?.[studentData.className] || { transactions: [], structure: {}, concession: 0 };
   
-  // A simple way to calculate due fee from the last transaction for now.
-  // This can be improved with a proper calculation function later.
   let dueFee = 0;
-  // This logic needs to be more robust. Placeholder for now.
+  if(carryForwardDues) {
+    // This logic needs to be more robust, fetching the fee structure to calculate accurately.
+    // For now, it's a placeholder.
+  }
   
   const previousSessionRecord: PreviousSession = {
     sessionId: `${studentData.admissionNumber}-${studentData.session}`,
@@ -199,7 +207,15 @@ export async function promoteStudent(
     dueFee: dueFee,
   };
 
-  const newFees = { ...studentData.fees, [newSession]: { transactions: [] } };
+  const newFees = studentData.fees;
+  if (!newFees[newClassName]) {
+    newFees[newClassName] = { transactions: [] };
+  }
+
+  const newResults = studentData.results;
+  if (!newResults[newClassName]) {
+    newResults[newClassName] = { examResults: {} };
+  }
 
   const batch = writeBatch(db);
 
@@ -209,7 +225,7 @@ export async function promoteStudent(
     sectionName: newSectionName,
     previousSessions: arrayUnion(previousSessionRecord),
     fees: newFees,
-    results: { ...studentData.results, [newSession]: { examResults: {} } },
+    results: newResults,
   });
 
   await batch.commit();
@@ -412,41 +428,18 @@ export async function getTeacherAttendanceForMonth(teacherId: string, year: numb
   return teacherAttendanceRecords;
 }
 
-export async function saveStudentResults(admissionNumber: string, session: string, examResult: ExamResult): Promise<void> {
+export async function saveStudentResults(admissionNumber: string, className: string, examResult: ExamResult): Promise<void> {
   const studentRef = doc(db, 'students', admissionNumber);
-  const studentSnap = await getDoc(studentRef);
-
-  if (!studentSnap.exists()) {
-    throw new Error('Student not found');
-  }
-
-  const studentData = studentSnap.data() as Student;
-  const currentResults = studentData.results || {};
-  const currentSessionResults = currentResults[session] || { examResults: {} };
-
-  const updatedExamResults = {
-    ...currentSessionResults.examResults,
-    [examResult.examType]: examResult,
-  };
-
-  const updatedSessionResults = {
-    ...currentSessionResults,
-    examResults: updatedExamResults,
-  };
-
-  const updatedResults = {
-    ...currentResults,
-    [session]: updatedSessionResults,
-  };
-
+  const path = `results.${className}.examResults.${examResult.examType}`;
+  
   await updateDoc(studentRef, {
-    results: updatedResults,
+    [path]: examResult,
   });
 }
 
-export async function deleteStudentResults(admissionNumber: string, session: string, examType: ExamType): Promise<void> {
+export async function deleteStudentResults(admissionNumber: string, className: string, examType: ExamType): Promise<void> {
   const studentRef = doc(db, 'students', admissionNumber);
-  const updatePath = `results.${session}.examResults.${examType}`;
+  const updatePath = `results.${className}.examResults.${examType}`;
   
   await updateDoc(studentRef, {
     [updatePath]: deleteField(),
@@ -504,18 +497,18 @@ export async function getFeeStructure(): Promise<{[className: string]: FeeStruct
     return null;
 }
 
-export async function addFeePayment(admissionNumber: string, session: string, transaction: FeeReceipt): Promise<void> {
+export async function addFeePayment(admissionNumber: string, className: string, transaction: FeeReceipt): Promise<void> {
     const studentRef = doc(db, 'students', admissionNumber);
-    const path = `fees.${session}.transactions`;
+    const path = `fees.${className}.transactions`;
     await updateDoc(studentRef, {
         [path]: arrayUnion(transaction)
     });
 }
 
-export async function updateStudentFeeStructure(admissionNumber: string, session: string, structure: FeeStructure, concession: number): Promise<void> {
+export async function updateStudentFeeStructure(admissionNumber: string, className: string, structure: FeeStructure, concession: number): Promise<void> {
     const studentRef = doc(db, 'students', admissionNumber);
     const updates: any = {};
-    updates[`fees.${session}.structure`] = structure;
-    updates[`fees.${session}.concession`] = concession;
+    updates[`fees.${className}.structure`] = structure;
+    updates[`fees.${className}.concession`] = concession;
     await updateDoc(studentRef, updates);
 }

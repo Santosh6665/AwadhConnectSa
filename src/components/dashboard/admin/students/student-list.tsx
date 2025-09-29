@@ -25,10 +25,11 @@ type SortConfig = {
 };
 
 const getFeeStatus = (student: Student) => {
-    const classFees = student.fees[student.className] || [];
-    if (classFees.length === 0) return 'Due';
-    const lastReceipt = classFees[classFees.length - 1];
-    return lastReceipt.status;
+    const classFees = student.fees[student.className] || { transactions: [] };
+    const totalPaid = classFees.transactions.reduce((sum, tx) => sum + tx.amount, 0);
+    // This is a simplified check. A proper due calculation would be needed here.
+    if (totalPaid > 0) return 'Partial'; 
+    return 'Due';
 };
 
 
@@ -202,14 +203,12 @@ export default function StudentList({
                 </div>
               </TableHead>
               <TableHead>Parent</TableHead>
-              <TableHead>Fee Status</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredStudents.map((student) => {
-              const feeStatus = getFeeStatus(student);
               const hasPreviousRecords = student.previousSessions && student.previousSessions.length > 0;
               return (
               <TableRow key={student.admissionNumber}>
@@ -219,15 +218,6 @@ export default function StudentList({
                 <TableCell>{`${student.className || 'N/A'}-${student.sectionName || 'N/A'}`}</TableCell>
                 <TableCell>{student.session}</TableCell>
                 <TableCell>{student.parentName || 'N/A'}</TableCell>
-                <TableCell>
-                  <Badge variant={
-                      feeStatus === 'Paid' ? 'default' 
-                      : feeStatus === 'Due' ? 'destructive' 
-                      : 'secondary'
-                  }>
-                    {feeStatus}
-                  </Badge>
-                </TableCell>
                 <TableCell>
                   <Badge variant={student.status === 'Active' ? 'default' : 'secondary'}>
                     {student.status}

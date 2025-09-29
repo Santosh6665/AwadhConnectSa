@@ -10,7 +10,7 @@ import AddPaymentDialog from './add-payment-dialog';
 import CustomizeStructureDialog from './customize-structure-dialog';
 
 const calculateDues = (student: Student, defaultStructure: FeeStructure | null) => {
-    const studentFeeData = student.fees?.[student.session];
+    const studentFeeData = student.fees?.[student.className];
     const studentStructure = studentFeeData?.structure || defaultStructure?.[student.className];
 
     let annualFee = 0;

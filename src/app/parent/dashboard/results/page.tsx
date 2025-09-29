@@ -15,7 +15,7 @@ export default function ParentResultsPage() {
   const [children, setChildren] = useState<Student[]>([]);
   const [selectedChild, setSelectedChild] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedSession, setSelectedSession] = useState<string>('');
+  const [selectedSession, setSelectedSession] = useState<string>(''); // This will be className now
 
   useEffect(() => {
     if (user?.id) {
@@ -30,8 +30,8 @@ export default function ParentResultsPage() {
           if (validStudents.length > 0) {
             const firstChild = validStudents[0];
             setSelectedChild(firstChild);
-            if (firstChild.session) {
-              setSelectedSession(firstChild.session);
+            if (firstChild.className) {
+              setSelectedSession(firstChild.className); // It is className
             }
           }
         }
@@ -45,7 +45,7 @@ export default function ParentResultsPage() {
     const child = children.find(c => c.admissionNumber === admissionNumber);
     if(child) {
         setSelectedChild(child);
-        setSelectedSession(child.session);
+        setSelectedSession(child.className);
     }
   }
 
@@ -65,7 +65,7 @@ export default function ParentResultsPage() {
       <Card>
         <CardHeader>
           <CardTitle>View Child's Results</CardTitle>
-          <CardDescription>Select a child and a session to view their report card.</CardDescription>
+          <CardDescription>Select a child and a class to view their report card.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-4">
           <Select onValueChange={handleChildChange} value={selectedChild?.admissionNumber || ''} disabled={children.length === 0}>
@@ -83,11 +83,11 @@ export default function ParentResultsPage() {
           {sessionOptions.length > 0 && (
             <Select onValueChange={setSelectedSession} value={selectedSession}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Select Session" />
+                <SelectValue placeholder="Select Class" />
               </SelectTrigger>
               <SelectContent>
                 {sessionOptions.map(session => (
-                  <SelectItem key={session} value={session}>Session {session}</SelectItem>
+                  <SelectItem key={session} value={session}>Class {session}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -101,7 +101,7 @@ export default function ParentResultsPage() {
         ) : (
           <Card className="no-print">
             <CardContent className="p-8 text-center text-muted-foreground">
-              {selectedChild ? 'No results found for the selected session.' : 'Please select a child to view results.'}
+              {selectedChild ? 'No results found for the selected class.' : 'Please select a child to view results.'}
             </CardContent>
           </Card>
         )}

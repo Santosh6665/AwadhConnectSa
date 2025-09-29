@@ -27,7 +27,7 @@ interface SingleReceiptDialogProps {
 export default function SingleReceiptDialog({ isOpen, onOpenChange, student, receipt, balanceDue }: SingleReceiptDialogProps) {
   const receiptRef = React.useRef(null);
   const handlePrint = useReactToPrint({
-    contentRef: () => receiptRef.current,
+    contentRef: receiptRef,
   });
 
   return (

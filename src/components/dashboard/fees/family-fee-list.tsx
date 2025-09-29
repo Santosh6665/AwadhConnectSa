@@ -52,15 +52,15 @@ export default function FamilyFeeList({
                 mode,
                 remarks,
             };
-            await addFeePayment(student.admissionNumber, student.session, receipt);
+            await addFeePayment(student.admissionNumber, student.className, receipt);
             
             const updatedStudent: Student = {
                 ...student,
                 fees: {
                     ...student.fees,
-                    [student.session]: {
-                        ...student.fees[student.session],
-                        transactions: [...(student.fees[student.session]?.transactions || []), receipt],
+                    [student.className]: {
+                        ...student.fees[student.className],
+                        transactions: [...(student.fees[student.className]?.transactions || []), receipt],
                     }
                 }
             };
@@ -79,13 +79,13 @@ export default function FamilyFeeList({
   const handleSaveStructure = async (student: Student, newStructure: FeeStructure, newConcession: number) => {
      startTransition(async () => {
         try {
-            await updateStudentFeeStructure(student.admissionNumber, student.session, newStructure, newConcession);
+            await updateStudentFeeStructure(student.admissionNumber, student.className, newStructure, newConcession);
              const updatedStudent: Student = {
                 ...student,
                 fees: {
                     ...student.fees,
-                    [student.session]: {
-                        ...(student.fees[student.session] || { transactions: [] }),
+                    [student.className]: {
+                        ...(student.fees[student.className] || { transactions: [] }),
                         structure: newStructure,
                         concession: newConcession,
                     }

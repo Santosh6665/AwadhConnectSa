@@ -26,7 +26,7 @@ export default function CustomizeStructureDialog({ isOpen, onOpenChange, student
 
   React.useEffect(() => {
     if (student && isOpen) {
-        const studentFeeData = student.fees?.[student.session];
+        const studentFeeData = student.fees?.[student.className];
         const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[student.className];
         const studentConcession = studentFeeData?.concession || 0;
         
@@ -59,13 +59,13 @@ export default function CustomizeStructureDialog({ isOpen, onOpenChange, student
         <DialogHeader>
           <DialogTitle>Customize Fee Structure</DialogTitle>
           <DialogDescription>
-            Set a custom fee structure or concession for {student.firstName} for the session {student.session}.
+            Set a custom fee structure or concession for {student.firstName} for Class {student.className}.
           </DialogDescription>
         </DialogHeader>
 
         <Alert variant="default">
             <AlertDescription>
-                These changes will only apply to this student for the current session. The base structure is taken from the global fee settings for Class {student.className}.
+                These changes will only apply to this student for the current class. The base structure is taken from the global fee settings for Class {student.className}.
             </AlertDescription>
         </Alert>
 

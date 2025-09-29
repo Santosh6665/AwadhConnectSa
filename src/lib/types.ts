@@ -13,8 +13,8 @@ export interface Student {
   status: 'Active' | 'Archived';
   session: string; // e.g., '2024-25'
   
-  fees: { [session: string]: FeeSessionData };
-  results: { [session: string]: AnnualResult };
+  fees: { [className: string]: FeeSessionData };
+  results: { [className: string]: AnnualResult };
 
   // Optional fields
   password?: string;
