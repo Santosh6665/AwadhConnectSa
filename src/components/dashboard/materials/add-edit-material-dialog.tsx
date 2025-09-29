@@ -1,5 +1,3 @@
-
-
 'use client';
 import * as React from 'react';
 import {
@@ -19,9 +17,11 @@ import { Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { StudyMaterial } from '@/lib/types';
+import type { StudyMaterial, AppUser } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useToast } from '@/hooks/use-toast';
+import { addStudyMaterial, updateStudyMaterial, uploadStudyMaterialFile } from '@/lib/firebase/firestore';
 
 const materialSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -39,14 +39,18 @@ interface AddEditMaterialDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   item: StudyMaterial | null;
-  onSave: (data: any, file?: File | null) => void;
-  isSaving: boolean;
+  onSaveSuccess: () => void;
+  isSaving?: boolean; // isSaving is now managed internally
   teacherClasses: string[];
   teacherSubjects: string[];
+  user: AppUser | null;
 }
 
-export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSave, isSaving, teacherClasses, teacherSubjects }: AddEditMaterialDialogProps) {
+export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSaveSuccess, teacherClasses, teacherSubjects, user }: AddEditMaterialDialogProps) {
   const [file, setFile] = React.useState<File | null>(null);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const { toast } = useToast();
+  
   const form = useForm<FormData>({
     resolver: zodResolver(materialSchema),
   });
@@ -83,34 +87,82 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
         });
       }
       setFile(null);
+      setIsSaving(false);
     }
   }, [isOpen, item, form]);
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
+    const userId = user?.email || user?.id;
+    if (!userId) {
+      toast({ title: "Error", description: "User not authenticated.", variant: "destructive" });
+      return;
+    }
+
     if (data.materialType === 'link' && !data.fileUrl) {
       form.setError('fileUrl', { type: 'manual', message: 'URL is required for link type.' });
       return;
     }
      if (data.materialType === 'file' && !item && !file) {
-      form.setError('fileUrl', { type: 'manual', message: 'A file is required.' });
+      form.setError('fileUrl', { type: 'manual', message: 'A file is required for new uploads.' });
       return;
     }
-
-    const { className, sectionName } = parseClassSection(data.classSection);
     
-    const saveData = {
-      title: data.title,
-      description: data.description,
-      className: className,
-      sectionName: sectionName,
-      subject: data.subject,
-      topic: data.topic || '',
-      fileUrl: data.fileUrl || '',
-      materialType: data.materialType,
-      visibleTo: ['student', 'parent'],
-    };
+    setIsSaving(true);
+    
+    try {
+        let fileUrl = data.fileUrl || '';
+        
+        if (data.materialType === 'file' && file) {
+          fileUrl = await uploadStudyMaterialFile(file);
+        } else if (item?.materialType === 'file' && !file) {
+          // If editing a file but not uploading a new one, keep the old URL
+          fileUrl = item.fileUrl;
+        }
 
-    onSave(saveData, file);
+        const { className, sectionName } = parseClassSection(data.classSection);
+
+        if (item) { // Editing existing material
+            const updatedItem: Partial<StudyMaterial> = {
+                title: data.title,
+                description: data.description,
+                className: className,
+                sectionName: sectionName,
+                subject: data.subject,
+                topic: data.topic || '',
+                fileUrl,
+                materialType: data.materialType,
+                updatedAt: new Date().toISOString(),
+            };
+            await updateStudyMaterial(item.id, updatedItem);
+            toast({ title: "Success", description: "Material updated successfully." });
+        } else { // Adding new material
+            const newItem: Omit<StudyMaterial, 'id'> = {
+                title: data.title,
+                description: data.description,
+                className: className,
+                sectionName: sectionName,
+                subject: data.subject,
+                topic: data.topic || '',
+                fileUrl,
+                materialType: data.materialType,
+                uploadedBy: userId,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                visibleTo: ['student', 'parent'],
+                viewedBy: [],
+                completedBy: [],
+            };
+            await addStudyMaterial(newItem);
+            toast({ title: "Success", description: "Material added successfully." });
+        }
+        onSaveSuccess();
+
+    } catch (error) {
+        console.error("Failed to save material:", error);
+        toast({ title: "Error", description: "Failed to save material.", variant: "destructive" });
+    } finally {
+        setIsSaving(false);
+    }
   };
   
   const materialType = form.watch('materialType');
@@ -136,24 +188,14 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
               <FormMessage /></FormItem>
             )}/>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField name="title" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Chapter 1 Notes" {...field} /></FormControl><FormMessage /></FormItem>
-                )}/>
-                
-                {materialType === 'file' ? (
-                     <FormField name="topic" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>Topic</FormLabel><FormControl><Input placeholder="e.g., Photosynthesis" {...field} /></FormControl><FormMessage /></FormItem>
-                    )}/>
-                ) : (
-                    <FormField name="fileUrl" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>URL</FormLabel><FormControl><Input placeholder="https://youtube.com/watch?v=..." {...field} /></FormControl><FormMessage /></FormItem>
-                    )}/>
-                )}
-            </div>
+            <FormField name="title" control={form.control} render={({ field }) => (
+                <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Chapter 1 Notes" {...field} /></FormControl><FormMessage /></FormItem>
+            )}/>
+
              <FormField name="description" control={form.control} render={({ field }) => (
               <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief overview of the material." {...field} rows={3} /></FormControl><FormMessage /></FormItem>
             )}/>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField name="classSection" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Class</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger></FormControl><SelectContent>{teacherClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
@@ -166,8 +208,12 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
                     </Select><FormMessage /></FormItem>
                 )}/>
             </div>
+            
+             <FormField name="topic" control={form.control} render={({ field }) => (
+                <FormItem><FormLabel>Topic (Optional)</FormLabel><FormControl><Input placeholder="e.g., Photosynthesis" {...field} /></FormControl><FormMessage /></FormItem>
+            )}/>
 
-            {materialType === 'file' && (
+            {materialType === 'file' ? (
                  <FormItem>
                     <FormLabel>File</FormLabel>
                     <FormControl><Input type="file" onChange={e => setFile(e.target.files?.[0] || null)} /></FormControl>
@@ -176,6 +222,10 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
                     )}
                     <FormMessage>{form.formState.errors.fileUrl?.message}</FormMessage>
                  </FormItem>
+            ) : (
+                <FormField name="fileUrl" control={form.control} render={({ field }) => (
+                    <FormItem><FormLabel>URL</FormLabel><FormControl><Input placeholder="https://youtube.com/watch?v=..." {...field} /></FormControl><FormMessage /></FormItem>
+                )}/>
             )}
 
             <DialogFooter className="pt-6">

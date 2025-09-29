@@ -2,7 +2,7 @@
 import { useState, useEffect, useTransition } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import type { StudyMaterial } from '@/lib/types';
-import { getStudyMaterials, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, uploadStudyMaterialFile, getTeacherById } from '@/lib/firebase/firestore';
+import { getStudyMaterials, deleteStudyMaterial, getTeacherById } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
@@ -24,8 +24,7 @@ export default function StudyMaterialPage() {
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchMaterials = async () => {
       if (user?.role !== 'teacher' || !user.id) return;
       setIsLoading(true);
       try {
@@ -44,9 +43,11 @@ export default function StudyMaterialPage() {
       } finally {
         setIsLoading(false);
       }
-    }
-    fetchData();
-  }, [toast, user]);
+    };
+
+  useEffect(() => {
+    fetchMaterials();
+  }, [user]);
 
   const handleAddNew = () => {
     setSelectedItem(null);
@@ -74,54 +75,9 @@ export default function StudyMaterialPage() {
     });
   };
 
-  const handleSave = async (data: Omit<StudyMaterial, 'id' | 'createdAt' | 'updatedAt' | 'uploadedBy'>, file?: File | null) => {
-    const userId = user?.email || user?.id;
-    if (!userId) {
-      toast({ title: "Error", description: "User not authenticated.", variant: "destructive" });
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        let fileUrl = data.fileUrl;
-        
-        if (data.materialType === 'file' && file) {
-          fileUrl = await uploadStudyMaterialFile(file);
-        } else if (selectedItem?.materialType === 'file' && !file) {
-          fileUrl = selectedItem.fileUrl;
-        }
-
-        if (selectedItem) {
-          const updatedItem: StudyMaterial = {
-            ...selectedItem,
-            ...data,
-            fileUrl,
-            updatedAt: new Date().toISOString(),
-          };
-          await updateStudyMaterial(updatedItem.id, updatedItem);
-          setMaterials(prev => prev.map(m => m.id === updatedItem.id ? updatedItem : m));
-          toast({ title: "Success", description: "Material updated successfully." });
-        } else {
-          const newItem: Omit<StudyMaterial, 'id'> = {
-            ...data,
-            fileUrl,
-            uploadedBy: userId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            viewedBy: [],
-            completedBy: [],
-          };
-          const id = await addStudyMaterial(newItem);
-          setMaterials(prev => [{ id, ...newItem } as StudyMaterial, ...prev]);
-          toast({ title: "Success", description: "Material added successfully." });
-        }
-        setIsDialogOpen(false);
-        setSelectedItem(null);
-      } catch (error) {
-        console.error("Failed to save material:", error);
-        toast({ title: "Error", description: "Failed to save material.", variant: "destructive" });
-      }
-    });
+  const handleDialogSave = () => {
+    setIsDialogOpen(false);
+    fetchMaterials(); // Re-fetch materials after a save
   };
 
   return (
@@ -150,10 +106,10 @@ export default function StudyMaterialPage() {
         isOpen={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         item={selectedItem}
-        onSave={handleSave}
-        isSaving={isSaving}
+        onSaveSuccess={handleDialogSave}
         teacherClasses={availableClasses}
         teacherSubjects={availableSubjects}
+        user={user}
       />
     </div>
   );
