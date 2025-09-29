@@ -13,7 +13,7 @@ import { useReactToPrint } from 'react-to-print';
 export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaultFeeStructure }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: FeeStructure | null }) {
   const receiptRef = React.useRef(null);
   const handlePrint = useReactToPrint({
-      content: () => receiptRef.current,
+      contentRef: receiptRef,
   });
 
   if (!student) return null;
@@ -23,77 +23,79 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl" ref={receiptRef}>
-        <DialogHeader>
-          <DialogTitle>Fee Details for {student.firstName} {student.lastName}</DialogTitle>
-          <DialogDescription>
-            Class: {student.className}-{student.sectionName} | Session: {student.session}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-3xl">
+        <div ref={receiptRef}>
+          <DialogHeader>
+            <DialogTitle>Fee Details for {student.firstName} {student.lastName}</DialogTitle>
+            <DialogDescription>
+              Class: {student.className}-{student.sectionName} | Session: {student.session}
+            </DialogDescription>
+          </DialogHeader>
 
-        <ScrollArea className="max-h-[60vh] p-1">
-            <div className="space-y-6 pr-4">
-                {/* Current Session Transactions */}
-                <div>
-                    <h4 className="font-semibold mb-2">Current Session Transactions ({student.session})</h4>
-                    <div className="border rounded-lg">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Mode</TableHead>
-                                    <TableHead>Remarks</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {currentTransactions.length > 0 ? (
-                                    currentTransactions.map(tx => (
-                                        <TableRow key={tx.id}>
-                                            <TableCell>{tx.date}</TableCell>
-                                            <TableCell>₹{tx.amount.toLocaleString()}</TableCell>
-                                            <TableCell><Badge variant="secondary">{tx.mode}</Badge></TableCell>
-                                            <TableCell>{tx.remarks}</TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow><TableCell colSpan={4} className="text-center h-24">No transactions for this session.</TableCell></TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </div>
+          <ScrollArea className="max-h-[60vh] p-1">
+              <div className="space-y-6 pr-4">
+                  {/* Current Session Transactions */}
+                  <div>
+                      <h4 className="font-semibold mb-2">Current Session Transactions ({student.session})</h4>
+                      <div className="border rounded-lg">
+                          <Table>
+                              <TableHeader>
+                                  <TableRow>
+                                      <TableHead>Date</TableHead>
+                                      <TableHead>Amount</TableHead>
+                                      <TableHead>Mode</TableHead>
+                                      <TableHead>Remarks</TableHead>
+                                  </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                  {currentTransactions.length > 0 ? (
+                                      currentTransactions.map(tx => (
+                                          <TableRow key={tx.id}>
+                                              <TableCell>{tx.date}</TableCell>
+                                              <TableCell>₹{tx.amount.toLocaleString()}</TableCell>
+                                              <TableCell><Badge variant="secondary">{tx.mode}</Badge></TableCell>
+                                              <TableCell>{tx.remarks}</TableCell>
+                                          </TableRow>
+                                      ))
+                                  ) : (
+                                      <TableRow><TableCell colSpan={4} className="text-center h-24">No transactions for this session.</TableCell></TableRow>
+                                  )}
+                              </TableBody>
+                          </Table>
+                      </div>
+                  </div>
 
-                {/* Previous Dues Section */}
-                {previousSessions.length > 0 && (
-                    <div>
-                         <h4 className="font-semibold mb-2">Previous Dues Breakdown</h4>
-                         <div className="border rounded-lg">
-                             <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Session</TableHead>
-                                        <TableHead>Class</TableHead>
-                                        <TableHead>Due Amount</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {previousSessions.map(session => (
-                                        session.dueFee > 0 && (
-                                            <TableRow key={session.sessionId}>
-                                                <TableCell>{session.session}</TableCell>
-                                                <TableCell>{session.className}-{session.sectionName}</TableCell>
-                                                <TableCell className="text-destructive">₹{session.dueFee.toLocaleString()}</TableCell>
-                                            </TableRow>
-                                        )
-                                    ))}
-                                </TableBody>
-                             </Table>
-                         </div>
-                    </div>
-                )}
-            </div>
-        </ScrollArea>
+                  {/* Previous Dues Section */}
+                  {previousSessions.length > 0 && (
+                      <div>
+                           <h4 className="font-semibold mb-2">Previous Dues Breakdown</h4>
+                           <div className="border rounded-lg">
+                               <Table>
+                                  <TableHeader>
+                                      <TableRow>
+                                          <TableHead>Session</TableHead>
+                                          <TableHead>Class</TableHead>
+                                          <TableHead>Due Amount</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {previousSessions.map(session => (
+                                          session.dueFee > 0 && (
+                                              <TableRow key={session.sessionId}>
+                                                  <TableCell>{session.session}</TableCell>
+                                                  <TableCell>{session.className}-{session.sectionName}</TableCell>
+                                                  <TableCell className="text-destructive">₹{session.dueFee.toLocaleString()}</TableCell>
+                                              </TableRow>
+                                          )
+                                      ))}
+                                  </TableBody>
+                               </Table>
+                           </div>
+                      </div>
+                  )}
+              </div>
+          </ScrollArea>
+        </div>
 
         <DialogFooter className="no-print">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
