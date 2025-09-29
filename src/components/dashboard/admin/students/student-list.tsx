@@ -120,13 +120,15 @@ export default function StudentList({
   const handleSaveStudent = (data: Student) => {
       startTransition(async () => {
         try {
-            const { admissionNumber, ...studentData } = data;
             if (selectedStudent) {
+                // Update logic
+                const { admissionNumber, ...studentData } = data;
                 await updateStudent(admissionNumber, studentData);
                 setStudents(students.map(s => s.admissionNumber === admissionNumber ? data : s));
                 toast({ title: "Success", description: "Student record updated." });
             } else {
-                await addStudent(studentData, admissionNumber);
+                // Add logic
+                await addStudent(data);
                 setStudents(prev => [...prev, data]);
                 toast({ title: "Success", description: "New student admitted." });
             }

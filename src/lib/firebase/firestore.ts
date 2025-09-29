@@ -92,20 +92,14 @@ export async function getStudentByAdmissionNumber(admissionNumber: string): Prom
 }
 
 
-export async function addStudent(studentData: Omit<Student, 'admissionNumber' | 'fees' | 'results' | 'dob'> & { dob: Date, admissionNumber: string }): Promise<void> {
-    const studentDocRef = doc(db, 'students', studentData.admissionNumber);
+export async function addStudent(studentData: Student): Promise<void> {
+    const { admissionNumber, ...data } = studentData;
+    const studentDocRef = doc(db, 'students', admissionNumber);
     const batch = writeBatch(db);
 
-    const birthYear = studentData.dob.getFullYear();
-    const password = `${studentData.firstName.charAt(0).toUpperCase() + studentData.firstName.slice(1)}@${birthYear}`;
-
-    const finalStudentData: Student = {
-        ...studentData,
-        dob: studentData.dob.toLocaleDateString('en-GB'),
-        password: password,
-        fees: { [studentData.className]: [] },
-        results: {},
-    }
+    const finalStudentData: Omit<Student, 'admissionNumber'> = {
+        ...data,
+    };
 
     // 1. Set student document
     batch.set(studentDocRef, finalStudentData);
@@ -118,7 +112,7 @@ export async function addStudent(studentData: Omit<Student, 'admissionNumber' | 
         if (parentDocSnap.exists()) {
             // Parent exists, update their children array
             batch.update(parentDocRef, {
-                children: arrayUnion(studentData.admissionNumber)
+                children: arrayUnion(admissionNumber)
             });
         } else {
             // Parent does not exist, create new parent document
@@ -126,7 +120,7 @@ export async function addStudent(studentData: Omit<Student, 'admissionNumber' | 
                 id: studentData.parentMobile,
                 name: studentData.parentName,
                 phone: studentData.parentMobile,
-                children: [studentData.admissionNumber],
+                children: [admissionNumber],
                 password: `${studentData.parentName.split(' ')[0]}@${new Date().getFullYear()}`, // Default password
             };
             batch.set(parentDocRef, newParent);
