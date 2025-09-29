@@ -360,6 +360,12 @@ export async function getAttendance(date: string, className: string, sectionName
     return null;
 }
 
+export async function getAllAttendance(): Promise<DailyAttendance[]> {
+  const snapshot = await getDocs(collection(db, 'attendance'));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DailyAttendance));
+}
+
+
 export async function getAttendanceForMonth(studentId: string, year: number, month: number): Promise<AttendanceRecord[]> {
   const startDate = new Date(year, month, 1);
   const endDate = new Date(year, month + 1, 0);
