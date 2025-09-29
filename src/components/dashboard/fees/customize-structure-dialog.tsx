@@ -19,7 +19,7 @@ const feeHeads: (keyof FeeStructure)[] = [
   'Miscellaneous/Enrolment',
 ];
 
-export default function CustomizeStructureDialog({ isOpen, onOpenChange, student, defaultFeeStructure, onSave, isSaving }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: FeeStructure | null; onSave: (newStructure: FeeStructure, newConcession: number) => void; isSaving: boolean; }) {
+export default function CustomizeStructureDialog({ isOpen, onOpenChange, student, defaultFeeStructure, onSave, isSaving }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: FeeStructure | null; onSave: (newStructure: FeeStructure, newConcession: number, onStructureSaved: () => void) => void; isSaving: boolean; }) {
   
   const [customStructure, setCustomStructure] = React.useState<FeeStructure | null>(null);
   const [concession, setConcession] = React.useState(0);
@@ -27,7 +27,7 @@ export default function CustomizeStructureDialog({ isOpen, onOpenChange, student
   React.useEffect(() => {
     if (student && isOpen) {
         const studentFeeData = student.fees?.[student.className];
-        const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[student.className];
+        const studentStructure = studentFeeData?.structure || defaultFeeStructure;
         const studentConcession = studentFeeData?.concession || 0;
         
         setCustomStructure(studentStructure || {});
@@ -47,7 +47,7 @@ export default function CustomizeStructureDialog({ isOpen, onOpenChange, student
   
   const handleSave = () => {
     if(customStructure) {
-        onSave(customStructure, concession);
+        onSave(customStructure, concession, () => onOpenChange(false));
     }
   }
 

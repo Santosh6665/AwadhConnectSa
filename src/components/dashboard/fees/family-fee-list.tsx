@@ -13,7 +13,7 @@ export default function FamilyFeeList({
   feeStructure: defaultFeeStructure,
 }: {
   initialFamilies: Family[];
-  feeStructure: FeeStructure | null;
+  feeStructure: { [key: string]: FeeStructure } | null;
 }) {
   const [families, setFamilies] = useState(initialFamilies);
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,7 +76,7 @@ export default function FamilyFeeList({
     });
   };
 
-  const handleSaveStructure = async (student: Student, newStructure: FeeStructure, newConcession: number) => {
+  const handleSaveStructure = async (student: Student, newStructure: FeeStructure, newConcession: number, onStructureSaved: () => void) => {
      startTransition(async () => {
         try {
             await updateStudentFeeStructure(student.admissionNumber, student.className, newStructure, newConcession);
@@ -93,6 +93,7 @@ export default function FamilyFeeList({
             };
             handleUpdateStudent(updatedStudent);
             toast({ title: 'Success', description: "Student's fee structure updated." });
+            onStructureSaved();
 
         } catch (error) {
             console.error("Error saving structure", error);

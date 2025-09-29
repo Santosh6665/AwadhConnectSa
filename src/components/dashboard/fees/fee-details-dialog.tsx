@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -5,14 +6,15 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import type { Student, FeeStructure, FeeReceipt, PreviousSession } from '@/lib/types';
+import type { Student, FeeStructure, FeeReceipt } from '@/lib/types';
 import { Download, GraduationCap, Mail, Phone, Printer } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import SingleReceiptDialog from './single-receipt-dialog';
 import { parse } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import SingleReceiptDialog from './single-receipt-dialog';
+
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
     <div className={cn("grid grid-cols-2 gap-4 items-start py-1", className)}>
@@ -23,9 +25,9 @@ const DetailItem = ({ label, value, className }: { label: string; value: React.R
 
 
 export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaultFeeStructure }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: { [key: string]: FeeStructure } | null }) {
-  const receiptRef = React.useRef(null);
-  const handlePrint = useReactToPrint({
-      content: receiptRef,
+  const summaryReceiptRef = React.useRef(null);
+  const handleSummaryPrint = useReactToPrint({
+      contentRef: () => summaryReceiptRef.current,
   });
 
   const [selectedReceipt, setSelectedReceipt] = React.useState<FeeReceipt | null>(null);
@@ -76,7 +78,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
     <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl p-0">
-        <div ref={receiptRef} className="p-8 max-h-[90vh] print:max-h-none overflow-y-scroll no-scrollbar">
+        <div ref={summaryReceiptRef} className="p-8 max-h-[90vh] print:max-h-none overflow-y-scroll no-scrollbar">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-4">
                   <GraduationCap className="h-12 w-12 text-primary" />
@@ -109,10 +111,10 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
             </div>
             
             <div className="mt-8">
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex justify-between items-center mb-2 no-print">
                     <h3 className="font-semibold text-muted-foreground">Payment History</h3>
                     <Select value={classFilter} onValueChange={setClassFilter} >
-                        <SelectTrigger className="w-48 no-print"><SelectValue/></SelectTrigger>
+                        <SelectTrigger className="w-48"><SelectValue/></SelectTrigger>
                         <SelectContent>
                             {classOptions.map(c => (
                                 <SelectItem key={c} value={c}>{c === 'all' ? 'All Classes' : `Class ${c}`}</SelectItem>
@@ -183,7 +185,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
         <DialogFooter className="p-4 border-t no-print">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-          <Button onClick={handlePrint}><Download className="mr-2 h-4 w-4" />Print Summary</Button>
+          <Button onClick={handleSummaryPrint}><Download className="mr-2 h-4 w-4" />Print Summary</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -199,3 +201,4 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
     </>
   );
 }
+

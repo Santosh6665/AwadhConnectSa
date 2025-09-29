@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import type { Student, FeeStructure, FeeReceipt } from '@/lib/types';
@@ -43,7 +44,7 @@ export default function StudentFeeRow({
   student: Student;
   defaultFeeStructure: { [key: string]: FeeStructure } | null;
   onSavePayment: (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string, onPaymentSaved: () => void) => void;
-  onSaveStructure: (student: Student, newStructure: FeeStructure, newConcession: number) => void;
+  onSaveStructure: (student: Student, newStructure: FeeStructure, newConcession: number, onStructureSaved: () => void) => void;
   isSaving: boolean;
 }) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -55,6 +56,11 @@ export default function StudentFeeRow({
   const handlePaymentSaved = () => {
     setIsPaymentOpen(false);
   };
+  
+  const handleStructureSaved = () => {
+    setIsStructureOpen(false);
+  };
+
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 py-3 border-b last:border-none">
@@ -74,12 +80,12 @@ export default function StudentFeeRow({
             <p className="font-mono text-lg font-semibold">₹{annualFee.toLocaleString()}</p>
         </div>
         <div className="text-right">
-            <p className="text-sm text-muted-foreground">Current Due</p>
-            <p className="font-mono text-lg font-semibold">₹{currentDue.toLocaleString()}</p>
-        </div>
-         <div className="text-right">
             <p className="text-sm text-muted-foreground">Previous Due</p>
             <p className="font-mono text-lg font-semibold text-destructive">₹{previousDue.toLocaleString()}</p>
+        </div>
+         <div className="text-right">
+            <p className="text-sm text-muted-foreground">Current Due</p>
+            <p className="font-mono text-lg font-semibold">₹{currentDue.toLocaleString()}</p>
         </div>
         <div className="text-right">
             <p className="text-sm text-muted-foreground">Total Due</p>
@@ -110,7 +116,7 @@ export default function StudentFeeRow({
         onOpenChange={setIsStructureOpen}
         student={student}
         defaultFeeStructure={defaultFeeStructure?.[student.className] || null}
-        onSave={(newStructure, newConcession) => onSaveStructure(student, newStructure, newConcession)}
+        onSave={(newStructure, newConcession) => onSaveStructure(student, newStructure, newConcession, handleStructureSaved)}
         isSaving={isSaving}
       />
     </div>

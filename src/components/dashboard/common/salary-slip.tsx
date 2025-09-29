@@ -38,7 +38,7 @@ type SalarySlipProps = {
 export default function SalarySlip({ teacher, month, salaryDetails, payment }: SalarySlipProps) {
     const slipRef = React.useRef<HTMLDivElement>(null);
     const handlePrint = useReactToPrint({
-      content: () => slipRef.current,
+      contentRef: slipRef,
     });
     
     const baseSalary = teacher.salary || 0;
