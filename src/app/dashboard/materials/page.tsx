@@ -83,7 +83,9 @@ export default function AdminStudyMaterialPage() {
         let fileUrl = data.fileUrl;
         
         if (data.materialType === 'file' && file) {
-          fileUrl = await uploadStudyMaterialFile(file, userId);
+          // Sanitize email for path
+          const uploadPathId = user.email ? user.email.replace(/[@.]/g, '_') : userId;
+          fileUrl = await uploadStudyMaterialFile(file, uploadPathId);
         } else if (selectedItem?.materialType === 'file' && !file) {
           fileUrl = selectedItem.fileUrl;
         }
