@@ -47,18 +47,22 @@ export default function FamilyFeeCard({
   isSaving: boolean;
 }) {
     const totalDue = calculateTotalDueForFamily(family, defaultFeeStructure);
-    const studentNames = family.students.map(s => s.firstName).join(', ');
+    const studentNames = family.students.map(s => `${s.firstName} ${s.lastName}`).join(', ');
+    const childCount = family.students.length;
+    const childLabel = childCount === 1 ? 'Child' : 'Children';
     
     return (
         <AccordionItem value={family.id} className="border-none">
             <div className="bg-card rounded-lg shadow-sm">
             <AccordionTrigger className="p-4 hover:no-underline rounded-t-lg data-[state=open]:bg-muted/50">
                 <div className="flex justify-between items-center w-full">
-                    <div className="text-left">
-                        <p className="font-bold text-lg">{family.name}</p>
-                        <p className="text-sm text-muted-foreground">{family.phone}</p>
-                        <div className="text-xs text-muted-foreground mt-1 data-[state=closed]:block hidden">
-                            {studentNames} ({family.students.length} children)
+                    <div className="flex items-center gap-4 text-left">
+                        <div>
+                            <p className="font-bold text-lg">{family.name}</p>
+                            <p className="text-sm text-muted-foreground">{family.phone}</p>
+                        </div>
+                        <div className="text-sm text-muted-foreground data-[state=closed]:block hidden">
+                            ({childCount} {childLabel}: {studentNames})
                         </div>
                     </div>
                      <div className="text-right">
