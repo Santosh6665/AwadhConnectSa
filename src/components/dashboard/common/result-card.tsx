@@ -69,8 +69,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
   }
 
   return (
-    <div ref={ref} className="print-container">
-    <Card className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
+    <Card ref={ref} className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -190,7 +189,6 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
             </div>
         </div>
     </Card>
-    </div>
   );
 });
 
