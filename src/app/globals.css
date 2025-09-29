@@ -103,31 +103,27 @@
 }
 
 @layer utilities {
-  .no-print {
-    display: none !important;
-  }
-
   @media print {
-    body > :not(.print-container) {
-      display: none !important;
+    body * {
+      visibility: hidden;
+    }
+    .print-container, .print-container * {
+      visibility: visible;
     }
     .print-container {
-      display: block !important;
       position: absolute;
-      top: 0;
       left: 0;
+      top: 0;
       width: 100%;
-    }
-    .print-container .result-card {
-      box-shadow: none;
-      border: none;
-      width: 100%;
-      height: auto;
     }
     .no-print {
       display: none !important;
     }
+    .result-card {
+      box-shadow: none;
+      border: none;
+    }
   }
 }
-
     
+
