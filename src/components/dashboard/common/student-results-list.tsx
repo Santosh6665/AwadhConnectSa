@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo, useTransition, useRef } from 'react';
 import type { Student, ExamType, AnnualResult, UserRole } from '@/lib/types';
@@ -7,16 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MoreHorizontal, Filter, Loader2, Edit, Trash, Eye } from 'lucide-react';
+import { MoreHorizontal, Filter, Loader2, Edit, Trash, Eye, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { calculateOverallResult, getGrade } from '@/lib/utils';
 import EditMarksDialog from './edit-marks-dialog';
 import ResultCard from './result-card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { deleteStudentResults } from '@/lib/firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useReactToPrint } from 'react-to-print';
 
 type StudentResultSummary = {
   student: Student;
@@ -42,6 +42,11 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
+  const resultRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    content: () => resultRef.current,
+  });
 
   const { toast } = useToast();
   
@@ -121,7 +126,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
          matchesClass = selectedClass === 'all' || student.className === selectedClass;
       }
 
-      const matchesSection = selectedSection === 'all' || student.sectionName === selectedSection;
+      const matchesSection = selectedSection === 'all' || student.sectionName === 'all' || student.sectionName === selectedSection;
 
       return matchesSearch && matchesClass && matchesSection;
     });
@@ -233,16 +238,15 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                 onSave={handleSaveMarks}
             />
             <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-                <DialogContent className="max-w-4xl p-0 border-0 print:p-0">
-                    <div className="print-container">
-                       <ScrollArea className="max-h-[90vh]">
-                         {selectedStudent.results?.[selectedStudent.session] ? (
-                           <ResultCard student={selectedStudent} annualResult={selectedStudent.results[selectedStudent.session]} onDownload={() => window.print()}/>
-                         ): (
-                          <div className="p-8 text-center">No results found for the current session.</div>
-                         )}
-                       </ScrollArea>
-                    </div>
+                <DialogContent className="max-w-4xl p-0 border-0">
+                    <ScrollArea className="max-h-[90vh]">
+                       <ResultCard 
+                            ref={resultRef}
+                            student={selectedStudent} 
+                            annualResult={selectedStudent.results?.[selectedStudent.session]} 
+                            onDownload={handlePrint}
+                        />
+                    </ScrollArea>
                 </DialogContent>
             </Dialog>
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

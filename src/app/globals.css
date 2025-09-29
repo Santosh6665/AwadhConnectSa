@@ -104,27 +104,21 @@
 
 @layer utilities {
   @media print {
-    body * {
-      visibility: hidden;
-    }
-    .print-container, .print-container * {
-      visibility: visible;
-    }
-    .print-container {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      box-shadow: none;
-      border: none;
+    body {
+      background: white !important;
     }
     .no-print {
       display: none !important;
     }
-    .result-card {
-      box-shadow: none !important;
-      border: none !important;
-    }
   }
 }
     
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

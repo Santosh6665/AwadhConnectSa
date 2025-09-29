@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -31,12 +30,22 @@ const DetailItem = ({ label, value }: { label: string; value: React.ReactNode })
 
 type ResultCardProps = {
   student: Student;
-  annualResult: AnnualResult;
+  annualResult?: AnnualResult;
   onDownload: () => void;
 };
 
 const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
   ({ student, annualResult, onDownload }, ref) => {
+    
+    if (!annualResult) {
+      return (
+        <div ref={ref}>
+          <Card className="p-8 text-center text-muted-foreground">
+            No results found for the selected session.
+          </Card>
+        </div>
+      );
+    }
 
     const qResult = annualResult.examResults.Quarterly;
     const hyResult = annualResult.examResults['Half-Yearly'];
@@ -71,7 +80,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
     }
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="print-container">
       <Card className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none">
           
           {/* Header */}
