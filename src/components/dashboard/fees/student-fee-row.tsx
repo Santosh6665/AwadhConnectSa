@@ -4,10 +4,11 @@ import { useState } from 'react';
 import type { Student, FeeStructure, FeeReceipt } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Banknote, FileCog, FileText } from 'lucide-react';
+import { Banknote, FileCog, FileText, MoreVertical } from 'lucide-react';
 import FeeDetailsDialog from './fee-details-dialog';
 import AddPaymentDialog from './add-payment-dialog';
 import CustomizeStructureDialog from './customize-structure-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 
 const calculateDues = (student: Student, defaultStructure: { [key: string]: FeeStructure } | null) => {
     const studentFeeData = student.fees?.[student.className];
@@ -86,9 +87,21 @@ export default function StudentFeeRow({
             <p className="font-mono text-lg font-bold text-destructive">₹{totalDue.toLocaleString()}</p>
         </div>
         <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsDetailsOpen(true)}><FileText className="mr-2 h-4 w-4"/>Details</Button>
-            <Button variant="secondary" size="sm" onClick={() => setIsStructureOpen(true)}><FileCog className="mr-2 h-4 w-4"/>Structure</Button>
+            <Button variant="outline" size="sm" onClick={() => setIsStructureOpen(true)}><FileCog className="mr-2 h-4 w-4"/>Structure</Button>
             <Button size="sm" onClick={() => setIsPaymentOpen(true)}><Banknote className="mr-2 h-4 w-4"/>Pay</Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                        <MoreVertical className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onSelect={() => setIsDetailsOpen(true)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Full Fee History
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </div>
       
