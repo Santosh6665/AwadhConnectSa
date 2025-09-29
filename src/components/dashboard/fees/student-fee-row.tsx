@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState } from 'react';
 import type { Student, FeeStructure, FeeReceipt } from '@/lib/types';
@@ -22,12 +23,11 @@ const calculateDues = (student: Student, defaultStructure: FeeStructure | null) 
     const totalPaid = (studentFeeData?.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
 
     const currentDue = Math.max(0, annualFee - concession - totalPaid);
-    const previousDue = (student.previousSessions || []).reduce((sum, session) => sum + session.dueFee, 0);
     
     return {
         annualFee,
         currentDue,
-        previousDue
+        previousDue: student.previousDue || 0,
     };
 };
 

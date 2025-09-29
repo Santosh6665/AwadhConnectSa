@@ -1,4 +1,5 @@
 
+
 export interface Student {
   admissionNumber: string; // Document ID
   rollNo: string;
@@ -15,6 +16,7 @@ export interface Student {
   
   fees: { [className: string]: FeeSessionData };
   results: { [className: string]: AnnualResult };
+  previousDue: number; // Total due from all previous classes
 
   // Optional fields
   password?: string;

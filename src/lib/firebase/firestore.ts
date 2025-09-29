@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import {
@@ -136,6 +137,7 @@ export async function addStudent(studentData: Student): Promise<void> {
     finalStudentData.password = `${data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1)}@${birthYear}`;
     finalStudentData.fees = { [data.className]: { transactions: [] } };
     finalStudentData.results = { [data.className]: { examResults: {} } };
+    finalStudentData.previousDue = 0;
 
 
     // 1. Set student document
@@ -189,33 +191,36 @@ export async function promoteStudent(
   }
 
   const studentData = studentSnap.data() as Student;
-  const currentClassFeeData = studentData.fees?.[studentData.className] || { transactions: [], structure: {}, concession: 0 };
-  
-  let dueFee = 0;
-  if(carryForwardDues) {
-    // This logic needs to be more robust, fetching the fee structure to calculate accurately.
-    // For now, it's a placeholder.
+  const currentClassName = studentData.className;
+  const currentClassFeeData = studentData.fees?.[currentClassName];
+
+  // Calculate dues for the current class
+  let currentClassDue = 0;
+  if (carryForwardDues && currentClassFeeData) {
+    const feeStructureRef = doc(db, 'settings', 'feeStructure');
+    const feeStructureSnap = await getDoc(feeStructureRef);
+    const defaultFeeStructure = feeStructureSnap.data() as { [key: string]: FeeStructure } | null;
+    
+    const structureToUse = currentClassFeeData.structure || defaultFeeStructure?.[currentClassName];
+    if (structureToUse) {
+        const annualFee = Object.values(structureToUse).reduce((sum, head) => sum + (head.amount * head.months), 0);
+        const totalPaid = (currentClassFeeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+        const concession = currentClassFeeData.concession || 0;
+        currentClassDue = Math.max(0, annualFee - concession - totalPaid);
+    }
   }
-  
+
   const previousSessionRecord: PreviousSession = {
-    sessionId: `${studentData.admissionNumber}-${studentData.session}`,
-    className: studentData.className,
+    sessionId: `${studentData.admissionNumber}-${currentClassName}`, // Unique ID for the academic record
+    className: currentClassName,
     sectionName: studentData.sectionName,
     session: studentData.session,
     rollNo: studentData.rollNo,
     finalStatus: 'Promoted',
-    dueFee: dueFee,
+    dueFee: currentClassDue,
   };
 
-  const newFees = studentData.fees;
-  if (!newFees[newClassName]) {
-    newFees[newClassName] = { transactions: [] };
-  }
-
-  const newResults = studentData.results;
-  if (!newResults[newClassName]) {
-    newResults[newClassName] = { examResults: {} };
-  }
+  const newTotalPreviousDue = (studentData.previousDue || 0) + currentClassDue;
 
   const batch = writeBatch(db);
 
@@ -224,8 +229,10 @@ export async function promoteStudent(
     className: newClassName,
     sectionName: newSectionName,
     previousSessions: arrayUnion(previousSessionRecord),
-    fees: newFees,
-    results: newResults,
+    previousDue: newTotalPreviousDue,
+    // Ensure new class has fee/result object
+    [`fees.${newClassName}`]: studentData.fees?.[newClassName] || { transactions: [] },
+    [`results.${newClassName}`]: studentData.results?.[newClassName] || { examResults: {} },
   });
 
   await batch.commit();
