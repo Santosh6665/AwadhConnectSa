@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/button';
 import { GraduationCap, User, Download, Calendar } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { useReactToPrint } from 'react-to-print';
 
 type SalaryDetails = {
   totalDays: number;
@@ -32,18 +31,19 @@ type SalarySlipProps = {
   teacher: Teacher;
   month: Date;
   salaryDetails: SalaryDetails;
-  onDownload: () => void;
 };
 
-const SalarySlip = React.forwardRef<HTMLDivElement, SalarySlipProps>(
-  ({ teacher, month, salaryDetails, onDownload }, ref) => {
+export default function SalarySlip({ teacher, month, salaryDetails }: SalarySlipProps) {
+    const slipRef = React.useRef<HTMLDivElement>(null);
+    const handlePrint = useReactToPrint({
+      content: () => slipRef.current,
+    });
     
     const baseSalary = teacher.salary || 0;
     const { totalDays, presentDays, absentDays, payableDays, deduction, payableSalary } = salaryDetails;
 
     return (
-      <div ref={ref} className="print-container">
-        <Card className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none print:min-h-screen">
+        <Card ref={slipRef} className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none print:min-h-screen">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex items-center gap-4">
@@ -56,7 +56,7 @@ const SalarySlip = React.forwardRef<HTMLDivElement, SalarySlipProps>(
                 <div className="flex items-center gap-4">
                     <p className="font-semibold text-lg">Salary Slip</p>
                     <Button
-                        onClick={onDownload}
+                        onClick={handlePrint}
                         variant="outline"
                         size="icon"
                         className="no-print"
@@ -98,7 +98,7 @@ const SalarySlip = React.forwardRef<HTMLDivElement, SalarySlipProps>(
                         <Separator />
                         <div className="flex justify-between items-center py-2 font-bold">
                             <span>Total Deductions</span>
-                            <span>- ₹{deduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span>- ₹${deduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </div>
                 </div>
@@ -140,10 +140,5 @@ const SalarySlip = React.forwardRef<HTMLDivElement, SalarySlipProps>(
                 <p>This is a computer-generated salary slip and does not require a signature.</p>
             </div>
         </Card>
-      </div>
     );
-  }
-);
-SalarySlip.displayName = 'SalarySlip';
-
-export default SalarySlip;
+}

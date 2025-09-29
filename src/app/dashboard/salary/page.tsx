@@ -10,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, ChevronLeft, ChevronRight, Download, Edit } from 'lucide-react';
 import { format, getDaysInMonth, addMonths, subMonths, isSunday } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useReactToPrint } from 'react-to-print';
 import SalarySlip from '@/components/dashboard/common/salary-slip';
 import ManagePaymentDialog from '@/components/dashboard/admin/salary/manage-payment-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -35,11 +34,6 @@ export default function AdminSalaryPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [isSlipOpen, setIsSlipOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
-  const slipRef = useRef<HTMLDivElement>(null);
-
-  const handlePrint = useReactToPrint({
-    content: () => slipRef.current,
-  });
 
   useEffect(() => {
     async function fetchAllData() {
@@ -199,11 +193,9 @@ export default function AdminSalaryPage() {
             <Dialog open={isSlipOpen} onOpenChange={setIsSlipOpen}>
                 <DialogContent className="max-w-4xl p-0 border-0">
                     <SalarySlip
-                        ref={slipRef}
                         teacher={selectedTeacher}
                         month={currentMonth}
                         salaryDetails={calculateSalary(selectedTeacher, teacherAttendance.get(selectedTeacher.id))}
-                        onDownload={handlePrint}
                     />
                 </DialogContent>
             </Dialog>

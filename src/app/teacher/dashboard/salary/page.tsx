@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, getDaysInMonth, addMonths, subMonths, isSunday } from 'date-fns';
-import { useReactToPrint } from 'react-to-print';
 import SalarySlip from '@/components/dashboard/common/salary-slip';
 import { Badge } from '@/components/ui/badge';
 
@@ -30,11 +29,6 @@ export default function TeacherSalaryPage() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [payment, setPayment] = useState<SalaryPayment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  const slipRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({
-    content: () => slipRef.current,
-  });
 
   useEffect(() => {
     async function fetchTeacherData() {
@@ -121,11 +115,9 @@ export default function TeacherSalaryPage() {
       </Card>
       
       <SalarySlip
-        ref={slipRef}
         teacher={teacher}
         month={currentMonth}
         salaryDetails={salaryDetails}
-        onDownload={handlePrint}
       />
     </div>
   );
