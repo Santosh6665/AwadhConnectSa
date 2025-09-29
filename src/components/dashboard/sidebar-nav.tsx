@@ -47,6 +47,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/fees', label: 'Fee Management', icon: Banknote, roles: ['admin'] },
   { href: '/dashboard/salary', label: 'Manage Salary', icon: DollarSign, roles: ['admin'] },
   { href: '/dashboard/events', label: 'Events & Notices', icon: CalendarDays, roles: ['admin'] },
+  { href: '/teacher/dashboard/materials', label: 'Study Materials', icon: BookCopy, roles: ['admin'] },
   { href: '/dashboard/reports', label: 'Reports', icon: Presentation, roles: ['admin'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['admin'] },
   

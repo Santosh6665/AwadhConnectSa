@@ -27,7 +27,7 @@ const DetailItem = ({ label, value, className }: { label: string; value: React.R
 export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaultFeeStructure }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: { [key: string]: FeeStructure } | null }) {
   const summaryReceiptRef = React.useRef(null);
   const handleSummaryPrint = useReactToPrint({
-      contentRef: () => summaryReceiptRef.current,
+      contentRef: summaryReceiptRef,
   });
 
   const [selectedReceipt, setSelectedReceipt] = React.useState<FeeReceipt | null>(null);

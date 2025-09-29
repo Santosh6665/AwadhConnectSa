@@ -22,9 +22,11 @@ import {
   deleteField,
   collectionGroup,
   deleteDoc,
+  arrayRemove,
 } from 'firebase/firestore';
-import { db } from './config';
-import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family } from '../types';
+import { getDownloadURL, ref, uploadBytes, deleteObject } from 'firebase/storage';
+import { db, storage } from './config';
+import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family, StudyMaterial } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -132,7 +134,6 @@ export async function addStudent(studentData: Student): Promise<void> {
         ...data,
     };
     
-    // For new students, create a password and initialize fees/results
     const birthYear = new Date(data.dob).getFullYear();
     finalStudentData.password = `${data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1)}@${birthYear}`;
     finalStudentData.fees = { [data.className]: { transactions: [] } };
@@ -140,33 +141,28 @@ export async function addStudent(studentData: Student): Promise<void> {
     finalStudentData.previousDue = 0;
 
 
-    // 1. Set student document
     batch.set(studentDocRef, finalStudentData);
 
-    // 2. Handle parent document creation/update
     if (studentData.parentMobile) {
         const parentDocRef = doc(db, 'parents', studentData.parentMobile);
         const parentDocSnap = await getDoc(parentDocRef);
 
         if (parentDocSnap.exists()) {
-            // Parent exists, update their children array
             batch.update(parentDocRef, {
                 children: arrayUnion(admissionNumber)
             });
         } else {
-            // Parent does not exist, create new parent document
             const newParent: Parent = {
                 id: studentData.parentMobile,
                 name: studentData.parentName,
                 phone: studentData.parentMobile,
                 children: [admissionNumber],
-                password: `${studentData.parentName.split(' ')[0]}@${new Date().getFullYear()}`, // Default password
+                password: `${studentData.parentName.split(' ')[0]}@${new Date().getFullYear()}`,
             };
             batch.set(parentDocRef, newParent);
         }
     }
     
-    // 3. Commit batch
     await batch.commit();
 }
 
@@ -194,7 +190,6 @@ export async function promoteStudent(
   const currentClassName = studentData.className;
   const currentClassFeeData = studentData.fees?.[currentClassName];
 
-  // Calculate dues for the current class
   let currentClassDue = 0;
   if (carryForwardDues && currentClassFeeData) {
     const feeStructureRef = doc(db, 'settings', 'feeStructure');
@@ -211,7 +206,7 @@ export async function promoteStudent(
   }
 
   const previousSessionRecord: PreviousSession = {
-    sessionId: `${studentData.admissionNumber}-${currentClassName}`, // Unique ID for the academic record
+    sessionId: `${studentData.admissionNumber}-${currentClassName}`,
     className: currentClassName,
     sectionName: studentData.sectionName,
     session: studentData.session,
@@ -230,7 +225,6 @@ export async function promoteStudent(
     sectionName: newSectionName,
     previousSessions: arrayUnion(previousSessionRecord),
     previousDue: newTotalPreviousDue,
-    // Ensure new class has fee/result object
     [`fees.${newClassName}`]: studentData.fees?.[newClassName] || { transactions: [] },
     [`results.${newClassName}`]: studentData.results?.[newClassName] || { examResults: {} },
   });
@@ -518,4 +512,79 @@ export async function updateStudentFeeStructure(admissionNumber: string, classNa
     updates[`fees.${className}.structure`] = structure;
     updates[`fees.${className}.concession`] = concession;
     await updateDoc(studentRef, updates);
+}
+
+// STUDY MATERIALS
+
+export async function uploadStudyMaterialFile(file: File, teacherId: string): Promise<string> {
+    const storageRef = ref(storage, `study_materials/${teacherId}/${Date.now()}_${file.name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+}
+
+export async function getStudyMaterials(filters?: { className?: string, subject?: string }): Promise<StudyMaterial[]> {
+    let q = query(collection(db, 'study_materials'), orderBy('createdAt', 'desc'));
+
+    if (filters?.className) {
+        q = query(q, where('className', '==', filters.className));
+    }
+     if (filters?.subject) {
+        q = query(q, where('subject', '==', filters.subject));
+    }
+    
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as StudyMaterial));
+}
+
+export async function addStudyMaterial(materialData: Omit<StudyMaterial, 'id'>): Promise<string> {
+    const docRef = await addDoc(collection(db, 'study_materials'), materialData);
+    return docRef.id;
+}
+
+export async function updateStudyMaterial(id: string, materialData: Partial<StudyMaterial>): Promise<void> {
+    const materialRef = doc(db, 'study_materials', id);
+    await updateDoc(materialRef, materialData);
+}
+
+export async function deleteStudyMaterial(id: string, fileUrl?: string): Promise<void> {
+    const materialRef = doc(db, 'study_materials', id);
+    await deleteDoc(materialRef);
+
+    if (fileUrl) {
+        try {
+            const fileRef = ref(storage, fileUrl);
+            await deleteObject(fileRef);
+        } catch (error: any) {
+            if (error.code === 'storage/object-not-found') {
+                console.warn(`File not found for deletion, but continuing: ${fileUrl}`);
+            } else {
+                throw error;
+            }
+        }
+    }
+}
+
+export async function toggleMaterialCompleted(materialId: string, studentId: string): Promise<boolean> {
+    const materialRef = doc(db, 'study_materials', materialId);
+    const materialSnap = await getDoc(materialRef);
+    
+    if (!materialSnap.exists()) {
+        throw new Error("Material not found");
+    }
+
+    const completedBy = materialSnap.data().completedBy || [];
+    const isCompleted = completedBy.includes(studentId);
+
+    if (isCompleted) {
+        await updateDoc(materialRef, {
+            completedBy: arrayRemove(studentId)
+        });
+        return false;
+    } else {
+        await updateDoc(materialRef, {
+            completedBy: arrayUnion(studentId)
+        });
+        return true;
+    }
 }

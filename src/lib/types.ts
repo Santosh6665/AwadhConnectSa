@@ -53,7 +53,7 @@ export interface SubjectResult {
 
 
 export interface PreviousSession {
-  sessionId: string; // e.g., 'S01-2023-24'
+  sessionId: string; // e.g., 'ADM123-5'
   className: string;
   sectionName: string;
   session: string;
@@ -185,11 +185,19 @@ export interface Event {
 export interface StudyMaterial {
   id: string;
   title: string;
+  description: string;
+  className: string;
+  sectionName: string;
+  subject: string;
+  topic: string;
+  materialType: 'file' | 'link';
   fileUrl: string;
-  classId: string;
-  sectionId: string;
   uploadedBy: string; // teacherId
-  date: Date;
+  createdAt: string; // ISO String
+  updatedAt: string; // ISO String
+  visibleTo: NoticeAudience[]; // Re-using for roles
+  viewedBy: string[]; // studentIds
+  completedBy: string[]; // studentIds
 }
 
 export type UserRole = 'admin' | 'teacher' | 'parent' | 'student';
