@@ -1,5 +1,6 @@
 
 
+
 'use server';
 
 import {
@@ -21,9 +22,10 @@ import {
   orderBy,
   deleteField,
   collectionGroup,
+  deleteDoc,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { Notice, Event, Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment } from '../types';
+import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice } from '../types';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -36,27 +38,55 @@ const convertTimestampsToDates = (data: any) => {
   return anemicData;
 };
 
-export async function getNotices(): Promise<Notice[]> {
-  const noticesCol = collection(db, 'notices');
-  const noticeSnapshot = await getDocs(noticesCol);
-  const noticeList = noticeSnapshot.docs.map(doc =>
-    convertTimestampsToDates({ id: doc.id, ...doc.data() })
-  );
-  return noticeList.sort(
-    (a, b) => b.date.getTime() - a.date.getTime()
-  ) as Notice[];
+// NOTICES & EVENTS
+export async function getNotices(limitCount?: number): Promise<Notice[]> {
+  let q = query(collection(db, 'notices'), orderBy('date', 'desc'));
+  if(limitCount) {
+    q = query(q, limit(limitCount));
+  }
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notice));
 }
 
-export async function getEvents(): Promise<Event[]> {
-  const eventsCol = collection(db, 'events');
-  const eventSnapshot = await getDocs(eventsCol);
-  const eventList = eventSnapshot.docs.map(doc =>
-    convertTimestampsToDates({ id: doc.id, ...doc.data() })
-  );
-  return eventList.sort(
-    (a, b) => a.startDate.getTime() - b.startDate.getTime()
-  ) as Event[];
+export async function addNotice(noticeData: Omit<Notice, 'id'>): Promise<string> {
+    const docRef = await addDoc(collection(db, 'notices'), noticeData);
+    return docRef.id;
 }
+
+export async function updateNotice(id: string, noticeData: Partial<Notice>): Promise<void> {
+    const noticeRef = doc(db, 'notices', id);
+    await updateDoc(noticeRef, noticeData);
+}
+
+export async function deleteNotice(id: string): Promise<void> {
+    const noticeRef = doc(db, 'notices', id);
+    await deleteDoc(noticeRef);
+}
+
+export async function getEvents(limitCount?: number): Promise<Event[]> {
+  let q = query(collection(db, 'events'), orderBy('startDate', 'desc'));
+  if(limitCount) {
+    q = query(q, limit(limitCount));
+  }
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Event));
+}
+
+export async function addEvent(eventData: Omit<Event, 'id'>): Promise<string> {
+    const docRef = await addDoc(collection(db, 'events'), eventData);
+    return docRef.id;
+}
+
+export async function updateEvent(id: string, eventData: Partial<Event>): Promise<void> {
+    const eventRef = doc(db, 'events', id);
+    await updateDoc(eventRef, eventData);
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+    const eventRef = doc(db, 'events', id);
+    await deleteDoc(eventRef);
+}
+
 
 export async function getStudents(filters?: { className?: string; sectionName?: string; status?: 'Active' | 'Archived', admissionNumber?: string }): Promise<Student[]> {
   let q = query(collection(db, 'students'));

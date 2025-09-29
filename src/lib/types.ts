@@ -1,6 +1,7 @@
 
 
 
+
 export interface Student {
   admissionNumber: string; // Document ID
   rollNo: string;
@@ -144,22 +145,31 @@ export interface TeacherDailyAttendance {
 
 
 export type NoticeAudience = 'student' | 'teacher' | 'parent' | 'all';
+export type EventNoticeCategory = 'Academic' | 'Sports' | 'Cultural' | 'Holiday' | 'General';
 
 export interface Notice {
   id: string;
   title: string;
   description: string;
-  targetAudience: NoticeAudience;
-  date: Date;
+  targetAudience: NoticeAudience[];
+  category: EventNoticeCategory;
+  date: string; // ISO String
+  createdBy: string; // user email
+  createdAt: string; // ISO String
+  updatedAt: string; // ISO String
 }
 
 export interface Event {
   id: string;
   title: string;
   description: string;
-  startDate: Date;
-  endDate: Date;
-  targetAudience: NoticeAudience;
+  targetAudience: NoticeAudience[];
+  category: EventNoticeCategory;
+  startDate: string; // ISO String
+  endDate: string; // ISO String
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface StudyMaterial {
