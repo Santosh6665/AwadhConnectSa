@@ -31,19 +31,7 @@ const materialSchema = z.object({
   topic: z.string().optional(),
   fileUrl: z.string().optional(),
   materialType: z.enum(['file', 'link']),
-}).refine(data => {
-    if (data.materialType === 'link') {
-        return !!data.fileUrl && data.fileUrl.length > 0;
-    }
-    return true;
-}, { message: "URL is required for link type", path: ['fileUrl']})
-.refine(data => {
-    if (data.materialType === 'file') {
-        return !!data.topic && data.topic.length > 0;
-    }
-    return true;
-}, { message: "Topic is required for file type", path: ['topic']});
-
+});
 
 type FormData = z.infer<typeof materialSchema>;
 
@@ -99,6 +87,15 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
   }, [isOpen, item, form]);
 
   const onSubmit = (data: FormData) => {
+    if (data.materialType === 'link' && !data.fileUrl) {
+      form.setError('fileUrl', { type: 'manual', message: 'URL is required for link type.' });
+      return;
+    }
+     if (data.materialType === 'file' && !item && !file) {
+      form.setError('fileUrl', { type: 'manual', message: 'A file is required.' });
+      return;
+    }
+
     const { className, sectionName } = parseClassSection(data.classSection);
     
     const saveData = {
@@ -177,6 +174,7 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
                     {item?.materialType === 'file' && item.fileUrl && !file && (
                         <p className="text-sm text-muted-foreground">Current file: <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">View File</a>. Upload a new file to replace it.</p>
                     )}
+                    <FormMessage>{form.formState.errors.fileUrl?.message}</FormMessage>
                  </FormItem>
             )}
 
