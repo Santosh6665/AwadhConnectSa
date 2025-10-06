@@ -17,7 +17,7 @@ import SingleReceiptDialog from './single-receipt-dialog';
 
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
-    <div className={cn("grid grid-cols-2 gap-4 items-start py-1", className)}>
+    <div className={cn("flex justify-between items-start py-1", className)}>
       <span className="font-medium text-muted-foreground">{label}</span>
       <span className="font-semibold text-end">{value || 'N/A'}</span>
     </div>
@@ -97,16 +97,16 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
             <Separator className="my-6" />
 
-            <div className="grid sm:grid-cols-2 gap-8">
+             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2">
                 <div>
                     <h3 className="font-semibold text-muted-foreground mb-2">Student Details</h3>
-                    <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} className="grid-cols-[auto_1fr] text-left" />
-                    <DetailItem label="Class:" value={`${student.className}-${student.sectionName}`} className="grid-cols-[auto_1fr] text-left" />
-                    <DetailItem label="Roll No:" value={student.rollNo} className="grid-cols-[auto_1fr] text-left" />
-                    <DetailItem label="Father's Name:" value={student.parentName} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} />
+                    <DetailItem label="Class:" value={`${student.className}-${student.sectionName}`} />
+                    <DetailItem label="Roll No:" value={student.rollNo} />
+                    <DetailItem label="Father's Name:" value={student.parentName} />
                 </div>
                  <div className="text-right">
-                    <h3 className="font-semibold text-muted-foreground mb-2">Receipt Details</h3>
+                    <h3 className="font-semibold text-muted-foreground mb-2 text-left">Receipt Details</h3>
                     <DetailItem label="Receipt Date:" value={new Date().toLocaleDateString('en-GB')} />
                     <DetailItem label="Student ID:" value={student.admissionNumber} />
                 </div>
