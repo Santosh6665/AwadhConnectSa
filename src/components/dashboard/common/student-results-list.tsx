@@ -18,6 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { deleteStudentResults } from '@/lib/firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useReactToPrint } from 'react-to-print';
+import { useAuth } from '@/contexts/auth-context';
 
 type StudentResultSummary = {
   student: Student;
@@ -32,6 +33,7 @@ const sectionOptions = ["A", "B", "C"];
 
 
 export default function StudentResultsList({ initialStudents, userRole, teacherClasses }: { initialStudents: Student[], userRole: UserRole, teacherClasses?: string[] }) {
+  const { user } = useAuth();
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExam, setSelectedExam] = useState<ExamType>('Annual');
@@ -61,7 +63,13 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     return allClassOptions;
   }, [userRole, teacherClasses]);
 
+  const canEditResults = user?.canEditResults ?? (userRole === 'admin');
+
   const handleEdit = (student: Student) => {
+    if (!canEditResults) {
+        toast({ title: "Permission Denied", description: "You do not have permission to edit results.", variant: "destructive" });
+        return;
+    }
     setSelectedStudent(student);
     setIsEditDialogOpen(true);
   };
@@ -73,6 +81,10 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   };
 
   const handleDeleteClick = (student: Student) => {
+    if (!canEditResults) {
+        toast({ title: "Permission Denied", description: "You do not have permission to delete results.", variant: "destructive" });
+        return;
+    }
     setSelectedStudent(student);
     setIsDeleteDialogOpen(true);
   };
@@ -221,11 +233,13 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                         <TableCell>
                             <div className="flex gap-1">
                                 <Button variant="ghost" size="icon" onClick={() => handleView(student)}><Eye className="h-4 w-4"/></Button>
-                                <Button variant="ghost" size="icon" onClick={() => handleEdit(student)}><Edit className="h-4 w-4"/></Button>
-                                {userRole === 'admin' && (
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(student)} disabled={isDeleting}>
-                                      <Trash className="h-4 w-4"/>
-                                    </Button>
+                                {canEditResults && (
+                                    <>
+                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(student)}><Edit className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(student)} disabled={isDeleting}>
+                                        <Trash className="h-4 w-4"/>
+                                        </Button>
+                                    </>
                                 )}
                             </div>
                         </TableCell>

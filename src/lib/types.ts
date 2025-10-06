@@ -217,6 +217,9 @@ export interface AppUser {
   // For teacher/student/parent role
   id?: string; 
   name?: string;
+  // Teacher-specific permissions
+  canMarkAttendance?: boolean;
+  canEditResults?: boolean;
 }
 
 export interface SalaryPayment {

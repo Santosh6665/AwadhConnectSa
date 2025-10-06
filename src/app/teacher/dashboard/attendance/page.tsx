@@ -11,7 +11,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Loader2, Eye, History, XCircle } from 'lucide-react';
+import { CalendarIcon, Loader2, Eye, History, XCircle, ShieldOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
@@ -39,6 +39,8 @@ export default function MarkAttendancePage() {
             fetchTeacherData();
         }
     }, [user]);
+
+    const canMarkAttendance = user?.canMarkAttendance ?? true;
 
     useEffect(() => {
         const fetchStudentsAndAttendance = async () => {
@@ -105,6 +107,11 @@ export default function MarkAttendancePage() {
             return;
         }
 
+        if (!canMarkAttendance) {
+            toast({ title: "Permission Denied", description: "You do not have permission to mark attendance.", variant: "destructive" });
+            return;
+        }
+
         const [className, sectionName] = parseClassSection(selectedClassSection);
 
         startTransition(async () => {
@@ -151,13 +158,13 @@ export default function MarkAttendancePage() {
                     </div>
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center gap-4">
-                     <Select onValueChange={setSelectedClassSection} value={selectedClassSection}>
+                     <Select onValueChange={setSelectedClassSection} value={selectedClassSection} disabled={!canMarkAttendance}>
                         <SelectTrigger className="w-48"><SelectValue placeholder="Select Class" /></SelectTrigger>
                         <SelectContent>{teacher?.classes?.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                     </Select>
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-48 justify-start text-left font-normal">
+                            <Button variant="outline" className="w-48 justify-start text-left font-normal" disabled={!canMarkAttendance}>
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
                             </Button>
@@ -167,9 +174,21 @@ export default function MarkAttendancePage() {
                 </CardContent>
             </Card>
 
-            {isLoading && <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
+            {!canMarkAttendance && (
+                <Card className="border-destructive bg-destructive/10">
+                    <CardContent className="p-6 flex items-center gap-4">
+                        <ShieldOff className="h-8 w-8 text-destructive" />
+                        <div>
+                            <h3 className="font-bold text-destructive">Permission Denied</h3>
+                            <p className="text-sm text-destructive/80">You do not have permission to mark or edit student attendance. Please contact the administrator.</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
-            {!isLoading && students.length > 0 && (
+            {isLoading && canMarkAttendance && <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
+
+            {!isLoading && students.length > 0 && canMarkAttendance && (
                 <Card>
                     <CardHeader>
                         <CardTitle>Student List</CardTitle>
@@ -243,7 +262,7 @@ export default function MarkAttendancePage() {
                 </Card>
             )}
 
-             {!isLoading && students.length === 0 && selectedClassSection && (
+             {!isLoading && students.length === 0 && selectedClassSection && canMarkAttendance && (
                  <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
                         No active students found for the selected class and section.

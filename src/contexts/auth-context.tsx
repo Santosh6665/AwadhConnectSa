@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!teacher) throw new Error('Teacher not found');
         if (teacher.password !== pass) throw new Error('Invalid password');
         
-        appUser = { id: credential, name: teacher.name, role: 'teacher' };
+        appUser = { id: credential, name: teacher.name, role: 'teacher', canMarkAttendance: teacher.canMarkAttendance, canEditResults: teacher.canEditResults };
         router.push('/teacher/dashboard');
       } else if (role === 'student') {
         const student = await getStudentByAdmissionNumber(credential);
