@@ -87,12 +87,21 @@ export default function PromoteStudentDialog({ isOpen, onOpenChange, student, on
     return calculateCurrentDues(student, defaultFeeStructure);
   }, [student, defaultFeeStructure]);
 
+  const getNextClass = (currentClass: string): string => {
+    const currentIndex = classOptions.indexOf(currentClass);
+    if (currentIndex === -1 || currentIndex === classOptions.length - 1) {
+      return currentClass;
+    }
+    return classOptions[currentIndex + 1];
+  };
+
   React.useEffect(() => {
     if (student) {
         const nextSession = sessionOptions[0];
+        const nextClass = getNextClass(student.className);
         form.reset({
             newSession: nextSession,
-            newClassName: student.className,
+            newClassName: nextClass,
             newSectionName: student.sectionName,
             carryForwardDues: true,
         });
