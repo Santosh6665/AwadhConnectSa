@@ -46,14 +46,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const passwordHash = sha256(pass);
         if (admin.password !== passwordHash) throw new Error('Invalid password');
 
-        appUser = { email: credential, role: 'admin', canEditResults: true, canMarkAttendance: true };
+        appUser = { email: credential, role: 'admin' };
         router.push('/dashboard');
       } else if (role === 'teacher') {
         const teacher = await getTeacherById(credential);
         if (!teacher) throw new Error('Teacher not found');
         if (teacher.password !== pass) throw new Error('Invalid password');
         
-        appUser = { id: credential, name: teacher.name, role: 'teacher', canMarkAttendance: teacher.canMarkAttendance, canEditResults: teacher.canEditResults };
+        appUser = { 
+          id: credential, 
+          name: teacher.name, 
+          role: 'teacher', 
+          canMarkAttendance: teacher.canMarkAttendance, 
+          canEditResults: teacher.canEditResults 
+        };
         router.push('/teacher/dashboard');
       } else if (role === 'student') {
         const student = await getStudentByAdmissionNumber(credential);

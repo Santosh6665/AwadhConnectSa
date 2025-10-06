@@ -13,6 +13,7 @@ export default function TeacherResultsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [teacherClasses, setTeacherClasses] = useState<string[]>([]);
+  const canEditResults = user?.canEditResults ?? false;
 
   useEffect(() => {
     if (user?.id) {
@@ -49,8 +50,6 @@ export default function TeacherResultsPage() {
       </div>
     );
   }
-
-  const canEditResults = user?.canEditResults ?? false;
 
   return (
     <div className="space-y-6">
