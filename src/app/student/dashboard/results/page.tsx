@@ -3,31 +3,29 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { getStudentByAdmissionNumber, getResultVisibilitySettings } from '@/lib/firebase/firestore';
+import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import type { Student, ResultVisibilitySettings } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import ResultCard from '@/components/dashboard/common/result-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { useResultVisibility } from '@/hooks/use-result-visibility';
 
 export default function MyResultsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { settings: visibilitySettings, loading: settingsLoading } = useResultVisibility();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<string>('');
-  const [visibilitySettings, setVisibilitySettings] = useState<ResultVisibilitySettings | null>(null);
+  
 
   useEffect(() => {
     if (user?.id) {
       const fetchStudentData = async () => {
         setLoading(true);
-        const [studentData, settingsData] = await Promise.all([
-          getStudentByAdmissionNumber(user.id!),
-          getResultVisibilitySettings()
-        ]);
+        const studentData = await getStudentByAdmissionNumber(user.id!);
         
         setStudent(studentData);
-        setVisibilitySettings(settingsData);
         
         if (studentData?.className) {
           setSelectedClass(studentData.className);
@@ -38,7 +36,7 @@ export default function MyResultsPage() {
     }
   }, [user]);
 
-  if (authLoading || loading) {
+  if (authLoading || loading || settingsLoading) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -89,7 +87,7 @@ export default function MyResultsPage() {
       </div>
 
       <div className="print-container">
-        {filteredAnnualResult && student ? (
+        {filteredAnnualResult && Object.keys(filteredAnnualResult.examResults).length > 0 && student ? (
           <ResultCard student={student} annualResult={filteredAnnualResult} forClass={selectedClass} onDownload={() => window.print()}/>
         ) : (
           <Card className="no-print">
