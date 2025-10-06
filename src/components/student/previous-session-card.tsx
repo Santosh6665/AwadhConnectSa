@@ -1,4 +1,5 @@
 
+
 import type { PreviousSession } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,8 +34,8 @@ export default function PreviousSessionCard({ session }: { session: PreviousSess
         <div>
             <h4 className="font-semibold mb-2 text-primary">Academic Summary</h4>
             <DetailItem label="Final Status" value={<Badge variant={session.finalStatus === 'Promoted' ? 'default' : 'destructive'}>{session.finalStatus}</Badge>} />
-            <DetailItem label="Attendance" value="95% (180/190 days)" />
-             <DetailItem label="Overall Grade" value="A+" />
+            <DetailItem label="Attendance" value={`${session.attendancePercentage.toFixed(2)}%`} />
+            <DetailItem label="Percentage" value={`${session.overallPercentage.toFixed(2)}%`} />
         </div>
         <div>
             <h4 className="font-semibold mb-2 text-primary">Financial Summary</h4>

@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import {
@@ -26,7 +27,8 @@ import {
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes, deleteObject } from 'firebase/storage';
 import { db, storage } from './config';
-import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family, StudyMaterial } from '../types';
+import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family, StudyMaterial, AnnualResult } from '../types';
+import { calculateOverallResult } from '../utils';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
 const convertTimestampsToDates = (data: any) => {
@@ -188,56 +190,87 @@ export async function promoteStudent(
   carryForwardDues: boolean
 ): Promise<void> {
   const studentRef = doc(db, 'students', admissionNumber);
-  const studentSnap = await getDoc(studentRef);
 
-  if (!studentSnap.exists()) {
-    throw new Error('Student not found');
-  }
-
-  const studentData = studentSnap.data() as Student;
-  const currentClassName = studentData.className;
-  const currentClassFeeData = studentData.fees?.[currentClassName];
-
-  let currentClassDue = 0;
-  if (carryForwardDues && currentClassFeeData) {
-    const feeStructureRef = doc(db, 'settings', 'feeStructure');
-    const feeStructureSnap = await getDoc(feeStructureRef);
-    const defaultFeeStructure = feeStructureSnap.data() as { [key: string]: FeeStructure } | null;
-    
-    const structureToUse = currentClassFeeData.structure || defaultFeeStructure?.[currentClassName];
-    if (structureToUse) {
-        const annualFee = Object.values(structureToUse).reduce((sum, head) => sum + (head.amount * head.months), 0);
-        const totalPaid = (currentClassFeeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
-        const concession = currentClassFeeData.concession || 0;
-        currentClassDue = Math.max(0, annualFee - concession - totalPaid);
+  await runTransaction(db, async (transaction) => {
+    const studentSnap = await transaction.get(studentRef);
+    if (!studentSnap.exists()) {
+      throw new Error('Student not found');
     }
-  }
 
-  const previousSessionRecord: PreviousSession = {
-    sessionId: `${studentData.admissionNumber}-${currentClassName}`,
-    className: currentClassName,
-    sectionName: studentData.sectionName,
-    session: studentData.session,
-    rollNo: studentData.rollNo,
-    finalStatus: 'Promoted',
-    dueFee: currentClassDue,
-  };
+    const studentData = studentSnap.data() as Student;
+    const currentClassName = studentData.className;
+    const currentSession = studentData.session;
+    
+    // 1. Calculate final results and attendance for the session being archived
+    const annualResultForClass = studentData.results?.[currentClassName];
+    const { percentage: overallPercentage } = calculateOverallResult(annualResultForClass);
 
-  const newTotalPreviousDue = (studentData.previousDue || 0) + currentClassDue;
+    const [startYear] = currentSession.split('-').map(Number);
+    const sessionStartMonth = 3; // April (month 3)
+    const sessionEndMonth = 2; // March (month 2) of next year
+    
+    let totalPresents = 0;
+    let totalWorkingDays = 0;
 
-  const batch = writeBatch(db);
+    for (let i = 0; i < 12; i++) {
+        const month = (sessionStartMonth + i) % 12;
+        const year = month >= sessionStartMonth ? startYear : startYear + 1;
+        const attendanceForMonth = await getAttendanceForMonth(admissionNumber, year, month);
+        // This is a simplified calculation. A more robust one would fetch school holidays.
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        // Assuming 4 Sundays a month as a rough estimate for non-working days
+        totalWorkingDays += (daysInMonth - 4); 
+        totalPresents += attendanceForMonth.filter(a => a.status === 'Present').length;
+    }
+    const attendancePercentage = totalWorkingDays > 0 ? (totalPresents / totalWorkingDays) * 100 : 0;
 
-  batch.update(studentRef, {
-    session: newSession,
-    className: newClassName,
-    sectionName: newSectionName,
-    previousSessions: arrayUnion(previousSessionRecord),
-    previousDue: newTotalPreviousDue,
-    [`fees.${newClassName}`]: studentData.fees?.[newClassName] || { transactions: [] },
-    [`results.${newClassName}`]: studentData.results?.[newClassName] || { examResults: {} },
+
+    // 2. Calculate final fee dues for the session
+    const currentClassFeeData = studentData.fees?.[currentClassName];
+    let currentClassDue = 0;
+    if (carryForwardDues && currentClassFeeData) {
+      const feeStructureRef = doc(db, 'settings', 'feeStructure');
+      const feeStructureSnap = await getDoc(feeStructureRef);
+      const defaultFeeStructure = feeStructureSnap.data() as { [key: string]: FeeStructure } | null;
+      
+      const structureToUse = currentClassFeeData.structure || defaultFeeStructure?.[currentClassName];
+      if (structureToUse) {
+          const annualFee = Object.values(structureToUse).reduce((sum, head) => sum + (head.amount * head.months), 0);
+          const totalPaid = (currentClassFeeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+          const concession = currentClassFeeData.concession || 0;
+          currentClassDue = Math.max(0, annualFee - concession - totalPaid);
+      }
+    }
+
+    // 3. Create the historical record
+    const previousSessionRecord: PreviousSession = {
+      sessionId: `${studentData.admissionNumber}-${currentClassName}`,
+      className: currentClassName,
+      sectionName: studentData.sectionName,
+      session: studentData.session,
+      rollNo: studentData.rollNo,
+      finalStatus: 'Promoted', // This could be based on percentage in the future
+      dueFee: currentClassDue,
+      attendancePercentage: attendancePercentage,
+      overallPercentage: overallPercentage,
+    };
+
+    // 4. Prepare updates for the student document
+    const newTotalPreviousDue = (studentData.previousDue || 0) + currentClassDue;
+
+    const updates: Partial<Student> = {
+      session: newSession,
+      className: newClassName,
+      sectionName: newSectionName,
+      previousSessions: arrayUnion(previousSessionRecord),
+      previousDue: newTotalPreviousDue,
+      [`fees.${newClassName}`]: studentData.fees?.[newClassName] || { transactions: [] },
+      [`results.${newClassName}`]: studentData.results?.[newClassName] || { examResults: {} },
+    };
+
+    // 5. Commit the transaction
+    transaction.update(studentRef, updates);
   });
-
-  await batch.commit();
 }
 
 
@@ -538,7 +571,7 @@ export async function addFeePayment(admissionNumber: string, className: string, 
             amountForCurrentClass = remainingAmount;
         }
         
-        const updates: Partial<Student> = {
+        const updates: any = {
             previousDue: newPreviousDue
         };
 
@@ -551,13 +584,10 @@ export async function addFeePayment(admissionNumber: string, className: string, 
                 remarks: `Paid ₹${amount}. Applied ₹${amountForCurrentClass} to current fees. ${remarks || ''}`.trim(),
             };
             const path = `fees.${className}.transactions`;
-            transaction.update(studentRef, {
-                ...updates,
-                [path]: arrayUnion(receipt)
-            });
-        } else {
-             transaction.update(studentRef, updates);
+            updates[path] = arrayUnion(receipt);
         }
+        
+        transaction.update(studentRef, updates);
     });
 }
 

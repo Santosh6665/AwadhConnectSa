@@ -60,6 +60,8 @@ export interface PreviousSession {
   rollNo: string;
   finalStatus: 'Promoted' | 'Retained';
   dueFee: number;
+  attendancePercentage: number;
+  overallPercentage: number;
 }
 
 
@@ -102,7 +104,7 @@ export interface Class {
 
 export interface Section {
   id: string;
-  name: string; // e.g., 'A'
+  name: string; // eg., 'A'
   classId: string;
 }
 
