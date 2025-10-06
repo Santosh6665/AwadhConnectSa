@@ -50,7 +50,7 @@ export default function ChildProfileCard({ student }: { student: Student }) {
   const feeStatus = getFeeStatus(student);
 
   return (
-    <Card>
+    <Card className="bg-muted/50">
       <CardHeader>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -59,13 +59,13 @@ export default function ChildProfileCard({ student }: { student: Student }) {
               <AvatarFallback>{student.firstName.charAt(0)}{student.lastName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-2xl">{student.firstName} {student.lastName}</CardTitle>
+              <CardTitle className="text-xl">{student.firstName} {student.lastName}</CardTitle>
               <CardDescription>
                 Class: {student.className}-{student.sectionName} | Roll No: {student.rollNo}
               </CardDescription>
             </div>
           </div>
-           <Button asChild variant="outline">
+           <Button asChild variant="outline" className="w-full md:w-auto">
                 <Link href={`/parent/dashboard/child/${student.admissionNumber}`}>
                     View Full Profile <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>

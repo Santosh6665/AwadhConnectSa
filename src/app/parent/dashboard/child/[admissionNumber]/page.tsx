@@ -16,9 +16,9 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter, useParams } from 'next/navigation';
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div className="grid grid-cols-3 gap-4 items-start py-2">
-    <span className="font-semibold text-muted-foreground">{label}</span>
-    <span className="col-span-2">{value || 'N/A'}</span>
+  <div className="grid grid-cols-2 gap-4 items-start py-2">
+    <span className="font-semibold text-muted-foreground text-sm">{label}</span>
+    <span className="col-span-1 text-sm">{value || 'N/A'}</span>
   </div>
 );
 
@@ -71,7 +71,7 @@ export default function ChildDetailPage() {
             <Link href="/parent/dashboard"><ArrowLeft /></Link>
         </Button>
         <div>
-            <h1 className="text-3xl font-headline font-bold">Child Profile</h1>
+            <h1 className="text-2xl md:text-3xl font-headline font-bold">Child Profile</h1>
             <p className="text-muted-foreground">Detailed view of {student.firstName}'s records.</p>
         </div>
       </div>

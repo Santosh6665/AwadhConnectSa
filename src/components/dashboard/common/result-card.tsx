@@ -23,9 +23,9 @@ const getGrade = (percentage: number): { grade: string; remarks: string; passed:
 };
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div className="grid grid-cols-2 gap-4 items-start py-1">
-      <span className="font-medium text-muted-foreground">{label}</span>
-      <span className="font-semibold">{value || 'N/A'}</span>
+    <div className="grid grid-cols-2 gap-2 items-start py-1">
+      <span className="font-medium text-muted-foreground text-sm">{label}</span>
+      <span className="font-semibold text-sm">{value || 'N/A'}</span>
     </div>
   );
 
@@ -99,13 +99,13 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
                       <p className="text-sm text-muted-foreground">Ghosiyari bazar, bansi, Siddharth Nagar, 272148</p>
                   </div>
               </div>
-              <div className="flex items-center gap-4">
-                  <Badge variant="secondary" className="text-lg py-2 px-4">Annual Exam Result Card</Badge>
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <Badge variant="secondary" className="text-base py-2 px-4 whitespace-nowrap">Annual Result Card</Badge>
                   <Button
                       onClick={onDownload}
                       variant="outline"
                       size="icon"
-                      className="no-print"
+                      className="no-print ml-auto"
                   >
                       <Download className="h-5 w-5"/>
                   </Button>
@@ -116,7 +116,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
           {/* Student Details */}
           <div>
               <h2 className="flex items-center gap-2 text-lg font-semibold mb-2"><User className="w-5 h-5 text-primary"/>Student Details</h2>
-              <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2 text-sm">
                   <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} />
                   <DetailItem label="Roll No.:" value={rollNoForClass} />
                   <DetailItem label="Class/Section:" value={`${forClass}-${sectionForClass}`} />
@@ -140,14 +140,14 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
                               <th colSpan={2} className="p-3 font-medium text-center border-l bg-muted">Total</th>
                           </tr>
                           <tr>
-                              <th className="p-3"></th>
-                              <th className="p-2 font-normal text-center w-20">Obtained</th>
+                              <th className="p-2 w-[150px] sm:w-auto"></th>
+                              <th className="p-2 font-normal text-center w-20">Obt.</th>
                               <th className="p-2 font-normal text-center w-20 border-r">Max</th>
-                              <th className="p-2 font-normal text-center w-20">Obtained</th>
+                              <th className="p-2 font-normal text-center w-20">Obt.</th>
                               <th className="p-2 font-normal text-center w-20 border-r">Max</th>
-                              <th className="p-2 font-normal text-center w-20">Obtained</th>
+                              <th className="p-2 font-normal text-center w-20">Obt.</th>
                               <th className="p-2 font-normal text-center w-20 border-r">Max</th>
-                              <th className="p-2 font-normal text-center w-20">Obtained</th>
+                              <th className="p-2 font-normal text-center w-20">Obt.</th>
                               <th className="p-2 font-normal text-center w-20">Max</th>
                           </tr>
                       </thead>

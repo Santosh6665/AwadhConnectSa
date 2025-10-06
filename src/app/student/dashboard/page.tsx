@@ -14,9 +14,9 @@ import PreviousSessionCard from '@/components/student/previous-session-card';
 import { Button } from '@/components/ui/button';
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div className="grid grid-cols-3 gap-4 items-start">
-    <span className="font-semibold text-muted-foreground">{label}</span>
-    <span className="col-span-2">{value || 'N/A'}</span>
+  <div className="grid grid-cols-2 gap-4 items-start py-2">
+    <span className="font-semibold text-muted-foreground text-sm">{label}</span>
+    <span className="col-span-1 text-sm">{value || 'N/A'}</span>
   </div>
 );
 
@@ -47,12 +47,13 @@ export default function StudentDashboardPage() {
   }
   
   const hasPreviousSessions = student.previousSessions && student.previousSessions.length > 0;
+  const safePreviousSessions = student.previousSessions || [];
 
   const handlePreviousSession = () => {
     setPreviousSessionIndex(prev => (prev > 0 ? prev - 1 : prev));
   };
   const handleNextSession = () => {
-    setPreviousSessionIndex(prev => (student.previousSessions && prev < student.previousSessions.length - 1 ? prev + 1 : prev));
+    setPreviousSessionIndex(prev => (prev < safePreviousSessions.length - 1 ? prev + 1 : prev));
   };
 
 
@@ -92,29 +93,32 @@ export default function StudentDashboardPage() {
         {/* Right Column - Details */}
         <div className="lg:col-span-2 space-y-8">
           
-          {hasPreviousSessions && student.previousSessions && (
+          {hasPreviousSessions && (
             <Card>
                  <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
                             <div className="bg-primary/10 p-3 rounded-lg"><Calendar className="w-6 h-6 text-primary" /></div>
-                            <CardTitle>Previous Sessions</CardTitle>
+                            <div>
+                                <CardTitle>Previous Sessions</CardTitle>
+                                <CardDescription>Your academic history.</CardDescription>
+                            </div>
                         </div>
                          <div className="flex items-center gap-2">
                             <Button variant="outline" size="icon" onClick={handlePreviousSession} disabled={previousSessionIndex === 0}>
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
-                             <span className="text-sm text-muted-foreground">
-                                {previousSessionIndex + 1} of {student.previousSessions.length}
+                             <span className="text-sm text-muted-foreground whitespace-nowrap">
+                                {previousSessionIndex + 1} of {safePreviousSessions.length}
                             </span>
-                            <Button variant="outline" size="icon" onClick={handleNextSession} disabled={previousSessionIndex === student.previousSessions.length - 1}>
+                            <Button variant="outline" size="icon" onClick={handleNextSession} disabled={previousSessionIndex === safePreviousSessions.length - 1}>
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <PreviousSessionCard session={student.previousSessions[previousSessionIndex]} />
+                    <PreviousSessionCard session={safePreviousSessions[previousSessionIndex]} />
                 </CardContent>
             </Card>
           )}

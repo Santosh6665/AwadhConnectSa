@@ -108,14 +108,14 @@ export default function ParentFeePage() {
                       <p className="text-sm text-muted-foreground">Class: {child.className}-{child.sectionName}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full sm:w-auto">
+                    <div className="text-right flex-grow sm:flex-grow-0">
                         <p className="text-sm text-muted-foreground">Total Due</p>
                         <p className={`font-mono text-lg font-bold ${totalDue > 0 ? 'text-destructive' : 'text-green-600'}`}>
                            Rs {totalDue.toLocaleString()}
                         </p>
                     </div>
-                    <Button onClick={() => handleViewDetails(child)} variant="outline">
+                    <Button onClick={() => handleViewDetails(child)} variant="outline" className="w-full sm:w-auto">
                       <FileText className="mr-2 h-4 w-4" />
                       View Receipt
                     </Button>

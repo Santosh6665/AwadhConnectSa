@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { getParentByMobile, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
 import type { Parent, Student } from '@/lib/types';
 import { Loader2, User as UserIcon, BookOpen, Calendar, Banknote, Users } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ChildProfileCard from '@/components/parent/child-profile-card';
 
 export default function ParentDashboardPage() {
@@ -64,16 +64,16 @@ export default function ParentDashboardPage() {
                 </div>
             </div>
           </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+                {children.length > 0 ? (
+                children.map(child => <ChildProfileCard key={child.admissionNumber} student={child} />)
+                ) : (
+                <p className="text-muted-foreground text-center py-8">No children found linked to this account.</p>
+                )}
+            </div>
+          </CardContent>
       </Card>
-
-      <div className="space-y-6">
-        {children.length > 0 ? (
-          children.map(child => <ChildProfileCard key={child.admissionNumber} student={child} />)
-        ) : (
-          <p className="text-muted-foreground text-center">No children found linked to this account.</p>
-        )}
-      </div>
-
     </div>
   );
 }
