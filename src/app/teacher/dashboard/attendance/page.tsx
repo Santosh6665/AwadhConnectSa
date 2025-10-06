@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useEffect, useTransition } from 'react';
-import { getStudents, saveAttendance, getAttendance, getTeacherById } from '@/lib/firebase/firestore';
+import { getStudents, saveAttendance, getAttendance } from '@/lib/firebase/firestore';
 import type { Student, AttendanceStatus, DailyAttendance, Teacher } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +19,6 @@ import Link from 'next/link';
 
 export default function MarkAttendancePage() {
     const { user } = useAuth();
-    const [teacher, setTeacher] = useState<Teacher | null>(null);
     const [selectedClassSection, setSelectedClassSection] = useState<string>('');
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [students, setStudents] = useState<Student[]>([]);
@@ -29,22 +28,15 @@ export default function MarkAttendancePage() {
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     const { toast } = useToast();
-    
-    useEffect(() => {
-        if (user?.id) {
-            const fetchTeacherData = async () => {
-                const teacherData = await getTeacherById(user.id);
-                setTeacher(teacherData);
-            }
-            fetchTeacherData();
-        }
-    }, [user]);
 
-    const canMarkAttendance = user?.canMarkAttendance ?? true;
+    // The `user` object from useAuth now contains real-time teacher data, including permissions.
+    const canMarkAttendance = user?.canMarkAttendance ?? false;
+    const teacherClasses = (user as Teacher)?.classes || [];
+
 
     useEffect(() => {
         const fetchStudentsAndAttendance = async () => {
-            if (!selectedClassSection || !selectedDate || !teacher) return;
+            if (!selectedClassSection || !selectedDate || !user) return;
             
             const [className, sectionName] = parseClassSection(selectedClassSection);
             if (!className || !sectionName) return;
@@ -87,7 +79,7 @@ export default function MarkAttendancePage() {
         };
 
         fetchStudentsAndAttendance();
-    }, [selectedClassSection, selectedDate, toast, teacher]);
+    }, [selectedClassSection, selectedDate, toast, user]);
 
     const parseClassSection = (classSection: string) => {
         if (!classSection) return ['', ''];
@@ -160,7 +152,7 @@ export default function MarkAttendancePage() {
                 <CardContent className="flex flex-wrap items-center gap-4">
                      <Select onValueChange={setSelectedClassSection} value={selectedClassSection} disabled={!canMarkAttendance}>
                         <SelectTrigger className="w-48"><SelectValue placeholder="Select Class" /></SelectTrigger>
-                        <SelectContent>{teacher?.classes?.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                        <SelectContent>{teacherClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                     </Select>
                     <Popover>
                         <PopoverTrigger asChild>
