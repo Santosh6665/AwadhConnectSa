@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Accordion } from '@/components/ui/accordion';
 import FamilyFeeCard from './family-fee-card';
 import { useToast } from '@/hooks/use-toast';
-import { addFeePayment, updateStudentFeeStructure } from '@/lib/firebase/firestore';
+import { addFeePayment, getStudentByAdmissionNumber, updateStudentFeeStructure } from '@/lib/firebase/firestore';
 
 export default function FamilyFeeList({
   initialFamilies,
@@ -45,27 +45,15 @@ export default function FamilyFeeList({
   const handleSavePayment = async (student: Student, amount: number, mode: FeeReceipt['mode'], remarks: string, onPaymentSaved: () => void) => {
     startTransition(async () => {
         try {
-            const receipt: FeeReceipt = {
-                id: `TXN-${Date.now()}`,
-                amount,
-                date: new Date().toLocaleDateString('en-GB'), // dd/MM/yyyy
-                mode,
-                remarks,
-            };
-            await addFeePayment(student.admissionNumber, student.className, receipt);
+            await addFeePayment(student.admissionNumber, student.className, amount, mode, remarks);
             
-            const updatedStudent: Student = {
-                ...student,
-                fees: {
-                    ...student.fees,
-                    [student.className]: {
-                        ...student.fees[student.className],
-                        transactions: [...(student.fees[student.className]?.transactions || []), receipt],
-                    }
-                }
-            };
+            // Re-fetch student data to get the updated dues and transactions
+            const updatedStudent = await getStudentByAdmissionNumber(student.admissionNumber);
 
-            handleUpdateStudent(updatedStudent);
+            if (updatedStudent) {
+                handleUpdateStudent(updatedStudent);
+            }
+
             toast({ title: 'Success', description: 'Payment recorded successfully.' });
             onPaymentSaved(); // Callback to close dialog
 

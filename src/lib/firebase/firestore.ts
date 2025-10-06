@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -21,6 +22,7 @@ import {
   collectionGroup,
   deleteDoc,
   arrayRemove,
+  runTransaction,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes, deleteObject } from 'firebase/storage';
 import { db, storage } from './config';
@@ -510,13 +512,55 @@ export async function getFeeStructure(): Promise<{[className: string]: FeeStruct
     return null;
 }
 
-export async function addFeePayment(admissionNumber: string, className: string, transaction: FeeReceipt): Promise<void> {
+export async function addFeePayment(admissionNumber: string, className: string, amount: number, mode: FeeReceipt['mode'], remarks: string): Promise<void> {
     const studentRef = doc(db, 'students', admissionNumber);
-    const path = `fees.${className}.transactions`;
-    await updateDoc(studentRef, {
-        [path]: arrayUnion(transaction)
+
+    await runTransaction(db, async (transaction) => {
+        const studentDoc = await transaction.get(studentRef);
+        if (!studentDoc.exists()) {
+            throw "Student document does not exist!";
+        }
+
+        const studentData = studentDoc.data() as Student;
+        let currentPreviousDue = studentData.previousDue || 0;
+        let remainingAmount = amount;
+        
+        let newPreviousDue = currentPreviousDue;
+        let amountForCurrentClass = 0;
+
+        if (currentPreviousDue > 0) {
+            const amountToClearPrevious = Math.min(remainingAmount, currentPreviousDue);
+            newPreviousDue -= amountToClearPrevious;
+            remainingAmount -= amountToClearPrevious;
+        }
+
+        if (remainingAmount > 0) {
+            amountForCurrentClass = remainingAmount;
+        }
+        
+        const updates: Partial<Student> = {
+            previousDue: newPreviousDue
+        };
+
+        if (amountForCurrentClass > 0) {
+            const receipt: FeeReceipt = {
+                id: `TXN-${Date.now()}`,
+                amount: amountForCurrentClass,
+                date: new Date().toLocaleDateString('en-GB'), // dd/MM/yyyy
+                mode,
+                remarks: `Paid ₹${amount}. Applied ₹${amountForCurrentClass} to current fees. ${remarks || ''}`.trim(),
+            };
+            const path = `fees.${className}.transactions`;
+            transaction.update(studentRef, {
+                ...updates,
+                [path]: arrayUnion(receipt)
+            });
+        } else {
+             transaction.update(studentRef, updates);
+        }
     });
 }
+
 
 export async function updateStudentFeeStructure(admissionNumber: string, className: string, structure: FeeStructure, concession: number): Promise<void> {
     const studentRef = doc(db, 'students', admissionNumber);
