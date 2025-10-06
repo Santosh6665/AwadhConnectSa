@@ -1,17 +1,19 @@
-import { getStudents, getTeachers, getFees, getAllAttendance } from '@/lib/firebase/firestore';
+
+import { getStudents, getTeachers, getAllAttendance } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EnrollmentReport from '@/components/dashboard/reports/enrollment-report';
 import FeeCollectionReport from '@/components/dashboard/reports/fee-collection-report';
 import TeacherRosterReport from '@/components/dashboard/reports/teacher-roster-report';
 import AttendanceSummaryReport from '@/components/dashboard/reports/attendance-summary-report';
+import { getFeeStructure } from '@/lib/firebase/firestore';
 
 export default async function ReportsPage() {
-  const [students, teachers, fees, allAttendance] = await Promise.all([
+  const [students, teachers, allAttendance, feeStructure] = await Promise.all([
     getStudents({ status: 'Active' }),
     getTeachers({ status: 'Active' }),
-    getFees(),
     getAllAttendance(),
+    getFeeStructure(),
   ]);
 
   return (
@@ -43,7 +45,7 @@ export default async function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="fees">
-            <FeeCollectionReport fees={fees} students={students} />
+            <FeeCollectionReport students={students} feeStructure={feeStructure} />
         </TabsContent>
 
         <TabsContent value="attendance">
