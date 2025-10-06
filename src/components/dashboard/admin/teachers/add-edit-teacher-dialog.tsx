@@ -34,7 +34,7 @@ const teacherSchema = z.object({
   hireDate: z.date({ required_error: 'Hire date is required' }),
   designation: z.string().min(1, 'Designation is required'),
   subjects: z.array(z.string()).min(1, 'At least one subject is required'),
-  classes: z.array(z-string()).min(1, 'At least one class is required'),
+  classes: z.array(z.string()).min(1, 'At least one class is required'),
   status: z.enum(['Active', 'Archived']),
   salary: z.coerce.number().optional(),
   canMarkAttendance: z.boolean().optional(),
