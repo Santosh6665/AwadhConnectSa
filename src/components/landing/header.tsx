@@ -36,52 +36,15 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="mr-4 flex items-center">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline text-lg">Awadh Inter College</span>
-          </Link>
-        </div>
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="transition-colors hover:text-primary">
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex flex-1 items-center justify-end space-x-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
-                <User className="mr-2 h-4 w-4" />
-                Login
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href="/login">Admin Portal</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/teacher/login">Teacher Portal</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/student/login">Student Portal</Link>
-              </DropdownMenuItem>
-               <DropdownMenuItem asChild>
-                <Link href="/parent/login">Parent Portal</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <div className="md:hidden">
-            <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <div className="flex items-center md:hidden">
+           <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
                   <Menu className="h-6 w-6" />
                   <span className="sr-only">Open main menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
                 <SheetHeader>
                   <SheetTitle className="sr-only">Main Menu</SheetTitle>
                   <SheetDescription className="sr-only">
@@ -129,7 +92,46 @@ export default function Header() {
                 </div>
               </SheetContent>
             </Sheet>
-          </div>
+        </div>
+
+        <div className="flex-1 flex justify-center md:justify-start items-center">
+            <Link href="/" className="flex items-center space-x-2">
+                <GraduationCap className="h-6 w-6 text-primary" />
+                <span className="font-bold font-headline text-lg">Awadh Inter College</span>
+            </Link>
+        </div>
+
+        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} className="transition-colors hover:text-primary">
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        
+        <div className="flex items-center justify-end space-x-4 md:ml-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <User className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/login">Admin Portal</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/teacher/login">Teacher Portal</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/student/login">Student Portal</Link>
+              </DropdownMenuItem>
+               <DropdownMenuItem asChild>
+                <Link href="/parent/login">Parent Portal</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
