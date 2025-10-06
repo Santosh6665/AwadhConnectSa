@@ -9,7 +9,7 @@ import {
   Calendar,
   GraduationCap,
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -31,7 +31,7 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserRole } from '@/lib/types';
+import type { UserRole } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { useAuth } from '@/contexts/auth-context';
