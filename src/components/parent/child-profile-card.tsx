@@ -1,6 +1,6 @@
 
 'use client';
-import type { Student } from '@/lib/types';
+import type { Student, FeeStructure } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -22,11 +22,29 @@ const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
 
 export default function ChildProfileCard({ student }: { student: Student }) {
 
-  const getFeeStatus = (student: Student) => {
-    const classFees = student.fees[student.className] || [];
-    if (classFees.length === 0) return 'Due';
-    const lastReceipt = classFees[classFees.length - 1];
-    return lastReceipt.status;
+  const getFeeStatus = (student: Student): 'Paid' | 'Partial' | 'Due' => {
+    const feeData = student.fees?.[student.className];
+    if (!feeData) return 'Due';
+
+    const structure = feeData.structure;
+    if (!structure) {
+        // If no specific structure, assume due if no payments made
+        return (feeData.transactions || []).length > 0 ? 'Partial' : 'Due';
+    }
+    
+    const annualFee = Object.values(structure).reduce((sum, head) => sum + (head.amount * head.months), 0);
+    const concession = feeData.concession || 0;
+    const totalPayable = annualFee - concession;
+
+    const totalPaid = (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+
+    if (totalPaid >= totalPayable) {
+        return 'Paid';
+    }
+    if (totalPaid > 0) {
+        return 'Partial';
+    }
+    return 'Due';
   };
 
   const feeStatus = getFeeStatus(student);
