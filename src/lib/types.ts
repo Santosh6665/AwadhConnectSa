@@ -241,3 +241,9 @@ export interface FeeHead {
 export interface FeeStructure {
     [feeHead: string]: FeeHead;
 }
+
+export interface ResultVisibilitySettings {
+  showQuarterly: boolean;
+  showHalfYearly: boolean;
+  showAnnual: boolean;
+}

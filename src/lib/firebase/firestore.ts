@@ -27,7 +27,7 @@ import {
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes, deleteObject } from 'firebase/storage';
 import { db, storage } from './config';
-import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family, StudyMaterial, AnnualResult } from '../types';
+import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family, StudyMaterial, AnnualResult, ResultVisibilitySettings } from '../types';
 import { calculateOverallResult } from '../utils';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
@@ -678,4 +678,21 @@ export async function toggleMaterialCompleted(materialId: string, studentId: str
         });
         return true;
     }
+}
+
+
+// SETTINGS
+
+export async function saveResultVisibilitySettings(settings: ResultVisibilitySettings): Promise<void> {
+    const settingsRef = doc(db, 'settings', 'resultVisibility');
+    await setDoc(settingsRef, settings);
+}
+
+export async function getResultVisibilitySettings(): Promise<ResultVisibilitySettings | null> {
+    const settingsRef = doc(db, 'settings', 'resultVisibility');
+    const docSnap = await getDoc(settingsRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as ResultVisibilitySettings;
+    }
+    return null;
 }

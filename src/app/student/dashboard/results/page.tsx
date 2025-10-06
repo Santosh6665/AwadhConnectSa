@@ -3,8 +3,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
-import type { Student, AnnualResult } from '@/lib/types';
+import { getStudentByAdmissionNumber, getResultVisibilitySettings } from '@/lib/firebase/firestore';
+import type { Student, ResultVisibilitySettings } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import ResultCard from '@/components/dashboard/common/result-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,13 +15,20 @@ export default function MyResultsPage() {
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<string>('');
+  const [visibilitySettings, setVisibilitySettings] = useState<ResultVisibilitySettings | null>(null);
 
   useEffect(() => {
     if (user?.id) {
       const fetchStudentData = async () => {
         setLoading(true);
-        const studentData = await getStudentByAdmissionNumber(user.id!);
+        const [studentData, settingsData] = await Promise.all([
+          getStudentByAdmissionNumber(user.id!),
+          getResultVisibilitySettings()
+        ]);
+        
         setStudent(studentData);
+        setVisibilitySettings(settingsData);
+        
         if (studentData?.className) {
           setSelectedClass(studentData.className);
         }
@@ -45,6 +52,18 @@ export default function MyResultsPage() {
 
   const classOptions = Object.keys(student.results || {}).sort().reverse();
   const annualResult = student.results?.[selectedClass];
+
+  const isCurrentSession = selectedClass === student.className;
+  const filteredAnnualResult = isCurrentSession && visibilitySettings && annualResult
+    ? {
+      ...annualResult,
+      examResults: {
+        ...(visibilitySettings.showQuarterly && annualResult.examResults.Quarterly ? { Quarterly: annualResult.examResults.Quarterly } : {}),
+        ...(visibilitySettings.showHalfYearly && annualResult.examResults['Half-Yearly'] ? { 'Half-Yearly': annualResult.examResults['Half-Yearly'] } : {}),
+        ...(visibilitySettings.showAnnual && annualResult.examResults.Annual ? { Annual: annualResult.examResults.Annual } : {}),
+      }
+    }
+    : annualResult;
 
   return (
     <div className="space-y-6">
@@ -70,13 +89,12 @@ export default function MyResultsPage() {
       </div>
 
       <div className="print-container">
-        {annualResult && student ? (
-          <ResultCard student={student} annualResult={annualResult} forClass={selectedClass} onDownload={() => window.print()}/>
+        {filteredAnnualResult && student ? (
+          <ResultCard student={student} annualResult={filteredAnnualResult} forClass={selectedClass} onDownload={() => window.print()}/>
         ) : (
           <Card className="no-print">
               <CardContent className="p-8 text-center text-muted-foreground">
-                  <p>No results found for the selected class.</p>
-                  <p>Please select a different class or contact your teacher.</p>
+                  <p>Results for the selected class are not available or have not been published yet.</p>
               </CardContent>
           </Card>
         )}
