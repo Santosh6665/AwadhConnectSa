@@ -77,19 +77,19 @@ export default function StudentFeeRow({
       <div className="flex flex-wrap items-center gap-4">
         <div className="text-right">
             <p className="text-sm text-muted-foreground">Annual Fee</p>
-            <p className="font-mono text-lg font-semibold">₹{annualFee.toLocaleString()}</p>
+            <p className="font-mono text-lg font-semibold">Rs {annualFee.toLocaleString()}</p>
         </div>
         <div className="text-right">
             <p className="text-sm text-muted-foreground">Previous Due</p>
-            <p className="font-mono text-lg font-semibold text-destructive">₹{previousDue.toLocaleString()}</p>
+            <p className="font-mono text-lg font-semibold text-destructive">Rs {previousDue.toLocaleString()}</p>
         </div>
          <div className="text-right">
             <p className="text-sm text-muted-foreground">Current Due</p>
-            <p className="font-mono text-lg font-semibold">₹{currentDue.toLocaleString()}</p>
+            <p className="font-mono text-lg font-semibold">Rs {currentDue.toLocaleString()}</p>
         </div>
         <div className="text-right">
             <p className="text-sm text-muted-foreground">Total Due</p>
-            <p className="font-mono text-lg font-bold text-destructive">₹{totalDue.toLocaleString()}</p>
+            <p className="font-mono text-lg font-bold text-destructive">Rs {totalDue.toLocaleString()}</p>
         </div>
         <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setIsStructureOpen(true)}><FileCog className="mr-2 h-4 w-4"/>Structure</Button>

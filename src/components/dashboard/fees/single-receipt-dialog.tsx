@@ -67,12 +67,12 @@ export default function SingleReceiptDialog({ isOpen, onOpenChange, student, rec
             
             <div className="mt-8">
                  <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
-                    <DetailItem label="Amount Paid:" value={<span className="text-xl font-bold">₹{receipt.amount.toLocaleString()}</span>} />
+                    <DetailItem label="Amount Paid:" value={<span className="text-xl font-bold">Rs {receipt.amount.toLocaleString()}</span>} />
                     {receipt.remarks && <DetailItem label="Remarks:" value={receipt.remarks} />}
                     <Separator/>
                     <div className="flex justify-between items-center py-2">
                         <span className="text-base font-bold">Remaining Balance after this transaction:</span>
-                        <span className="text-xl font-bold text-destructive">₹{balanceDue.toLocaleString()}</span>
+                        <span className="text-xl font-bold text-destructive">Rs {balanceDue.toLocaleString()}</span>
                     </div>
                  </div>
             </div>

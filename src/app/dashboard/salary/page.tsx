@@ -160,8 +160,8 @@ export default function AdminSalaryPage() {
                     <TableRow key={teacher.id}>
                       <TableCell>{teacher.id}</TableCell>
                       <TableCell>{teacher.name}</TableCell>
-                      <TableCell>₹{teacher.salary?.toLocaleString() || 'N/A'}</TableCell>
-                      <TableCell className="font-semibold">₹{salaryDetails.payableSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                      <TableCell>Rs {teacher.salary?.toLocaleString() || 'N/A'}</TableCell>
+                      <TableCell className="font-semibold">Rs {salaryDetails.payableSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                        <TableCell>
                          <Badge variant={payment?.status === 'Paid' ? 'default' : 'destructive'}>
                            {payment?.status || 'Pending'}

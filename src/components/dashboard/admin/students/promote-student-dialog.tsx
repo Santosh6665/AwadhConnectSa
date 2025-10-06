@@ -128,9 +128,9 @@ export default function PromoteStudentDialog({ isOpen, onOpenChange, student, on
             <Alert variant="destructive">
                 <AlertDescription className="grid grid-cols-2 gap-x-4">
                     <div className="font-semibold">Current Class Dues:</div>
-                    <div className="font-mono text-right">₹{currentDues.toLocaleString()}</div>
+                    <div className="font-mono text-right">Rs {currentDues.toLocaleString()}</div>
                     <div className="font-semibold">Previous Dues:</div>
-                    <div className="font-mono text-right">₹{(student.previousDue || 0).toLocaleString()}</div>
+                    <div className="font-mono text-right">Rs {(student.previousDue || 0).toLocaleString()}</div>
                 </AlertDescription>
             </Alert>
 
@@ -153,7 +153,7 @@ export default function PromoteStudentDialog({ isOpen, onOpenChange, student, on
                         <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                        <FormLabel>Carry forward total dues of ₹{totalDuesToCarry.toLocaleString()} to the new session</FormLabel>
+                        <FormLabel>Carry forward total dues of Rs {totalDuesToCarry.toLocaleString()} to the new session</FormLabel>
                         <FormMessage />
                     </div>
                 </FormItem>

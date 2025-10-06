@@ -1,3 +1,4 @@
+
 import StatCard from "@/components/dashboard/stat-card";
 import { getFees, getStudents, getTeachers } from "@/lib/firebase/firestore";
 import { Users, BookUser, Banknote, Landmark, UserCheck } from "lucide-react";
@@ -37,9 +38,9 @@ export default async function AdminDashboardPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                 <StatCard title="Total Students" value={totalStudents.toString()} icon={Users} description="All active students" />
                 <StatCard title="Total Teachers" value={totalTeachers.toString()} icon={BookUser} description="All teaching staff" />
-                <StatCard title="Fees Collected" value={`₹${(totalFeesCollected / 1000).toFixed(1)}k`} icon={Banknote} description="This session" />
-                <StatCard title="Total Dues" value={`₹${(totalDues / 1000).toFixed(1)}k`} icon={Landmark} description="Pending fees" />
-                <StatCard title="Teacher Salary" value={`₹${(totalSalary / 1000).toFixed(1)}k`} icon={Banknote} description="Per month" />
+                <StatCard title="Fees Collected" value={`Rs ${(totalFeesCollected / 1000).toFixed(1)}k`} icon={Banknote} description="This session" />
+                <StatCard title="Total Dues" value={`Rs ${(totalDues / 1000).toFixed(1)}k`} icon={Landmark} description="Pending fees" />
+                <StatCard title="Teacher Salary" value={`Rs ${(totalSalary / 1000).toFixed(1)}k`} icon={Banknote} description="Per month" />
             </div>
 
             <div className="grid gap-8 lg:grid-cols-3">

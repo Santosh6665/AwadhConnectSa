@@ -87,8 +87,8 @@ export default function StudentFeePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <StatCard title="Total Paid" value={`₹${totalPaid.toLocaleString()}`} icon={Banknote} description="Across all sessions"/>
-        <StatCard title="Total Outstanding" value={`₹${totalDue.toLocaleString()}`} icon={Landmark} />
+        <StatCard title="Total Paid" value={`Rs ${totalPaid.toLocaleString()}`} icon={Banknote} description="Across all sessions"/>
+        <StatCard title="Total Outstanding" value={`Rs ${totalDue.toLocaleString()}`} icon={Landmark} />
         <StatCard title="Payment Status" value={`${collectionPercentage.toFixed(2)}% Paid`} icon={Percent} />
       </div>
 

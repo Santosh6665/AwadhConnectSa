@@ -97,16 +97,16 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
             <Separator className="my-6" />
 
-             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2">
+             <div className="grid sm:grid-cols-2 gap-8">
                 <div>
                     <h3 className="font-semibold text-muted-foreground mb-2">Student Details</h3>
-                    <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} />
-                    <DetailItem label="Class:" value={`${student.className}-${student.sectionName}`} />
-                    <DetailItem label="Roll No:" value={student.rollNo} />
-                    <DetailItem label="Father's Name:" value={student.parentName} />
+                    <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Class:" value={`${student.className}-${student.sectionName}`} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Roll No:" value={student.rollNo} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Father's Name:" value={student.parentName} className="grid-cols-[auto_1fr] text-left" />
                 </div>
                  <div className="text-right">
-                    <h3 className="font-semibold text-muted-foreground mb-2 text-left">Receipt Details</h3>
+                    <h3 className="font-semibold text-muted-foreground mb-2">Receipt Details</h3>
                     <DetailItem label="Receipt Date:" value={new Date().toLocaleDateString('en-GB')} />
                     <DetailItem label="Student ID:" value={student.admissionNumber} />
                 </div>
@@ -132,7 +132,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                             filteredTransactions.map(tx => (
                                 <TableRow key={tx.id}>
                                     <TableCell>{tx.date}</TableCell>
-                                    <TableCell>₹{tx.amount.toLocaleString()}</TableCell>
+                                    <TableCell>Rs {tx.amount.toLocaleString()}</TableCell>
                                     <TableCell><Badge variant="secondary">{tx.mode}</Badge></TableCell>
                                     <TableCell>{tx.remarks}</TableCell>
                                     <TableCell className="no-print">
@@ -155,22 +155,22 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                     <h3 className="font-semibold text-muted-foreground mb-2">Fee Structure (Class {classForSummary})</h3>
                     <div className="border rounded-lg p-4 space-y-2">
                         {Object.entries(studentStructure).map(([key, value]) => (
-                            <DetailItem key={key} label={`${key}:`} value={`₹${value.amount.toLocaleString()}`} />
+                            <DetailItem key={key} label={`${key}:`} value={`Rs ${value.amount.toLocaleString()}`} />
                         ))}
                         <Separator/>
-                         <DetailItem label="Concession:" value={`- ₹${concession.toLocaleString()}`} />
+                         <DetailItem label="Concession:" value={`- Rs ${concession.toLocaleString()}`} />
                     </div>
                 </div>
                 <div className="space-y-4">
                      <h3 className="font-semibold text-muted-foreground mb-2">Summary</h3>
                      <div className="border rounded-lg p-4 space-y-3">
-                        <DetailItem label={`Annual Fee (Class ${classForSummary}):`} value={`₹${annualFee.toLocaleString()}`} />
-                        <DetailItem label="Total Paid (All Time):" value={`₹${totalPaidAllTime.toLocaleString()}`} />
-                        <DetailItem label="Previous Dues:" value={classForSummary === student.className ? `₹${previousDue.toLocaleString()}` : 'N/A'} />
+                        <DetailItem label={`Annual Fee (Class ${classForSummary}):`} value={`Rs ${annualFee.toLocaleString()}`} />
+                        <DetailItem label="Total Paid (All Time):" value={`Rs ${totalPaidAllTime.toLocaleString()}`} />
+                        <DetailItem label="Previous Dues:" value={classForSummary === student.className ? `Rs ${previousDue.toLocaleString()}` : 'N/A'} />
                         <Separator/>
                         <div className="flex justify-between items-center py-2">
                             <span className="text-lg font-bold">Total Balance Due:</span>
-                            <span className="text-2xl font-bold text-destructive">₹{totalBalanceDue.toLocaleString()}</span>
+                            <span className="text-2xl font-bold text-destructive">Rs {totalBalanceDue.toLocaleString()}</span>
                         </div>
                      </div>
                 </div>

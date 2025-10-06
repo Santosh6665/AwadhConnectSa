@@ -1,3 +1,4 @@
+
 'use client';
 import type { Fee, Student } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,8 +22,8 @@ export default function FeeCollectionReport({ fees, students }: { fees: Fee[], s
   return (
     <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
-             <StatCard title="Total Fees Collected" value={`₹${(totalFeesCollected / 100000).toFixed(2)}L`} icon={Banknote} />
-             <StatCard title="Total Outstanding Dues" value={`₹${(totalDues / 100000).toFixed(2)}L`} icon={Landmark} />
+             <StatCard title="Total Fees Collected" value={`Rs ${(totalFeesCollected / 100000).toFixed(2)}L`} icon={Banknote} />
+             <StatCard title="Total Outstanding Dues" value={`Rs ${(totalDues / 100000).toFixed(2)}L`} icon={Landmark} />
              <StatCard title="Collection Rate" value={`${collectionPercentage.toFixed(2)}%`} icon={Percent} />
         </div>
         <Card>
@@ -47,7 +48,7 @@ export default function FeeCollectionReport({ fees, students }: { fees: Fee[], s
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => `₹${value.toLocaleString()}`} />
+                    <Tooltip formatter={(value: number) => `Rs ${value.toLocaleString()}`} />
                     <Legend />
                     </PieChart>
                 </ResponsiveContainer>

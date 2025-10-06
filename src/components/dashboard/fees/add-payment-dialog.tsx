@@ -46,7 +46,7 @@ export default function AddPaymentDialog({ isOpen, onOpenChange, student, onSave
 
         <div className="space-y-4 py-4">
             <div className="space-y-2">
-                <Label htmlFor="amount">Amount (₹)</Label>
+                <Label htmlFor="amount">Amount (Rs)</Label>
                 <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g., 5000" />
             </div>
             <div className="space-y-2">

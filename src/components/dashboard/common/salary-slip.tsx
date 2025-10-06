@@ -88,11 +88,11 @@ export default function SalarySlip({ teacher, month, salaryDetails, payment }: S
                 <div>
                     <h3 className="font-bold text-lg mb-2 text-green-600">Earnings</h3>
                     <div className="border rounded-lg p-4 space-y-2">
-                        <DetailItem label="Base Salary" value={`₹${baseSalary.toLocaleString()}`} />
+                        <DetailItem label="Base Salary" value={`Rs ${baseSalary.toLocaleString()}`} />
                         <Separator />
                         <div className="flex justify-between items-center py-2 font-bold">
                             <span>Gross Earnings</span>
-                            <span>₹{baseSalary.toLocaleString()}</span>
+                            <span>Rs {baseSalary.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -101,11 +101,11 @@ export default function SalarySlip({ teacher, month, salaryDetails, payment }: S
                  <div>
                     <h3 className="font-bold text-lg mb-2 text-red-600">Deductions</h3>
                      <div className="border rounded-lg p-4 space-y-2">
-                        <DetailItem label="Loss of Pay (LOP)" value={`- ₹${deduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+                        <DetailItem label="Loss of Pay (LOP)" value={`- Rs ${deduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
                         <Separator />
                         <div className="flex justify-between items-center py-2 font-bold">
                             <span>Total Deductions</span>
-                            <span>- ₹${deduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span>- Rs ${deduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </div>
                 </div>
@@ -115,7 +115,7 @@ export default function SalarySlip({ teacher, month, salaryDetails, payment }: S
             <Card className="bg-muted/50">
                 <CardContent className="p-4 flex justify-between items-center">
                     <h3 className="text-lg font-bold">Net Payable Salary</h3>
-                    <p className="text-2xl font-bold font-headline">₹{payableSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="text-2xl font-bold font-headline">Rs {payableSalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </CardContent>
             </Card>
 

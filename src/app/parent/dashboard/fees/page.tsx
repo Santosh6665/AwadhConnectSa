@@ -112,7 +112,7 @@ export default function ParentFeePage() {
                     <div className="text-right">
                         <p className="text-sm text-muted-foreground">Total Due</p>
                         <p className={`font-mono text-lg font-bold ${totalDue > 0 ? 'text-destructive' : 'text-green-600'}`}>
-                           ₹{totalDue.toLocaleString()}
+                           Rs {totalDue.toLocaleString()}
                         </p>
                     </div>
                     <Button onClick={() => handleViewDetails(child)} variant="outline">

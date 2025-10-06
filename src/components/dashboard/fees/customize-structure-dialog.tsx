@@ -84,7 +84,7 @@ export default function CustomizeStructureDialog({ isOpen, onOpenChange, student
                  ))}
              </div>
              <div className="mt-4 space-y-2 border-t pt-4">
-                <Label htmlFor="concession">Total Concession (₹)</Label>
+                <Label htmlFor="concession">Total Concession (Rs)</Label>
                 <Input
                     id="concession"
                     type="number"

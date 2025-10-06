@@ -42,7 +42,7 @@ export default function PreviousSessionCard({ session }: { session: PreviousSess
                 label="Fee Status" 
                 value={<Badge variant={feeStatus === 'Paid' ? 'secondary' : 'destructive'}>{feeStatus}</Badge>}
             />
-            <DetailItem label="Due Amount" value={`₹${session.dueFee.toLocaleString()}`} />
+            <DetailItem label="Due Amount" value={`Rs ${session.dueFee.toLocaleString()}`} />
         </div>
       </CardContent>
     </Card>

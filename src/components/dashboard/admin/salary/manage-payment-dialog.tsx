@@ -105,7 +105,7 @@ export default function ManagePaymentDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="p-3 bg-muted rounded-md text-center font-bold text-lg">
-              Payable Amount: ₹{payableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              Payable Amount: Rs {payableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
 
             <FormField

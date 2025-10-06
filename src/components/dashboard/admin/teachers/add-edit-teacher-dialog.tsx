@@ -34,7 +34,7 @@ const teacherSchema = z.object({
   hireDate: z.date({ required_error: 'Hire date is required' }),
   designation: z.string().min(1, 'Designation is required'),
   subjects: z.array(z.string()).min(1, 'At least one subject is required'),
-  classes: z.array(z.string()).min(1, 'At least one class is required'),
+  classes: z.array(z-string()).min(1, 'At least one class is required'),
   status: z.enum(['Active', 'Archived']),
   salary: z.coerce.number().optional(),
   canMarkAttendance: z.boolean().optional(),
@@ -307,7 +307,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                   name="salary"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Salary</FormLabel>
+                      <FormLabel>Salary (Rs)</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="e.g. 75000" {...field} />
                       </FormControl>

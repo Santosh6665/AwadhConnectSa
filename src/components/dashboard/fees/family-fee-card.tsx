@@ -68,7 +68,7 @@ export default function FamilyFeeCard({
                      <div className="text-right">
                          <p className="text-sm text-muted-foreground">Total Family Due</p>
                          <p className={`font-bold text-xl ${totalDue > 0 ? 'text-destructive' : 'text-green-600'}`}>
-                           ₹{totalDue.toLocaleString()}
+                           Rs {totalDue.toLocaleString()}
                          </p>
                     </div>
                 </div>

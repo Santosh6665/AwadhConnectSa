@@ -120,7 +120,7 @@ export default function FeeStructureForm({ initialData }: { initialData: FeeStru
                     <div className="flex justify-between w-full pr-4">
                         <span>Class {className}</span>
                         <span className="text-muted-foreground font-mono text-base">
-                            Annual: ₹{calculateAnnualTotal(className).toLocaleString()}
+                            Annual: Rs {calculateAnnualTotal(className).toLocaleString()}
                         </span>
                     </div>
                   </AccordionTrigger>

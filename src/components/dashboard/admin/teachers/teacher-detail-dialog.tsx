@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import {
@@ -50,7 +51,7 @@ export default function TeacherDetailDialog({ isOpen, onOpenChange, teacher }: T
             <DetailItem label="Date of Birth" value={teacher.dob} />
             <DetailItem label="Hire Date" value={teacher.hireDate} />
             <DetailItem label="Designation" value={teacher.designation} />
-            <DetailItem label="Salary" value={teacher.salary ? `₹${teacher.salary.toLocaleString()}` : 'N/A'} />
+            <DetailItem label="Salary" value={teacher.salary ? `Rs ${teacher.salary.toLocaleString()}` : 'N/A'} />
             <DetailItem 
                 label="Subjects" 
                 value={
