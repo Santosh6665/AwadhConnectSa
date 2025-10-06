@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const passwordHash = sha256(pass);
         if (admin.password !== passwordHash) throw new Error('Invalid password');
 
-        appUser = { email: credential, role: 'admin' };
+        appUser = { email: credential, role: 'admin', canEditResults: true, canMarkAttendance: true };
         router.push('/dashboard');
       } else if (role === 'teacher') {
         const teacher = await getTeacherById(credential);

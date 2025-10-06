@@ -18,7 +18,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { deleteStudentResults } from '@/lib/firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useReactToPrint } from 'react-to-print';
-import { useAuth } from '@/contexts/auth-context';
 
 type StudentResultSummary = {
   student: Student;
@@ -32,8 +31,7 @@ const allClassOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, 
 const sectionOptions = ["A", "B", "C"];
 
 
-export default function StudentResultsList({ initialStudents, userRole, teacherClasses }: { initialStudents: Student[], userRole: UserRole, teacherClasses?: string[] }) {
-  const { user } = useAuth();
+export default function StudentResultsList({ initialStudents, userRole, teacherClasses, canEdit }: { initialStudents: Student[], userRole: UserRole, teacherClasses?: string[], canEdit?: boolean }) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExam, setSelectedExam] = useState<ExamType>('Annual');
@@ -63,7 +61,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     return allClassOptions;
   }, [userRole, teacherClasses]);
 
-  const canEditResults = user?.canEditResults ?? (userRole === 'admin');
+  const canEditResults = canEdit ?? (userRole === 'admin');
 
   const handleEdit = (student: Student) => {
     if (!canEditResults) {

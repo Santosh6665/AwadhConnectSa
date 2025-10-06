@@ -50,7 +50,7 @@ export default function TeacherResultsPage() {
     );
   }
 
-  const canEditResults = user?.canEditResults ?? true;
+  const canEditResults = user?.canEditResults ?? false;
 
   return (
     <div className="space-y-6">
@@ -77,6 +77,7 @@ export default function TeacherResultsPage() {
         initialStudents={students} 
         userRole="teacher" 
         teacherClasses={teacherClasses}
+        canEdit={canEditResults}
       />
     </div>
   );
