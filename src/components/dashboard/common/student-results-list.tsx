@@ -127,7 +127,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
          matchesClass = selectedClass === 'all' || student.className === selectedClass;
       }
 
-      const matchesSection = selectedSection === 'all' || student.sectionName === 'all' || student.sectionName === selectedSection;
+      const matchesSection = selectedSection === 'all' || student.sectionName === selectedSection;
 
       return matchesSearch && matchesClass && matchesSection;
     });
