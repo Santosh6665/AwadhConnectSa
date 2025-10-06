@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { generateEventSuggestions } from '@/ai/flows/generate-event-suggestions';
@@ -6,12 +7,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Wand2, Loader2 } from 'lucide-react';
+import type { Event } from '@/lib/types';
 
-export default function EventSuggestionGenerator() {
+interface EventSuggestionGeneratorProps {
+  pastEvents: Event[];
+}
+
+export default function EventSuggestionGenerator({ pastEvents }: EventSuggestionGeneratorProps) {
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState('');
-  const [historicalData, setHistoricalData] = useState('Last year we held a Science Fair (high attendance), a Cultural Fest (medium attendance), and a Fun Run (high attendance).');
-  const [studentFeedback, setStudentFeedback] = useState('Students want more sports events and fewer academic competitions. They enjoyed the hands-on activities at the Science Fair.');
+  
+  const formattedPastEvents = pastEvents.map(e => `${e.title} (Category: ${e.category})`).join(', ');
+
+  const [historicalData, setHistoricalData] = useState(formattedPastEvents || 'No past events found.');
+  const [studentFeedback, setStudentFeedback] = useState('No specific feedback collected yet. Focus on a mix of academic and cultural events.');
   const [upcomingHolidays, setUpcomingHolidays] = useState('Winter Break (Dec 22 - Jan 5), Republic Day (Jan 26)');
 
   const handleSubmit = async (e: React.FormEvent) => {

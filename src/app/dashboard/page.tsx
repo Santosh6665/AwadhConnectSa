@@ -1,6 +1,6 @@
 
 import StatCard from "@/components/dashboard/stat-card";
-import { getStudents, getTeachers } from "@/lib/firebase/firestore";
+import { getStudents, getTeachers, getEvents } from "@/lib/firebase/firestore";
 import type { FeeStructure } from "@/lib/types";
 import { Users, BookUser, Banknote, Landmark, UserCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -18,9 +18,12 @@ const quickActions = [
 ];
 
 export default async function AdminDashboardPage() {
-    const allStudents = await getStudents();
-    const allTeachers = await getTeachers();
-    const feeStructure = await getFeeStructure();
+    const [allStudents, allTeachers, feeStructure, pastEvents] = await Promise.all([
+      getStudents(),
+      getTeachers(),
+      getFeeStructure(),
+      getEvents(),
+    ]);
 
     const activeStudents = allStudents.filter(s => s.status === 'Active');
     const activeTeachers = allTeachers.filter(t => t.status === 'Active');
@@ -29,22 +32,25 @@ export default async function AdminDashboardPage() {
     let totalDues = 0;
 
     allStudents.forEach(student => {
-        // Calculate current session's fees
-        const currentClassFeeData = student.fees?.[student.className];
-        if (currentClassFeeData) {
-            const structure = currentClassFeeData.structure || feeStructure?.[student.className];
+        let studentTotalExpected = 0;
+        let studentTotalPaid = 0;
+
+        // Calculate fees for all sessions recorded for the student
+        Object.keys(student.fees || {}).forEach(className => {
+            const feeData = student.fees[className];
+            const structure = feeData.structure || feeStructure?.[className];
             if (structure) {
                 const annualFee = Object.values(structure).reduce((sum, head) => sum + (head.amount * head.months), 0);
-                const concession = currentClassFeeData.concession || 0;
-                const totalPayable = annualFee - concession;
-                
-                const paid = (currentClassFeeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
-                totalFeesCollected += paid;
-                totalDues += Math.max(0, totalPayable - paid);
+                const concession = feeData.concession || 0;
+                studentTotalExpected += (annualFee - concession);
             }
-        }
-        // Add previous session's dues
-        totalDues += student.previousDue || 0;
+            studentTotalPaid += (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+        });
+        
+        studentTotalExpected += student.previousDue || 0;
+        
+        totalFeesCollected += studentTotalPaid;
+        totalDues += Math.max(0, studentTotalExpected - studentTotalPaid);
     });
 
     const totalSalary = activeTeachers.reduce((acc, teacher) => acc + (teacher.salary || 0), 0);
@@ -61,7 +67,7 @@ export default async function AdminDashboardPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                 <StatCard title="Active Students" value={activeStudents.length.toString()} icon={Users} description={`${allStudents.length} total students`} />
                 <StatCard title="Active Teachers" value={activeTeachers.length.toString()} icon={BookUser} description={`${allTeachers.length} total staff`} />
-                <StatCard title="Fees Collected" value={`Rs ${(totalFeesCollected / 1000).toFixed(1)}k`} icon={Banknote} description="This session" />
+                <StatCard title="Fees Collected" value={`Rs ${(totalFeesCollected / 1000).toFixed(1)}k`} icon={Banknote} description="Across all sessions" />
                 <StatCard title="Total Dues" value={`Rs ${(totalDues / 1000).toFixed(1)}k`} icon={Landmark} description="Pending fees" />
                 <StatCard title="Monthly Salary" value={`Rs ${(totalSalary / 1000).toFixed(1)}k`} icon={Banknote} description="For active staff" />
             </div>
@@ -88,7 +94,7 @@ export default async function AdminDashboardPage() {
                 </div>
 
                 <div className="lg:col-span-2">
-                  <EventSuggestionGenerator />
+                  <EventSuggestionGenerator pastEvents={pastEvents} />
                 </div>
             </div>
         </div>
