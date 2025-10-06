@@ -71,7 +71,7 @@ export default function MyResultsPage() {
 
       <div className="print-container">
         {annualResult && student ? (
-          <ResultCard student={student} annualResult={annualResult} onDownload={() => window.print()}/>
+          <ResultCard student={student} annualResult={annualResult} forClass={selectedClass} onDownload={() => window.print()}/>
         ) : (
           <Card className="no-print">
               <CardContent className="p-8 text-center text-muted-foreground">

@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { calculateOverallResult, getGrade } from '@/lib/utils';
 import EditMarksDialog from './edit-marks-dialog';
 import ResultCard from './result-card';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { deleteStudentResults } from '@/lib/firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -43,6 +43,9 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  
+  const [viewingClass, setViewingClass] = useState<string>('');
+
 
   const resultRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
@@ -65,6 +68,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   
   const handleView = (student: Student) => {
     setSelectedStudent(student);
+    setViewingClass(student.className); // Default to current class
     setIsViewDialogOpen(true);
   };
 
@@ -145,6 +149,10 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
 
     return summaries;
   }, [students, searchTerm, selectedClass, selectedSection, userRole]);
+
+
+  const viewingClassOptions = selectedStudent ? Object.keys(selectedStudent.results || {}).sort().reverse() : [];
+  const annualResultForViewing = selectedStudent?.results?.[viewingClass];
 
 
   return (
@@ -240,11 +248,25 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
             />
             <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
                 <DialogContent className="max-w-4xl p-0 border-0">
-                    <ScrollArea className="max-h-[90vh]">
+                    <DialogHeader className="p-4 pb-0">
+                        <DialogTitle>Viewing Result for {selectedStudent.firstName}</DialogTitle>
+                        <DialogDescription>
+                            <Select onValueChange={setViewingClass} value={viewingClass}>
+                                <SelectTrigger className="w-full md:w-48 mt-2">
+                                    <SelectValue placeholder="Select Class" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {viewingClassOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="max-h-[80vh]">
                        <ResultCard 
                             ref={resultRef}
                             student={selectedStudent} 
-                            annualResult={selectedStudent.results?.[selectedStudent.className]} 
+                            annualResult={annualResultForViewing} 
+                            forClass={viewingClass}
                             onDownload={handlePrint}
                         />
                     </ScrollArea>

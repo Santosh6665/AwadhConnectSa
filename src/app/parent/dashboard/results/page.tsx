@@ -15,7 +15,7 @@ export default function ParentResultsPage() {
   const [children, setChildren] = useState<Student[]>([]);
   const [selectedChild, setSelectedChild] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedSession, setSelectedSession] = useState<string>(''); // This will be className now
+  const [selectedClass, setSelectedClass] = useState<string>('');
 
   useEffect(() => {
     if (user?.id) {
@@ -31,7 +31,7 @@ export default function ParentResultsPage() {
             const firstChild = validStudents[0];
             setSelectedChild(firstChild);
             if (firstChild.className) {
-              setSelectedSession(firstChild.className); // It is className
+              setSelectedClass(firstChild.className);
             }
           }
         }
@@ -45,7 +45,7 @@ export default function ParentResultsPage() {
     const child = children.find(c => c.admissionNumber === admissionNumber);
     if(child) {
         setSelectedChild(child);
-        setSelectedSession(child.className);
+        setSelectedClass(child.className);
     }
   }
 
@@ -58,7 +58,7 @@ export default function ParentResultsPage() {
   }
 
   const sessionOptions = selectedChild ? Object.keys(selectedChild.results || {}).sort().reverse() : [];
-  const annualResult = selectedChild?.results?.[selectedSession];
+  const annualResult = selectedChild?.results?.[selectedClass];
 
   return (
     <div className="space-y-6">
@@ -81,7 +81,7 @@ export default function ParentResultsPage() {
             </SelectContent>
           </Select>
           {sessionOptions.length > 0 && (
-            <Select onValueChange={setSelectedSession} value={selectedSession}>
+            <Select onValueChange={setSelectedClass} value={selectedClass}>
               <SelectTrigger className="w-full md:w-48">
                 <SelectValue placeholder="Select Class" />
               </SelectTrigger>
@@ -97,7 +97,7 @@ export default function ParentResultsPage() {
       
       <div className="print-container">
         {annualResult && selectedChild ? (
-          <ResultCard student={selectedChild} annualResult={annualResult} onDownload={() => window.print()}/>
+          <ResultCard student={selectedChild} annualResult={annualResult} forClass={selectedClass} onDownload={() => window.print()}/>
         ) : (
           <Card className="no-print">
             <CardContent className="p-8 text-center text-muted-foreground">

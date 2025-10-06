@@ -32,11 +32,12 @@ const DetailItem = ({ label, value }: { label: string; value: React.ReactNode })
 type ResultCardProps = {
   student: Student;
   annualResult?: AnnualResult;
+  forClass: string;
   onDownload: () => void;
 };
 
 const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
-  ({ student, annualResult, onDownload }, ref) => {
+  ({ student, annualResult, forClass, onDownload }, ref) => {
     
     if (!annualResult) {
       return (
@@ -52,7 +53,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
     const hyResult = annualResult.examResults['Half-Yearly'];
     const anResult = annualResult.examResults.Annual;
     
-    const subjects = subjectsByClass[student.className as keyof typeof subjectsByClass] || [];
+    const subjects = subjectsByClass[forClass as keyof typeof subjectsByClass] || [];
 
     const calculateTotal = (result: ExamResult | undefined) => {
       if (!result) return { obtained: 0, max: 0 };
@@ -79,6 +80,11 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
     const getSubjectMarks = (subjectName: string, examResult: ExamResult | undefined): SubjectResult | undefined => {
       return examResult?.subjects.find(s => s.subjectName === subjectName);
     }
+    
+    const sessionForClass = student.previousSessions?.find(s => s.className === forClass)?.session || student.session;
+    const rollNoForClass = student.previousSessions?.find(s => s.className === forClass)?.rollNo || student.rollNo;
+    const sectionForClass = student.previousSessions?.find(s => s.className === forClass)?.sectionName || student.sectionName;
+
 
     return (
       <div ref={ref}>
@@ -112,9 +118,9 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
               <h2 className="flex items-center gap-2 text-lg font-semibold mb-2"><User className="w-5 h-5 text-primary"/>Student Details</h2>
               <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
                   <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} />
-                  <DetailItem label="Roll No.:" value={student.rollNo} />
-                  <DetailItem label="Class/Section:" value={`${student.className}-${student.sectionName}`} />
-                  <DetailItem label="Date of Birth:" value={student.dob} />
+                  <DetailItem label="Roll No.:" value={rollNoForClass} />
+                  <DetailItem label="Class/Section:" value={`${forClass}-${sectionForClass}`} />
+                  <DetailItem label="Session:" value={sessionForClass} />
                   <DetailItem label="Father's Name:" value={student.parentName} />
                   <DetailItem label="Parent's Phone:" value={student.parentMobile} />
               </div>
