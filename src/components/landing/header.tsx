@@ -112,9 +112,9 @@ export default function Header() {
         <div className="flex items-center justify-end space-x-4 md:ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button>
-                <User className="mr-2 h-4 w-4" />
-                Login
+              <Button variant="outline" size="icon">
+                <User className="h-5 w-5" />
+                <span className="sr-only">Login</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
