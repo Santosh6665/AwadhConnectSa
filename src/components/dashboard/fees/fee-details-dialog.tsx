@@ -59,18 +59,20 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
   
   const classOptions = ['all', ...Object.keys(student.fees || {})];
 
-  const studentFeeData = student.fees?.[student.className];
-  const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[student.className] || {};
+  const classForSummary = classFilter === 'all' ? student.className : classFilter;
+
+  const studentFeeData = student.fees?.[classForSummary];
+  const studentStructure = studentFeeData?.structure || defaultFeeStructure?.[classForSummary] || {};
 
   const annualFee = Object.values(studentStructure).reduce((sum, head) => sum + (head.amount * head.months), 0);
   const concession = studentFeeData?.concession || 0;
   
-  const currentClassTransactions = student.fees?.[student.className]?.transactions || [];
+  const currentClassTransactions = student.fees?.[classForSummary]?.transactions || [];
   const currentClassPaid = currentClassTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 
   const previousDue = student.previousDue || 0;
   const currentClassDue = Math.max(0, annualFee - concession - currentClassPaid);
-  const totalBalanceDue = currentClassDue + previousDue;
+  const totalBalanceDue = currentClassDue + (classForSummary === student.className ? previousDue : 0);
   
   const totalPaidAllTime = allTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 
@@ -150,7 +152,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
 
             <div className="grid sm:grid-cols-2 gap-8 mt-8">
                 <div>
-                    <h3 className="font-semibold text-muted-foreground mb-2">Fee Structure (Class {student.className})</h3>
+                    <h3 className="font-semibold text-muted-foreground mb-2">Fee Structure (Class {classForSummary})</h3>
                     <div className="border rounded-lg p-4 space-y-2">
                         {Object.entries(studentStructure).map(([key, value]) => (
                             <DetailItem key={key} label={`${key}:`} value={`₹${value.amount.toLocaleString()}`} />
@@ -162,9 +164,9 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                 <div className="space-y-4">
                      <h3 className="font-semibold text-muted-foreground mb-2">Summary</h3>
                      <div className="border rounded-lg p-4 space-y-3">
-                        <DetailItem label={`Annual Fee (Class ${student.className}):`} value={`₹${annualFee.toLocaleString()}`} />
+                        <DetailItem label={`Annual Fee (Class ${classForSummary}):`} value={`₹${annualFee.toLocaleString()}`} />
                         <DetailItem label="Total Paid (All Time):" value={`₹${totalPaidAllTime.toLocaleString()}`} />
-                        <DetailItem label="Previous Dues:" value={`₹${previousDue.toLocaleString()}`} />
+                        <DetailItem label="Previous Dues:" value={classForSummary === student.className ? `₹${previousDue.toLocaleString()}` : 'N/A'} />
                         <Separator/>
                         <div className="flex justify-between items-center py-2">
                             <span className="text-lg font-bold">Total Balance Due:</span>
@@ -201,4 +203,3 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
     </>
   );
 }
-
