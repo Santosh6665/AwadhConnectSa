@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import {
@@ -157,9 +158,18 @@ export default function AddEditMaterialDialog({ isOpen, onOpenChange, item, onSa
         }
         onSaveSuccess();
 
-    } catch (error) {
-        console.error("Failed to save material:", error);
-        toast({ title: "Error", description: "Failed to save material.", variant: "destructive" });
+    } catch (error: any) {
+        if (error.code === 'storage/unknown') {
+            toast({
+                variant: 'destructive',
+                title: 'Firebase Storage Error',
+                description: "File upload failed. This is likely a CORS or Storage Rules issue in your Firebase project. Please go to your project's Storage settings and ensure your rules allow writes and that your domain is added to the CORS configuration.",
+                duration: 9000,
+            });
+        } else {
+            console.error("Failed to save material:", error);
+            toast({ title: "Error", description: "Failed to save material.", variant: "destructive" });
+        }
     } finally {
         setIsSaving(false);
     }
