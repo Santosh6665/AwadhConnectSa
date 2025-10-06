@@ -4,18 +4,19 @@ import type { Student, FeeStructure } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 import StatCard from '../stat-card';
-import { Banknote, Landmark, Percent, CalendarCheck } from 'lucide-react';
+import { Banknote, Landmark, Percent, CalendarCheck, History } from 'lucide-react';
 import { useMemo } from 'react';
 
 const COLORS = ['#0088FE', '#FF8042'];
 
 export default function FeeCollectionReport({ students, feeStructure }: { students: Student[], feeStructure: { [key: string]: FeeStructure } | null }) {
 
-  const { allTimeFeesCollected, currentSessionFeesCollected, totalDues, collectionPercentage } = useMemo(() => {
+  const { allTimeFeesCollected, currentSessionFeesCollected, totalDues, collectionPercentage, totalPreviousDues } = useMemo(() => {
     let allTimeFeesCollected = 0;
     let currentSessionFeesCollected = 0;
     let totalDues = 0;
     let totalExpected = 0;
+    let totalPreviousDues = 0;
 
     students.forEach(student => {
         let studentTotalExpected = 0;
@@ -38,6 +39,7 @@ export default function FeeCollectionReport({ students, feeStructure }: { studen
             }
         });
         
+        totalPreviousDues += student.previousDue || 0;
         studentTotalExpected += student.previousDue || 0;
         
         allTimeFeesCollected += studentTotalPaid;
@@ -47,7 +49,7 @@ export default function FeeCollectionReport({ students, feeStructure }: { studen
     totalDues = Math.max(0, totalExpected - allTimeFeesCollected);
     const collectionPercentage = totalExpected > 0 ? (allTimeFeesCollected / totalExpected) * 100 : 0;
 
-    return { allTimeFeesCollected, currentSessionFeesCollected, totalDues, collectionPercentage };
+    return { allTimeFeesCollected, currentSessionFeesCollected, totalDues, collectionPercentage, totalPreviousDues };
   }, [students, feeStructure]);
 
   const chartData = [
@@ -57,9 +59,10 @@ export default function FeeCollectionReport({ students, feeStructure }: { studen
 
   return (
     <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
              <StatCard title="All-Time Collection" value={`Rs ${(allTimeFeesCollected / 1000).toFixed(1)}k`} icon={Banknote} description="Across all sessions"/>
              <StatCard title="Current Session Collection" value={`Rs ${(currentSessionFeesCollected / 1000).toFixed(1)}k`} icon={CalendarCheck} />
+             <StatCard title="Total Previous Dues" value={`Rs ${(totalPreviousDues / 1000).toFixed(1)}k`} icon={History} />
              <StatCard title="Total Outstanding Dues" value={`Rs ${(totalDues / 1000).toFixed(1)}k`} icon={Landmark} />
              <StatCard title="Overall Collection Rate" value={`${collectionPercentage.toFixed(2)}%`} icon={Percent} />
         </div>
