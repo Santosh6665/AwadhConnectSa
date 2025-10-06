@@ -192,6 +192,9 @@ export default function AdminSalaryPage() {
         <>
             <Dialog open={isSlipOpen} onOpenChange={setIsSlipOpen}>
                 <DialogContent className="max-w-4xl p-0 border-0">
+                    <DialogHeader className="p-4 pb-0">
+                      <DialogTitle className="sr-only">Salary Slip for {selectedTeacher.name}</DialogTitle>
+                    </DialogHeader>
                     <SalarySlip
                         teacher={selectedTeacher}
                         month={currentMonth}
@@ -214,3 +217,5 @@ export default function AdminSalaryPage() {
     </div>
   );
 }
+
+    

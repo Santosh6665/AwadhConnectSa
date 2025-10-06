@@ -11,6 +11,7 @@ import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, getDaysInMonth, addMonths, subMonths, isSunday } from 'date-fns';
 import SalarySlip from '@/components/dashboard/common/salary-slip';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 type SalaryDetails = {
   totalDays: number;
@@ -113,7 +114,19 @@ export default function TeacherSalaryPage() {
           </div>
         </CardContent>
       </Card>
-      
+      <Dialog>
+        <DialogContent className="max-w-4xl p-0 border-0">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Salary Slip</DialogTitle>
+          </DialogHeader>
+          <SalarySlip
+            teacher={teacher}
+            month={currentMonth}
+            salaryDetails={salaryDetails}
+            payment={payment}
+          />
+        </DialogContent>
+      </Dialog>
       <SalarySlip
         teacher={teacher}
         month={currentMonth}
@@ -123,3 +136,5 @@ export default function TeacherSalaryPage() {
     </div>
   );
 }
+
+    

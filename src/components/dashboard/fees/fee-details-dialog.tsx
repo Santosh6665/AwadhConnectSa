@@ -90,7 +90,10 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
     <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl p-0">
-        <div ref={summaryReceiptRef} className="p-8 max-h-[90vh] print:max-h-none overflow-y-scroll no-scrollbar">
+         <DialogHeader className="p-8 pb-0">
+          <DialogTitle className="sr-only">Fee Receipt for {student.firstName}</DialogTitle>
+        </DialogHeader>
+        <div ref={summaryReceiptRef} className="p-8 pt-0 max-h-[90vh] print:max-h-none overflow-y-scroll no-scrollbar">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-4">
                   <GraduationCap className="h-12 w-12 text-primary" />
@@ -213,3 +216,5 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
     </>
   );
 }
+
+    
