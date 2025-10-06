@@ -17,7 +17,7 @@ import SingleReceiptDialog from './single-receipt-dialog';
 
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
-    <div className={cn("flex justify-between items-start py-1", className)}>
+    <div className={cn("grid grid-cols-2 gap-4 items-start py-1", className)}>
       <span className="font-medium text-muted-foreground">{label}</span>
       <span className="font-semibold text-end">{value || 'N/A'}</span>
     </div>
@@ -57,7 +57,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
     ? allTransactions 
     : allTransactions.filter(tx => tx.className === classFilter);
   
-  const classOptions = ['all', ...Object.keys(student.fees || {})];
+  const classOptions = ['all', ...Object.keys(student.fees || {}).sort((a, b) => Number(b) - Number(a))];
 
   const classForSummary = classFilter === 'all' ? student.className : classFilter;
 
@@ -76,6 +76,16 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
   
   const totalPaidAllTime = allTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 
+  const previousSessionData = student.previousSessions?.find(s => s.className === classForSummary);
+
+  const displayData = {
+    session: previousSessionData?.session || student.session,
+    className: previousSessionData?.className || student.className,
+    sectionName: previousSessionData?.sectionName || student.sectionName,
+    rollNo: previousSessionData?.rollNo || student.rollNo,
+  };
+
+
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -91,7 +101,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
               </div>
               <div className="text-right">
                 <h2 className="text-xl font-semibold font-headline">Fee Receipt</h2>
-                <p className="text-sm text-muted-foreground">Session: {student.session}</p>
+                <p className="text-sm text-muted-foreground">Session: {displayData.session}</p>
               </div>
             </div>
 
@@ -101,8 +111,8 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                 <div>
                     <h3 className="font-semibold text-muted-foreground mb-2">Student Details</h3>
                     <DetailItem label="Name:" value={`${student.firstName} ${student.lastName}`} className="grid-cols-[auto_1fr] text-left" />
-                    <DetailItem label="Class:" value={`${student.className}-${student.sectionName}`} className="grid-cols-[auto_1fr] text-left" />
-                    <DetailItem label="Roll No:" value={student.rollNo} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Class:" value={`${displayData.className}-${displayData.sectionName}`} className="grid-cols-[auto_1fr] text-left" />
+                    <DetailItem label="Roll No:" value={displayData.rollNo} className="grid-cols-[auto_1fr] text-left" />
                     <DetailItem label="Father's Name:" value={student.parentName} className="grid-cols-[auto_1fr] text-left" />
                 </div>
                  <div className="text-right">
