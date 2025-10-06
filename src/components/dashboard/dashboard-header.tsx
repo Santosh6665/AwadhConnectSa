@@ -7,6 +7,7 @@ import {
   Settings,
   User,
   Calendar,
+  GraduationCap,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -54,10 +55,17 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
   const noticePath = `/${role}/dashboard/notices`;
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <SidebarTrigger className="sm:hidden" />
       
-      <Breadcrumb className="hidden md:flex">
+      <div className="flex-1 items-center justify-center text-center sm:hidden">
+          <Link href="/" className="flex items-center justify-center gap-2">
+            <GraduationCap className="h-6 w-6 text-primary" />
+            <span className="font-bold font-headline text-lg">Awadh Inter College</span>
+          </Link>
+      </div>
+
+      <Breadcrumb className="hidden sm:flex">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -85,12 +93,12 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="relative ml-auto flex-1 md:grow-0">
+      <div className="relative ml-auto hidden flex-1 grow-0 sm:flex">
          {/* Optional Search bar can go here */}
       </div>
       <DropdownMenu onOpenChange={(open) => { if (open) markAllAsRead(); }}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="relative">
+          <Button variant="outline" size="icon" className="relative hidden sm:inline-flex">
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{unreadCount}</Badge>
