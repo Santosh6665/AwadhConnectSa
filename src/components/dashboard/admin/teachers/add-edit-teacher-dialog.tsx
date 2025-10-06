@@ -177,7 +177,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1 pr-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -456,7 +456,7 @@ export default function AddEditTeacherDialog({ isOpen, onOpenChange, teacher, on
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="pt-6">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>Cancel</Button>
               <Button type="submit" disabled={isSaving}>
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

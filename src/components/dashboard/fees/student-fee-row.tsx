@@ -63,7 +63,7 @@ export default function StudentFeeRow({
 
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 py-3 border-b last:border-none">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 py-3 border-b last:border-none">
       <div className="flex items-center gap-4">
         <Avatar>
           <AvatarImage src={`https://picsum.photos/seed/${student.admissionNumber}/100`} />
@@ -92,9 +92,9 @@ export default function StudentFeeRow({
             <p className="font-mono text-lg font-bold text-destructive">Rs {totalDue.toLocaleString()}</p>
         </div>
         <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsStructureOpen(true)}><FileCog className="mr-2 h-4 w-4"/>Structure</Button>
             <Button size="sm" onClick={() => setIsPaymentOpen(true)}><Banknote className="mr-2 h-4 w-4"/>Pay</Button>
-            <Button variant="outline" size="sm" onClick={() => setIsDetailsOpen(true)}><FileText className="mr-2 h-4 w-4"/>Payment Receipt</Button>
+            <Button variant="outline" size="sm" onClick={() => setIsDetailsOpen(true)}><FileText className="mr-2 h-4 w-4"/>Receipt</Button>
+            <Button variant="outline" size="sm" onClick={() => setIsStructureOpen(true)}><FileCog className="mr-2 h-4 w-4"/>Structure</Button>
         </div>
       </div>
       

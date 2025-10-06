@@ -55,17 +55,17 @@ export default function FamilyFeeCard({
         <AccordionItem value={family.id} className="border-none">
             <div className="bg-card rounded-lg shadow-sm">
             <AccordionTrigger className="p-4 hover:no-underline rounded-t-lg data-[state=open]:bg-muted/50">
-                <div className="flex justify-between items-center w-full">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
                     <div className="flex items-center gap-4 text-left">
                         <div>
                             <p className="font-bold text-lg">{family.name}</p>
                             <p className="text-sm text-muted-foreground">{family.phone}</p>
                         </div>
-                        <div className="text-sm text-muted-foreground self-end">
+                        <div className="hidden lg:block text-sm text-muted-foreground self-end">
                             ({childCount} {childLabel}: {studentNames})
                         </div>
                     </div>
-                     <div className="text-right">
+                     <div className="text-left md:text-right shrink-0">
                          <p className="text-sm text-muted-foreground">Total Family Due</p>
                          <p className={`font-bold text-xl ${totalDue > 0 ? 'text-destructive' : 'text-green-600'}`}>
                            Rs {totalDue.toLocaleString()}

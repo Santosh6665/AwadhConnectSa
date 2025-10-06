@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { LucideIcon } from "lucide-react";
 
@@ -17,7 +18,7 @@ export default function StatCard({ title, value, description, icon: Icon }: Stat
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{value}</div>
-                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+                {description && <p className="text-xs text-muted-foreground truncate">{description}</p>}
             </CardContent>
         </Card>
     )

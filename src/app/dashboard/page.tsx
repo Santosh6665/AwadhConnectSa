@@ -1,7 +1,6 @@
 
 import StatCard from "@/components/dashboard/stat-card";
 import { getStudents, getTeachers, getEvents } from "@/lib/firebase/firestore";
-import type { FeeStructure } from "@/lib/types";
 import { Users, BookUser, Banknote, Landmark, UserCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

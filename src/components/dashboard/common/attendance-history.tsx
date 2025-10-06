@@ -191,15 +191,15 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
         <CardDescription>Select filters to view the monthly attendance report.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
+        <div className="flex flex-col md:flex-row md:flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
           {role === 'admin' && (
             <>
               <Select value={selectedClass} onValueChange={setSelectedClass}>
-                <SelectTrigger className="w-40"><SelectValue placeholder="All Classes" /></SelectTrigger>
+                <SelectTrigger className="w-full md:w-40"><SelectValue placeholder="All Classes" /></SelectTrigger>
                 <SelectContent>{classOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={selectedSection} onValueChange={setSelectedSection}>
-                <SelectTrigger className="w-40"><SelectValue placeholder="All Sections" /></SelectTrigger>
+                <SelectTrigger className="w-full md:w-40"><SelectValue placeholder="All Sections" /></SelectTrigger>
                 <SelectContent>{sectionOptions.map(s => <SelectItem key={s} value={s}>Section {s}</SelectItem>)}</SelectContent>
               </Select>
             </>
@@ -207,14 +207,14 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
 
           {role === 'teacher' && teacher?.classes && (
              <Select onValueChange={handleClassChange}>
-                <SelectTrigger className="w-40"><SelectValue placeholder="All My Classes" /></SelectTrigger>
+                <SelectTrigger className="w-full md:w-40"><SelectValue placeholder="All My Classes" /></SelectTrigger>
                 <SelectContent>{teacher.classes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
           )}
 
           {(role === 'admin' || role === 'teacher') && (
             <Select value={selectedStudent?.admissionNumber || ''} onValueChange={handleStudentChange} disabled={filteredStudents.length === 0}>
-                <SelectTrigger className="w-64"><SelectValue placeholder="Select Student" /></SelectTrigger>
+                <SelectTrigger className="w-full md:w-64"><SelectValue placeholder="Select Student" /></SelectTrigger>
                 <SelectContent>
                     {filteredStudents.map(s => <SelectItem key={s.admissionNumber} value={s.admissionNumber}>{s.firstName} {s.lastName} ({s.rollNo})</SelectItem>)}
                 </SelectContent>
@@ -223,7 +223,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
 
           {role === 'parent' && (
             <Select value={selectedStudent?.admissionNumber || ''} onValueChange={handleStudentChange} disabled={children.length === 0}>
-                <SelectTrigger className="w-64"><SelectValue placeholder="Select Child" /></SelectTrigger>
+                <SelectTrigger className="w-full md:w-64"><SelectValue placeholder="Select Child" /></SelectTrigger>
                 <SelectContent>
                     {children.map(c => <SelectItem key={c.admissionNumber} value={c.admissionNumber}>{c.firstName} {c.lastName}</SelectItem>)}
                 </SelectContent>
@@ -236,7 +236,7 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         ) : selectedStudent ? (
-          <div className="p-4 border rounded-lg">
+          <div className="p-0 md:p-4 border rounded-lg">
             <div className="flex justify-between items-center mb-4">
                 <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft /></Button>
                 <h3 className="text-xl font-semibold font-headline">{format(currentMonth, 'MMMM yyyy')}</h3>
@@ -279,7 +279,3 @@ export default function AttendanceHistory({ role, studentId, parentId, teacherId
     </Card>
   );
 }
-
-    
-
-    

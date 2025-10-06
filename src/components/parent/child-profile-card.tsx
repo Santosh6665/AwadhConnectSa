@@ -52,7 +52,7 @@ export default function ChildProfileCard({ student }: { student: Student }) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={`https://picsum.photos/seed/${student.admissionNumber}/150`} alt={student.firstName} />
@@ -73,7 +73,7 @@ export default function ChildProfileCard({ student }: { student: Student }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-4 border-t">
            <DetailItem 
                 icon={Banknote}
                 label="Fee Status" 

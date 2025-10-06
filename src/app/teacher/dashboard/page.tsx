@@ -46,10 +46,10 @@ export default function TeacherDashboardPage() {
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
                             {quickActions.map(action => (
-                                <Button key={action.href} variant="outline" className="flex flex-col h-24 gap-2" asChild>
+                                <Button key={action.href} variant="outline" className="flex flex-col h-24 gap-2 text-center" asChild>
                                     <Link href={action.href}>
                                         <action.icon className="h-6 w-6 text-primary" />
-                                        <span className="text-center text-sm">{action.label}</span>
+                                        <span className="text-sm">{action.label}</span>
                                     </Link>
                                 </Button>
                             ))}
