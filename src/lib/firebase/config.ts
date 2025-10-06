@@ -1,3 +1,4 @@
+
 // This comment is for the user, not the AI:
 // Instructions for the user:
 // 1. Create a `.env.local` file in the root of your project.
