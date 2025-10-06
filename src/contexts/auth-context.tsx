@@ -3,9 +3,11 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import type { AppUser } from '@/lib/types';
+import type { AppUser, Teacher } from '@/lib/types';
 import { getAdminByEmail, getTeacherById, getStudentByAdmissionNumber, getParentByMobile } from '@/lib/firebase/firestore';
 import { sha256 } from 'js-sha256';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 
 interface AuthContextType {
   user: AppUser | null;
@@ -34,6 +36,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (user?.role === 'teacher' && user.id) {
+      const unsub = onSnapshot(doc(db, "teachers", user.id), (doc) => {
+        if (doc.exists()) {
+          const teacherData = doc.data() as Teacher;
+          const updatedUser: AppUser = {
+            ...user,
+            name: teacherData.name,
+            canMarkAttendance: teacherData.canMarkAttendance,
+            canEditResults: teacherData.canEditResults,
+          };
+
+          // Check if user data has actually changed to avoid unnecessary updates
+          if (JSON.stringify(user) !== JSON.stringify(updatedUser)) {
+            setUser(updatedUser);
+            sessionStorage.setItem('app-user', JSON.stringify(updatedUser));
+          }
+        }
+      });
+
+      // Cleanup listener on unmount
+      return () => unsub();
+    }
+  }, [user]);
+
 
   const login = async (credential: string, pass: string, role: 'admin' | 'teacher' | 'student' | 'parent') => {
     setLoading(true);
