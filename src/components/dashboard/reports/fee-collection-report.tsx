@@ -11,17 +11,18 @@ const COLORS = ['#0088FE', '#FF8042'];
 
 export default function FeeCollectionReport({ students, feeStructure }: { students: Student[], feeStructure: { [key: string]: FeeStructure } | null }) {
 
-  const { allTimeFeesCollected, currentSessionFeesCollected, totalDues, collectionPercentage, totalPreviousDues } = useMemo(() => {
+  const { allTimeFeesCollected, currentSessionFeesCollected, currentSessionDue, totalDues, collectionPercentage, totalPreviousDues } = useMemo(() => {
     let allTimeFeesCollected = 0;
     let currentSessionFeesCollected = 0;
     let totalDues = 0;
     let totalExpected = 0;
     let totalPreviousDues = 0;
+    let currentSessionDue = 0;
 
     students.forEach(student => {
         let studentTotalExpected = 0;
         let studentTotalPaid = 0;
-
+        
         // All time calculation
         Object.keys(student.fees || {}).forEach(className => {
             const feeData = student.fees[className];
@@ -29,13 +30,23 @@ export default function FeeCollectionReport({ students, feeStructure }: { studen
             if (structure) {
                 const annualFee = Object.values(structure).reduce((sum, head) => sum + (head.amount * head.months), 0);
                 const concession = feeData.concession || 0;
-                studentTotalExpected += (annualFee - concession);
-            }
-            studentTotalPaid += (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+                const expectedForClass = annualFee - concession;
+                studentTotalExpected += expectedForClass;
 
-            // Current session calculation
-            if (className === student.className) {
-                currentSessionFeesCollected += (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+                const paidForClass = (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+                studentTotalPaid += paidForClass;
+
+                 // Current session due calculation
+                if (className === student.className) {
+                    currentSessionFeesCollected += paidForClass;
+                    currentSessionDue += Math.max(0, expectedForClass - paidForClass);
+                }
+            } else {
+                 const paidForClass = (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+                 studentTotalPaid += paidForClass;
+                 if (className === student.className) {
+                    currentSessionFeesCollected += paidForClass;
+                }
             }
         });
         
@@ -49,7 +60,7 @@ export default function FeeCollectionReport({ students, feeStructure }: { studen
     totalDues = Math.max(0, totalExpected - allTimeFeesCollected);
     const collectionPercentage = totalExpected > 0 ? (allTimeFeesCollected / totalExpected) * 100 : 0;
 
-    return { allTimeFeesCollected, currentSessionFeesCollected, totalDues, collectionPercentage, totalPreviousDues };
+    return { allTimeFeesCollected, currentSessionFeesCollected, currentSessionDue, totalDues, collectionPercentage, totalPreviousDues };
   }, [students, feeStructure]);
 
   const chartData = [
@@ -59,11 +70,12 @@ export default function FeeCollectionReport({ students, feeStructure }: { studen
 
   return (
     <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
              <StatCard title="All-Time Collection" value={`Rs ${(allTimeFeesCollected / 1000).toFixed(1)}k`} icon={Banknote} description="Across all sessions"/>
              <StatCard title="Current Session Collection" value={`Rs ${(currentSessionFeesCollected / 1000).toFixed(1)}k`} icon={CalendarCheck} />
+             <StatCard title="Current Session Due" value={`Rs ${(currentSessionDue / 1000).toFixed(1)}k`} icon={Landmark} />
              <StatCard title="Total Previous Dues" value={`Rs ${(totalPreviousDues / 1000).toFixed(1)}k`} icon={History} />
-             <StatCard title="Total Outstanding Dues" value={`Rs ${(totalDues / 1000).toFixed(1)}k`} icon={Landmark} />
+             <StatCard title="All-Time Outstanding Dues" value={`Rs ${(totalDues / 1000).toFixed(1)}k`} icon={Landmark} />
              <StatCard title="Overall Collection Rate" value={`${collectionPercentage.toFixed(2)}%`} icon={Percent} />
         </div>
         <Card>
