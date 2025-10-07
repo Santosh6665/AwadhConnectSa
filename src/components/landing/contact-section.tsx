@@ -23,9 +23,7 @@ const contactDetails = [
 ]
 
 export default function ContactSection() {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-  const mapQuery = encodeURIComponent("Awadh Inter College, Ghosiyari bazar, bansi, Siddharth Nagar");
-  const mapSrc = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${mapQuery}`;
+  const mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3567.893237593259!2d82.90481687498779!3d27.03460725593368!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3996d52f5f17ae31%3A0xd62c60629abe5491!2sAwadh%20narayan%20prataplal%20intermediate%20college%20ghosiyari%20bazar%20siddharthnagar!5e0!3m2!1sen!2sin!4v1719242940058!5m2!1sen!2sin";
 
   return (
     <section id="contact" className="container mx-auto px-4">
