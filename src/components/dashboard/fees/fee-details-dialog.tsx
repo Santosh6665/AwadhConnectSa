@@ -7,13 +7,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { Student, FeeStructure, FeeReceipt } from '@/lib/types';
-import { Download, GraduationCap, Mail, Phone, Printer } from 'lucide-react';
+import { Download, Mail, Phone, Printer } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { parse } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SingleReceiptDialog from './single-receipt-dialog';
+import Image from 'next/image';
 
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
@@ -96,7 +97,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
         <div ref={summaryReceiptRef} className="p-8 pt-0 max-h-[90vh] print:max-h-none overflow-y-scroll no-scrollbar">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-4">
-                  <GraduationCap className="h-12 w-12 text-primary" />
+                  <Image src="/logo.png" alt="School Logo" width={48} height={48} className="h-12 w-12" />
                   <div>
                       <h1 className="text-2xl font-bold font-headline">Awadh Inter College</h1>
                       <p className="text-sm text-muted-foreground">Ghosiyari bazar, bansi, Siddharth Nagar, 272148</p>

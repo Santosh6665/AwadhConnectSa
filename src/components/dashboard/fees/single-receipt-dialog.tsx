@@ -4,10 +4,11 @@ import * as React from 'react';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Download, GraduationCap, Mail, Phone } from 'lucide-react';
+import { Download, Mail, Phone } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 import type { Student, FeeReceipt } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 const DetailItem = ({ label, value, className }: { label: string; value: React.ReactNode, className?: string }) => (
     <div className={cn("grid grid-cols-2 gap-4 items-start py-1", className)}>
@@ -36,7 +37,7 @@ export default function SingleReceiptDialog({ isOpen, onOpenChange, student, rec
         <div ref={receiptRef} className="p-8">
            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-4">
-                  <GraduationCap className="h-12 w-12 text-primary" />
+                  <Image src="/logo.png" alt="School Logo" width={48} height={48} className="h-12 w-12" />
                   <div>
                       <h1 className="text-2xl font-bold font-headline">Awadh Inter College</h1>
                       <p className="text-sm text-muted-foreground">Ghosiyari bazar, bansi, Siddharth Nagar, 272148</p>

@@ -5,12 +5,12 @@ import * as React from 'react';
 import type { Student, AnnualResult, ExamResult, SubjectResult } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, User, BookOpen, BarChart, Download } from 'lucide-react';
+import { User, BookOpen, BarChart, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { subjectsByClass } from './subjects-schema';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import Image from 'next/image';
 
 const getGrade = (percentage: number): { grade: string; remarks: string; passed: boolean } => {
   if (percentage >= 90) return { grade: 'A+', remarks: 'Outstanding', passed: true };
@@ -93,7 +93,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-4">
-                  <GraduationCap className="h-12 w-12 text-primary" />
+                  <Image src="/logo.png" alt="School Logo" width={48} height={48} className="h-12 w-12" />
                   <div>
                       <h1 className="text-2xl font-bold font-headline">Awadh Inter College</h1>
                       <p className="text-sm text-muted-foreground">Ghosiyari bazar, bansi, Siddharth Nagar, 272148</p>

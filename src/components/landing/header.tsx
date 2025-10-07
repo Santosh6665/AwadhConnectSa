@@ -1,8 +1,7 @@
-
 'use client';
 
 import Link from 'next/link';
-import { GraduationCap, Menu, User } from 'lucide-react';
+import { Menu, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -19,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Image from 'next/image';
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -52,7 +52,7 @@ export default function Header() {
                   </SheetDescription>
                   <div className="flex items-center justify-between p-4 border-b">
                     <Link href="/" className="flex items-center space-x-2">
-                      <GraduationCap className="h-6 w-6 text-primary" />
+                      <Image src="/logo.png" alt="School Logo" width={32} height={32} className="h-8 w-8" />
                       <span className="font-bold font-headline text-lg">Awadh Inter College</span>
                     </Link>
                   </div>
@@ -96,7 +96,7 @@ export default function Header() {
 
         <div className="flex-1 flex justify-center md:justify-start items-center">
             <Link href="/" className="flex items-center space-x-2">
-                <GraduationCap className="h-6 w-6 text-primary" />
+                <Image src="/logo.png" alt="School Logo" width={32} height={32} className="h-8 w-8" />
                 <span className="font-bold font-headline text-lg">Awadh Inter College</span>
             </Link>
         </div>

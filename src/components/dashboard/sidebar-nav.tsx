@@ -9,7 +9,6 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import {
-  GraduationCap,
   LayoutDashboard,
   Users,
   UserCheck,
@@ -28,6 +27,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { UserRole } from '@/lib/types';
+import Image from 'next/image';
 
 type NavItem = {
   href: string;
@@ -86,7 +86,7 @@ export default function SidebarNav({ role }: { role: UserRole }) {
     <>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-            <GraduationCap className="size-8 text-sidebar-primary" />
+            <Image src="/logo.png" alt="School Logo" width={32} height={32} className="size-8" />
             <div className="flex flex-col">
                 <h3 className="text-lg font-headline font-semibold text-sidebar-primary">AwadhConnect</h3>
                 <p className="text-xs text-sidebar-foreground/70">{portalName}</p>

@@ -7,7 +7,6 @@ import {
   Settings,
   User,
   Calendar,
-  GraduationCap,
 } from 'lucide-react';
 import React from 'react';
 import { Button } from '@/components/ui/button';
@@ -37,6 +36,7 @@ import { Badge } from '../ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 import { formatDistanceToNow } from 'date-fns';
 import { useNotifications } from '@/hooks/use-notifications';
+import Image from 'next/image';
 
 function capitalize(str: string) {
     if(!str) return "";
@@ -60,7 +60,7 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
       
       <div className="flex-1 items-center justify-center text-center sm:hidden">
           <Link href="/" className="flex items-center justify-center gap-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
+            <Image src="/logo.png" alt="School Logo" width={24} height={24} className="h-6 w-6" />
             <span className="font-bold font-headline text-lg">Awadh Inter College</span>
           </Link>
       </div>

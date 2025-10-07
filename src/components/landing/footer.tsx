@@ -1,5 +1,5 @@
 
-import { GraduationCap } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Footer() {
@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Column 1: About */}
           <div className="md:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
-              <GraduationCap className="h-6 w-6 text-primary" />
+              <Image src="/logo.png" alt="School Logo" width={24} height={24} className="h-6 w-6" />
               <span className="font-bold font-headline text-lg">Awadh Inter College</span>
             </div>
             <p className="text-sm text-muted-foreground">
