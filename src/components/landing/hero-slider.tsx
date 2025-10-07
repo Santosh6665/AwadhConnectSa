@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -33,7 +34,7 @@ export default function HeroSlider() {
         <CarouselContent>
           {heroImages.map((image) => (
             <CarouselItem key={image.id}>
-              <div className="relative h-[60vh] md:h-[80vh] w-full">
+              <div className="relative h-[50vh] md:h-[65vh] w-full">
                 <Image
                   src={image.imageUrl}
                   alt={image.description}
