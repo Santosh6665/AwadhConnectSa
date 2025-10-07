@@ -63,7 +63,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t mt-8 pt-6 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Awadh Inter College. All rights reserved.</p>
+          <p> ©  Awadh Inter College. All rights reserved.</p>
           <p className="mt-1">
             For technical support, contact our IT Team at <a href="mailto:santoshx.dev@gmail.com" className="text-primary hover:underline">santoshx.dev@gmail.com</a>
           </p>

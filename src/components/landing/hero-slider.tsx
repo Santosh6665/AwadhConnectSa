@@ -9,23 +9,25 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import Autoplay from "embla-carousel-autoplay";
+import Autoplay from 'embla-carousel-autoplay';
+import { Button } from '../ui/button';
+import Link from 'next/link';
 
 export default function HeroSlider() {
   const heroImages = PlaceHolderImages.filter((img) => img.id.startsWith('hero-'));
 
   return (
     <section className="w-full">
-      <Carousel 
+      <Carousel
         className="w-full"
         plugins={[
-            Autoplay({
-              delay: 5000,
-              stopOnInteraction: true,
-            }),
+          Autoplay({
+            delay: 5000,
+            stopOnInteraction: true,
+          }),
         ]}
         opts={{
-            loop: true,
+          loop: true,
         }}
       >
         <CarouselContent>
@@ -49,6 +51,9 @@ export default function HeroSlider() {
                     <p className="mt-4 text-lg md:text-2xl font-body drop-shadow-md max-w-3xl mx-auto">
                       Learning with Excellence, Living with Purpose.
                     </p>
+                    <Button asChild size="lg" className="mt-8">
+                      <Link href="#admissions">Apply for Admission</Link>
+                    </Button>
                   </div>
                 </div>
               </div>
