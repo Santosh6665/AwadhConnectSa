@@ -18,28 +18,31 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Column 2: Quick Links */}
-          <div>
-            <h4 className="font-headline font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li><Link href="#about" className="text-sm text-muted-foreground hover:text-primary">About Us</Link></li>
-              <li><Link href="#academics" className="text-sm text-muted-foreground hover:text-primary">Academics</Link></li>
-              <li><Link href="#admissions" className="text-sm text-muted-foreground hover:text-primary">Admissions</Link></li>
-              <li><Link href="#gallery" className="text-sm text-muted-foreground hover:text-primary">Gallery</Link></li>
-              <li><Link href="#notices" className="text-sm text-muted-foreground hover:text-primary">Notices</Link></li>
-              <li><Link href="#contact" className="text-sm text-muted-foreground hover:text-primary">Contact Us</Link></li>
-            </ul>
-          </div>
+          {/* Mobile Two-Column Wrapper */}
+          <div className="md:col-span-2 grid grid-cols-2 gap-8 md:grid-cols-2">
+            {/* Column 2: Quick Links */}
+            <div>
+              <h4 className="font-headline font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2">
+                <li><Link href="#about" className="text-sm text-muted-foreground hover:text-primary">About Us</Link></li>
+                <li><Link href="#academics" className="text-sm text-muted-foreground hover:text-primary">Academics</Link></li>
+                <li><Link href="#admissions" className="text-sm text-muted-foreground hover:text-primary">Admissions</Link></li>
+                <li><Link href="#gallery" className="text-sm text-muted-foreground hover:text-primary">Gallery</Link></li>
+                <li><Link href="#notices" className="text-sm text-muted-foreground hover:text-primary">Notices</Link></li>
+                <li><Link href="#contact" className="text-sm text-muted-foreground hover:text-primary">Contact Us</Link></li>
+              </ul>
+            </div>
 
-          {/* Column 3: Portals */}
-          <div>
-            <h4 className="font-headline font-semibold mb-4">Portals</h4>
-            <ul className="space-y-2">
-              <li><Link href="/student/login" className="text-sm text-muted-foreground hover:text-primary">Student Portal</Link></li>
-              <li><Link href="/teacher/login" className="text-sm text-muted-foreground hover:text-primary">Teacher Portal</Link></li>
-              <li><Link href="/parent/login" className="text-sm text-muted-foreground hover:text-primary">Parent Portal</Link></li>
-              <li><Link href="/login" className="text-sm text-muted-foreground hover:text-primary">Admin Portal</Link></li>
-            </ul>
+            {/* Column 3: Portals */}
+            <div>
+              <h4 className="font-headline font-semibold mb-4">Portals</h4>
+              <ul className="space-y-2">
+                <li><Link href="/student/login" className="text-sm text-muted-foreground hover:text-primary">Student Portal</Link></li>
+                <li><Link href="/teacher/login" className="text-sm text-muted-foreground hover:text-primary">Teacher Portal</Link></li>
+                <li><Link href="/parent/login" className="text-sm text-muted-foreground hover:text-primary">Parent Portal</Link></li>
+                <li><Link href="/login" className="text-sm text-muted-foreground hover:text-primary">Admin Portal</Link></li>
+              </ul>
+            </div>
           </div>
 
           {/* Column 4: Contact Us */}
