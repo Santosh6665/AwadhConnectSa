@@ -49,6 +49,17 @@ export default function ContactSection() {
           </CardContent>
         </Card>
       </div>
+      <div className="mt-12 rounded-lg overflow-hidden shadow-lg">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3556.764952044813!2d82.92007227499648!3d27.05519655519894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3996b7b2585f9e2b%3A0x8a7f4e7c938159f8!2sAwadh%20Inter%20College!5e0!3m2!1sen!2sin!4v1759082269389!5m2!1sen!2sin"
+          width="100%"
+          height="450"
+          style={{ border: 0 }}
+          allowFullScreen={true}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
     </section>
   );
 }
