@@ -1,17 +1,18 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
-import type { Student } from '@/lib/types';
-import { Loader2, User as UserIcon, BookOpen, Calendar, Banknote, ArrowLeft, ArrowRight } from 'lucide-react';
+import type { Student, PreviousSession } from '@/lib/types';
+import { Loader2, ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import PreviousSessionCard from '@/components/student/previous-session-card';
 import { Button } from '@/components/ui/button';
+import { calculateGrandTotalResult } from '@/lib/utils';
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className="grid grid-cols-2 gap-4 items-start py-2">
@@ -38,6 +39,30 @@ export default function StudentDashboardPage() {
     }
   }, [user]);
 
+  const processedPreviousSessions = useMemo(() => {
+    if (!student?.previousSessions) return [];
+
+    return student.previousSessions.map(session => {
+      const annualResult = student.results?.[session.className];
+      const { percentage } = calculateGrandTotalResult(annualResult);
+
+      const totalClasses = annualResult?.attendance?.totalClasses || 0;
+      const attendedClasses = annualResult?.attendance?.attendedClasses || 0;
+      const attendancePercentage = totalClasses > 0 ? (attendedClasses / totalClasses) * 100 : 0;
+
+      const feeDetails = student.fees?.[session.session];
+      const dueFee = feeDetails ? feeDetails.totalFees - feeDetails.paidAmount : 0;
+
+      return {
+        ...session,
+        overallPercentage: percentage,
+        attendancePercentage: attendancePercentage,
+        finalStatus: percentage >= 33 ? 'Promoted' : 'Not Promoted', 
+        dueFee: dueFee,
+      };
+    });
+  }, [student]);
+
   if (authLoading || loading || !student) {
     return (
       <div className="flex h-full w-full items-center justify-center">
@@ -46,16 +71,14 @@ export default function StudentDashboardPage() {
     );
   }
   
-  const hasPreviousSessions = student.previousSessions && student.previousSessions.length > 0;
-  const safePreviousSessions = student.previousSessions || [];
+  const hasPreviousSessions = processedPreviousSessions.length > 0;
 
   const handlePreviousSession = () => {
     setPreviousSessionIndex(prev => (prev > 0 ? prev - 1 : prev));
   };
   const handleNextSession = () => {
-    setPreviousSessionIndex(prev => (prev < safePreviousSessions.length - 1 ? prev + 1 : prev));
+    setPreviousSessionIndex(prev => (prev < processedPreviousSessions.length - 1 ? prev + 1 : prev));
   };
-
 
   return (
     <div className="space-y-8">
@@ -65,7 +88,6 @@ export default function StudentDashboardPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Left Column - Profile */}
         <div className="lg:col-span-1 space-y-8">
           <Card>
             <CardHeader className="items-center text-center">
@@ -90,7 +112,6 @@ export default function StudentDashboardPage() {
           </Card>
         </div>
 
-        {/* Right Column - Details */}
         <div className="lg:col-span-2 space-y-8">
           
           {hasPreviousSessions && (
@@ -109,16 +130,16 @@ export default function StudentDashboardPage() {
                                 <ArrowLeft className="h-4 w-4" />
                             </Button>
                              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                                {previousSessionIndex + 1} of {safePreviousSessions.length}
+                                {previousSessionIndex + 1} of {processedPreviousSessions.length}
                             </span>
-                            <Button variant="outline" size="icon" onClick={handleNextSession} disabled={previousSessionIndex === safePreviousSessions.length - 1}>
+                            <Button variant="outline" size="icon" onClick={handleNextSession} disabled={previousSessionIndex === processedPreviousSessions.length - 1}>
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <PreviousSessionCard session={safePreviousSessions[previousSessionIndex]} />
+                    <PreviousSessionCard session={processedPreviousSessions[previousSessionIndex]} />
                 </CardContent>
             </Card>
           )}

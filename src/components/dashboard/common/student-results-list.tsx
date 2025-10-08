@@ -1,16 +1,15 @@
 
 'use client';
-import { useState, useMemo, useTransition, useRef } from 'react';
+import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
 import type { Student, ExamType, AnnualResult, UserRole } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MoreHorizontal, Filter, Loader2, Edit, Trash, Eye, Download } from 'lucide-react';
+import { MoreHorizontal, Loader2, Edit, Trash, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { calculateOverallResult, getGrade, calculateGrandTotalResult } from '@/lib/utils';
+import { calculateOverallResult, calculateGrandTotalResult } from '@/lib/utils';
 import EditMarksDialog from './edit-marks-dialog';
 import ResultCard from './result-card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -32,7 +31,19 @@ const allClassOptions = ["Nursery", "LKG", "UKG", ...Array.from({ length: 12 }, 
 const sectionOptions = ["A", "B", "C"];
 
 
-export default function StudentResultsList({ initialStudents, userRole, teacherClasses, canEdit }: { initialStudents: Student[], userRole: UserRole, teacherClasses?: string[], canEdit?: boolean }) {
+export default function StudentResultsList({
+  initialStudents,
+  allStudentsForRank,
+  userRole,
+  teacherClasses,
+  canEdit
+}: {
+  initialStudents: Student[];
+  allStudentsForRank?: Student[];
+  userRole: UserRole;
+  teacherClasses?: string[];
+  canEdit?: boolean;
+}) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExam, setSelectedExam] = useState<ExamType>('Annual');
@@ -45,10 +56,8 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedStudentSummary, setSelectedStudentSummary] = useState<StudentResultSummary | null>(null);
-
   
   const [viewingClass, setViewingClass] = useState<string>('');
-
 
   const resultRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
@@ -56,6 +65,10 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   });
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    setStudents(initialStudents);
+  }, [initialStudents]);
   
   const classOptions = useMemo(() => {
     if (userRole === 'teacher' && teacherClasses) {
@@ -126,30 +139,15 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
 
   const handleSaveMarks = (updatedStudent: Student) => {
     setStudents(prev => prev.map(s => s.admissionNumber === updatedStudent.admissionNumber ? updatedStudent : s));
+    if (allStudentsForRank) {
+        const newAllStudents = allStudentsForRank.map(s => s.admissionNumber === updatedStudent.admissionNumber ? updatedStudent : s);
+    }
   };
   
   const studentSummaries = useMemo(() => {
-    let filtered = students.filter(student => {
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch =
-        student.firstName.toLowerCase().includes(searchLower) ||
-        student.lastName.toLowerCase().includes(searchLower) ||
-        student.rollNo.toLowerCase().includes(searchLower);
+    const rankingList = allStudentsForRank || students;
 
-      let matchesClass = selectedClass === 'all';
-      if (userRole === 'teacher' && selectedClass !== 'all') {
-        const classAndSection = `${student.className}${student.sectionName}`;
-        matchesClass = classAndSection === selectedClass;
-      } else if (userRole === 'admin') {
-         matchesClass = selectedClass === 'all' || student.className === selectedClass;
-      }
-
-      const matchesSection = selectedSection === 'all' || student.sectionName === selectedSection;
-
-      return matchesSearch && matchesClass && matchesSection;
-    });
-
-    const summaries = filtered.map(student => {
+    const allSummaries = rankingList.map(student => {
         const annualResult = student.results?.[student.className] || { examResults: {} };
         const { percentage, grade } = calculateOverallResult(annualResult, selectedExam);
         const { percentage: grandTotalPercentage } = calculateGrandTotalResult(annualResult);
@@ -157,7 +155,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     });
 
     const summariesByClass: { [className: string]: StudentResultSummary[] } = {};
-    summaries.forEach(s => {
+    allSummaries.forEach(s => {
       const className = s.student.className;
       if (!summariesByClass[className]) {
         summariesByClass[className] = [];
@@ -176,7 +174,39 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
       }
     }
 
-    const finalSummaries = Object.values(summariesByClass).flat();
+    const rankMap = new Map<string, number>();
+    Object.values(summariesByClass).flat().forEach(s => {
+        rankMap.set(s.student.admissionNumber, s.rank);
+    });
+
+    let filtered = students.filter(student => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch =
+        student.firstName.toLowerCase().includes(searchLower) ||
+        student.lastName.toLowerCase().includes(searchLower) ||
+        (student.rollNo || '').toLowerCase().includes(searchLower);
+
+      let matchesClass = selectedClass === 'all';
+        if (userRole === 'teacher' && selectedClass !== 'all') {
+            const classAndSection = `${student.className}${student.sectionName}`;
+            matchesClass = classAndSection === selectedClass;
+        } else if (userRole !== 'teacher') { 
+            matchesClass = selectedClass === 'all' || student.className === selectedClass;
+        }
+
+      const matchesSection = selectedSection === 'all' || student.sectionName === selectedSection;
+
+      return matchesSearch && matchesClass && matchesSection;
+    });
+
+    const finalSummaries = filtered.map(student => {
+        const annualResult = student.results?.[student.className] || { examResults: {} };
+        const { percentage, grade } = calculateOverallResult(annualResult, selectedExam);
+        const { percentage: grandTotalPercentage } = calculateGrandTotalResult(annualResult);
+        const rank = rankMap.get(student.admissionNumber) || 0;
+        return { student, percentage, grade, rank, grandTotalPercentage };
+    });
+    
     finalSummaries.sort((a,b) => {
         if (a.student.className < b.student.className) return -1;
         if (a.student.className > b.student.className) return 1;
@@ -184,7 +214,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     });
 
     return finalSummaries;
-  }, [students, searchTerm, selectedClass, selectedSection, userRole, selectedExam]);
+  }, [students, allStudentsForRank, searchTerm, selectedClass, selectedSection, userRole, selectedExam]);
 
 
   const viewingClassOptions = selectedStudent ? Object.keys(selectedStudent.results || {}).sort().reverse() : [];
@@ -288,7 +318,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                 <DialogContent className="max-w-4xl p-0 border-0">
                     <DialogHeader className="p-4 pb-0">
                         <DialogTitle>Viewing Result for {selectedStudent.firstName}</DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription asChild>
                             <Select onValueChange={setViewingClass} value={viewingClass}>
                                 <SelectTrigger className="w-full md:w-48 mt-2">
                                     <SelectValue placeholder="Select Class" />
@@ -333,5 +363,3 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     </>
   );
 }
-
-    
