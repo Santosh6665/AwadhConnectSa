@@ -37,8 +37,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        {/* Mobile menu and logo */} 
-        <div className="flex items-center flex-1 md:hidden">
+        {/* Mobile Header */}
+        <div className="flex w-full items-center justify-between md:hidden">
           <Sheet open={isMobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon">
@@ -48,63 +48,55 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
               <SheetHeader>
-                <SheetTitle className="sr-only">Main Menu</SheetTitle>
-                <SheetDescription className="sr-only">
-                  Main navigation links for Awadh Inter College.
-                </SheetDescription>
-                <div className="flex items-center justify-between p-4 border-b">
-                  <Link href="/" className="flex items-center space-x-2">
-                    <Image src="/logo.png" alt="School Logo" width={32} height={32} className="h-8 w-8" />
-                    <span className="font-bold font-headline text-lg">Awadh Inter College</span>
-                  </Link>
-                </div>
+                  <SheetTitle className="sr-only">Main Menu</SheetTitle>
+                  <SheetDescription className="sr-only">
+                      Main navigation links for Awadh Inter College.
+                  </SheetDescription>
+                  <div className="flex items-center justify-between p-4 border-b">
+                      <Link href="/" className="flex items-center space-x-2">
+                          <Image src="/logo.png" alt="School Logo" width={32} height={32} className="h-8 w-8" />
+                          <span className="font-bold font-headline text-lg">Awadh Inter College</span>
+                      </Link>
+                  </div>
               </SheetHeader>
-              <div className="flex flex-col h-full">
-                <nav className="flex flex-col p-4 space-y-4">
+              <nav className="flex flex-col p-4 space-y-4">
                   {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="text-lg font-medium transition-colors hover:text-primary"
-                    >
-                      {item.label}
-                    </Link>
+                      <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-lg font-medium transition-colors hover:text-primary"
+                      >
+                          {item.label}
+                      </Link>
                   ))}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button className="w-full justify-start">Login</Button>
-                    </DropdownMenuTrigger>
-                     <DropdownMenuContent>
-                      <DropdownMenuItem asChild>
-                          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Admin Portal</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                          <Link href="/teacher/login" onClick={() => setMobileMenuOpen(false)}>Teacher Portal</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                          <Link href="/student/login" onClick={() => setMobileMenuOpen(false)}>Student Portal</Link>
-                      </DropdownMenuItem>
-                       <DropdownMenuItem asChild>
-                          <Link href="/parent/login" onClick={() => setMobileMenuOpen(false)}>Parent Portal</Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </nav>
-              </div>
+              </nav>
             </SheetContent>
           </Sheet>
-          <div className="flex-1 flex justify-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image src="/logo.png" alt="School Logo" width={32} height={32} className="h-8 w-8" />
-              <span className="font-bold font-headline text-lg">Awadh Inter College</span>
-            </Link>
-          </div>
+
+          <Link href="/" className="flex items-center space-x-2">
+            <Image src="/logo.png" alt="School Logo" width={32} height={32} className="h-8 w-8" />
+            <span className="font-bold font-headline text-lg">Awadh Inter College</span>
+          </Link>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <User className="h-5 w-5" />
+                <span className="sr-only">Login</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild><Link href="/login">Admin Portal</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/teacher/login">Teacher Portal</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/student/login">Student Portal</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/parent/login">Parent Portal</Link></DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Desktop Header */}
-        <div className="hidden md:flex w-full items-center">
-            {/* Left: Logo */}
+        <div className="hidden w-full items-center md:flex">
             <div className="flex-1 flex justify-start">
                 <Link href="/" className="flex items-center space-x-2">
                     <Image src="/logo.png" alt="School Logo" width={32} height={32} className="h-8 w-8" />
@@ -112,7 +104,6 @@ export default function Header() {
                 </Link>
             </div>
 
-            {/* Center: Navigation */}
             <nav className="flex justify-center items-center space-x-6 text-sm font-medium">
               {navItems.map((item) => (
                 <Link
@@ -125,7 +116,6 @@ export default function Header() {
               ))}
             </nav>
             
-            {/* Right: Login */}
             <div className="flex-1 flex items-center justify-end space-x-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
