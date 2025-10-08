@@ -64,41 +64,56 @@ interface DateDropdownsProps {
 }
 
 function DateDropdowns({ value, onChange, fromYear, toYear }: DateDropdownsProps) {
-  const [day, setDay] = React.useState(value ? value.getDate() : '');
-  const [month, setMonth] = React.useState(value ? value.getMonth() : '');
-  const [year, setYear] = React.useState(value ? value.getFullYear() : '');
+  const day = value ? value.getDate() : '';
+  const month = value ? value.getMonth() : '';
+  const year = value ? value.getFullYear() : '';
 
-  React.useEffect(() => {
-    if (day && month !== '' && year) {
-      onChange(new Date(Number(year), Number(month), Number(day)));
+  const handleDayChange = (val: string) => {
+    const newDay = parseInt(val, 10);
+    const newDate = value ? new Date(value) : new Date();
+    newDate.setDate(newDay);
+    onChange(newDate);
+  };
+
+  const handleMonthChange = (val: string) => {
+    const newMonth = parseInt(val, 10);
+    const newDate = value ? new Date(value) : new Date();
+    const currentDay = newDate.getDate();
+    const daysInNewMonth = new Date(newDate.getFullYear(), newMonth + 1, 0).getDate();
+    if (currentDay > daysInNewMonth) {
+        newDate.setDate(daysInNewMonth);
     }
-  }, [day, month, year, onChange]);
+    newDate.setMonth(newMonth);
+    onChange(newDate);
+  };
 
-  React.useEffect(() => {
-    setDay(value ? value.getDate() : '');
-    setMonth(value ? value.getMonth() : '');
-    setYear(value ? value.getFullYear() : '');
-  }, [value]);
+  const handleYearChange = (val: string) => {
+    const newYear = parseInt(val, 10);
+    const newDate = value ? new Date(value) : new Date();
+    newDate.setFullYear(newYear);
+    onChange(newDate);
+  };
+
 
   const years = Array.from({ length: toYear - fromYear + 1 }, (_, i) => toYear - i);
-  const daysInMonth = (year && month !== '') ? new Date(Number(year), Number(month) + 1, 0).getDate() : 31;
+  const daysInMonth = (year !== '' && month !== '') ? new Date(Number(year), Number(month) + 1, 0).getDate() : 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
     <div className="flex gap-2">
-      <Select value={day.toString()} onValueChange={(val) => setDay(val)}>
+      <Select value={day ? day.toString() : ''} onValueChange={handleDayChange}>
         <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
         <SelectContent>
           {days.map(d => <SelectItem key={d} value={d.toString()}>{d}</SelectItem>)}
         </SelectContent>
       </Select>
-      <Select value={month.toString()} onValueChange={(val) => setMonth(val)}>
+      <Select value={month !== '' ? month.toString() : ''} onValueChange={handleMonthChange}>
         <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
         <SelectContent>
           {months.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>)}
         </SelectContent>
       </Select>
-      <Select value={year.toString()} onValueChange={(val) => setYear(val)}>
+      <Select value={year ? year.toString() : ''} onValueChange={handleYearChange}>
         <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
         <SelectContent>
           {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
