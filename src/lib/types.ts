@@ -247,3 +247,23 @@ export interface ResultVisibilitySettings {
   showHalfYearly: boolean;
   showAnnual: boolean;
 }
+
+export interface AdmissionApplication {
+  id: string; // Document ID
+  studentFullName: string;
+  dob: string; // ISO String date
+  gender: 'Male' | 'Female' | 'Other';
+  classForAdmission: string;
+  previousSchoolName?: string;
+  parentName: string;
+  relationshipWithStudent?: string;
+  contactNumber: string;
+  alternateContactNumber?: string;
+  emailAddress?: string;
+  residentialAddress: string;
+  city: string;
+  state: string;
+  pinCode: string;
+  applicationDate: string; // ISO String
+  status: 'Pending' | 'Approved' | 'Rejected';
+}

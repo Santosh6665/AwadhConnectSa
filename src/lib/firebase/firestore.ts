@@ -27,7 +27,7 @@ import {
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes, deleteObject } from 'firebase/storage';
 import { db, storage } from './config';
-import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family, StudyMaterial, AnnualResult, ResultVisibilitySettings } from '../types';
+import type { Student, Teacher, Fee, Admin, Class, Section, DailyAttendance, Parent, AttendanceRecord, PreviousSession, FeeReceipt, TeacherDailyAttendance, ExamResult, ExamType, SalaryPayment, Event, Notice, FeeStructure, Family, StudyMaterial, AnnualResult, ResultVisibilitySettings, AdmissionApplication } from '../types';
 import { calculateOverallResult } from '../utils';
 
 // Helper to convert Firestore Timestamps to JS Dates for client-side use
@@ -88,6 +88,16 @@ export async function updateEvent(id: string, eventData: Partial<Event>): Promis
 export async function deleteEvent(id: string): Promise<void> {
     const eventRef = doc(db, 'events', id);
     await deleteDoc(eventRef);
+}
+
+export async function addAdmissionApplication(applicationData: Omit<AdmissionApplication, 'id' | 'applicationDate' | 'status'>): Promise<string> {
+    const newApplication = {
+        ...applicationData,
+        applicationDate: new Date().toISOString(),
+        status: 'Pending' as const,
+    };
+    const docRef = await addDoc(collection(db, 'admissions'), newApplication);
+    return docRef.id;
 }
 
 
@@ -701,7 +711,7 @@ export async function saveResultVisibilitySettings(settings: ResultVisibilitySet
     await setDoc(settingsRef, settings);
 }
 
-export async function getResultVisibilitySettings(): Promise<ResultVisibilitySettings | null> {
+export async function getResultVisibilitySettings(): Promise<ResultISettings | null> {
     const settingsRef = doc(db, 'settings', 'resultVisibility');
     const docSnap = await getDoc(settingsRef);
     if (docSnap.exists()) {
