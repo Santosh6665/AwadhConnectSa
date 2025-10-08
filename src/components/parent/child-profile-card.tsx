@@ -1,12 +1,15 @@
 
 'use client';
-import type { Student, FeeStructure } from '@/lib/types';
+import type { Student } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '../ui/button';
 import { ArrowRight, BarChart, CalendarCheck, Banknote } from 'lucide-react';
 import Link from 'next/link';
+
+// This type must match the one defined in the parent dashboard page
+import type { ProcessedChild } from '@/app/parent/dashboard/page';
 
 const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string; value: React.ReactNode }) => (
     <div className="flex items-center gap-3">
@@ -20,34 +23,9 @@ const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
     </div>
 );
 
-export default function ChildProfileCard({ student }: { student: Student }) {
+export default function ChildProfileCard({ student }: { student: ProcessedChild }) {
 
-  const getFeeStatus = (student: Student): 'Paid' | 'Partial' | 'Due' => {
-    const feeData = student.fees?.[student.className];
-    if (!feeData) return 'Due';
-
-    const structure = feeData.structure;
-    if (!structure) {
-        // If no specific structure, assume due if no payments made
-        return (feeData.transactions || []).length > 0 ? 'Partial' : 'Due';
-    }
-    
-    const annualFee = Object.values(structure).reduce((sum, head) => sum + (head.amount * head.months), 0);
-    const concession = feeData.concession || 0;
-    const totalPayable = annualFee - concession;
-
-    const totalPaid = (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
-
-    if (totalPaid >= totalPayable) {
-        return 'Paid';
-    }
-    if (totalPaid > 0) {
-        return 'Partial';
-    }
-    return 'Due';
-  };
-
-  const feeStatus = getFeeStatus(student);
+  const { feeStatus } = student;
 
   return (
     <Card className="bg-muted/50">
@@ -82,12 +60,12 @@ export default function ChildProfileCard({ student }: { student: Student }) {
            <DetailItem 
                 icon={CalendarCheck}
                 label="Attendance (This Month)" 
-                value="95%"
+                value={`${student.monthlyAttendance.toFixed(0)}%`}
             />
             <DetailItem 
                 icon={BarChart}
                 label="Recent Exam Score" 
-                value="88% (Avg.)"
+                value={`${student.recentExamScore.toFixed(2)}% (Avg.)`}
             />
         </div>
       </CardContent>

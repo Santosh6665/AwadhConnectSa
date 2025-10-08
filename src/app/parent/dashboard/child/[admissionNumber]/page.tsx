@@ -3,8 +3,8 @@
 
 import { useEffect, useState } from 'react';
 import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
-import type { Student } from '@/lib/types';
-import { Loader2, ArrowLeft, User, BadgeCheck, BookOpen, Calendar, Banknote } from 'lucide-react';
+import type { Student, PreviousSession } from '@/lib/types';
+import { Loader2, ArrowLeft, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,7 @@ const DetailItem = ({ label, value }: { label: string; value: React.ReactNode })
 export default function ChildDetailPage() {
   const { user, loading: authLoading } = useAuth();
   const [student, setStudent] = useState<Student | null>(null);
+  const [previousSessions, setPreviousSessions] = useState<PreviousSession[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
@@ -39,16 +40,25 @@ export default function ChildDetailPage() {
     if (admissionNumber) {
       const fetchStudentData = async () => {
         setLoading(true);
-        const studentData = await getStudentByAdmissionNumber(admissionNumber);
-        
-        // Security check: Make sure the logged-in parent is authorized to see this student.
-        if (user && studentData?.parentMobile !== user.id) {
-            router.push('/parent/dashboard'); // Redirect if not their child
-            return;
-        }
+        try {
+            const studentData = await getStudentByAdmissionNumber(admissionNumber);
+            
+            if (user && studentData?.parentMobile !== user.id) {
+                router.push('/parent/dashboard');
+                return;
+            }
 
-        setStudent(studentData);
-        setLoading(false);
+            setStudent(studentData);
+
+            if (studentData?.previousSessions) {
+                setPreviousSessions(studentData.previousSessions);
+            }
+
+        } catch (error) {
+            console.error("Failed to fetch child details:", error);
+        } finally {
+            setLoading(false);
+        }
       };
       fetchStudentData();
     }
@@ -61,8 +71,6 @@ export default function ChildDetailPage() {
       </div>
     );
   }
-
-  const hasPreviousSessions = student.previousSessions && student.previousSessions.length > 0;
 
   return (
     <div className="space-y-8">
@@ -101,7 +109,7 @@ export default function ChildDetailPage() {
         </div>
 
         <div className="lg:col-span-2 space-y-8">
-            {hasPreviousSessions && (
+            {previousSessions.length > 0 ? (
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-4">
@@ -113,13 +121,12 @@ export default function ChildDetailPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {student.previousSessions?.map(session => (
+                        {previousSessions.map(session => (
                              <PreviousSessionCard key={session.sessionId} session={session} />
                         ))}
                     </CardContent>
                 </Card>
-            )}
-            {!hasPreviousSessions && (
+            ) : (
                  <Card>
                     <CardContent className="p-8 text-center text-muted-foreground">
                         No previous session records found for this student.

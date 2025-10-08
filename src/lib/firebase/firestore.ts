@@ -126,6 +126,19 @@ export async function getStudentByAdmissionNumber(admissionNumber: string): Prom
   return { admissionNumber: studentDocSnap.id, ...studentDocSnap.data() } as Student;
 }
 
+export async function getPreviousSessionById(sessionId: string): Promise<PreviousSession | null> {
+    // sessionId is in the format `admissionNumber-className`
+    const [admissionNumber, className] = sessionId.split('-');
+    const studentRef = doc(db, 'students', admissionNumber);
+    const studentSnap = await getDoc(studentRef);
+    if (!studentSnap.exists()) {
+        return null;
+    }
+    const studentData = studentSnap.data() as Student;
+    const session = studentData.previousSessions?.find(s => s.sessionId === sessionId);
+    return session || null;
+}
+
 export async function getStudentsByAdmissionNumbers(admissionNumbers: string[]): Promise<Student[]> {
     if (admissionNumbers.length === 0) return [];
     const studentPromises = admissionNumbers.map(id => getStudentByAdmissionNumber(id));
