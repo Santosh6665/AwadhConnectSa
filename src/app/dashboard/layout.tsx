@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Sidebar, SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -25,14 +26,16 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
     );
   }
+  
+  const userRole = user.role;
 
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarNav role="admin" />
+        <SidebarNav role={userRole} />
       </Sidebar>
       <SidebarInset>
-        <DashboardHeader role="admin" />
+        <DashboardHeader role={userRole} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">
             {children}
         </main>

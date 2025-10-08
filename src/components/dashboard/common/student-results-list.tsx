@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MoreHorizontal, Filter, Loader2, Edit, Trash, Eye, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { calculateOverallResult, getGrade } from '@/lib/utils';
+import { calculateOverallResult, getGrade, calculateGrandTotalResult } from '@/lib/utils';
 import EditMarksDialog from './edit-marks-dialog';
 import ResultCard from './result-card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -24,6 +24,7 @@ type StudentResultSummary = {
   percentage: number;
   grade: string;
   rank: number;
+  grandTotalPercentage: number;
 };
 
 const examTypes: ExamType[] = ['Quarterly', 'Half-Yearly', 'Annual'];
@@ -43,6 +44,8 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedStudentSummary, setSelectedStudentSummary] = useState<StudentResultSummary | null>(null);
+
   
   const [viewingClass, setViewingClass] = useState<string>('');
 
@@ -72,9 +75,10 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
     setIsEditDialogOpen(true);
   };
   
-  const handleView = (student: Student) => {
-    setSelectedStudent(student);
-    setViewingClass(student.className); // Default to current class
+  const handleView = (summary: StudentResultSummary) => {
+    setSelectedStudent(summary.student);
+    setSelectedStudentSummary(summary);
+    setViewingClass(summary.student.className);
     setIsViewDialogOpen(true);
   };
 
@@ -97,7 +101,6 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
       try {
         await deleteStudentResults(selectedStudent.admissionNumber, selectedStudent.className, selectedExam);
         
-        // Optimistically update the UI
         const updatedStudents = students.map(s => {
           if (s.admissionNumber === selectedStudent.admissionNumber) {
             const newStudent = { ...s };
@@ -148,17 +151,40 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
 
     const summaries = filtered.map(student => {
         const annualResult = student.results?.[student.className] || { examResults: {} };
-        const { percentage, grade } = calculateOverallResult(annualResult);
-        return { student, percentage, grade, rank: 0 };
+        const { percentage, grade } = calculateOverallResult(annualResult, selectedExam);
+        const { percentage: grandTotalPercentage } = calculateGrandTotalResult(annualResult);
+        return { student, percentage, grade, rank: 0, grandTotalPercentage };
     });
 
-    summaries.sort((a, b) => b.percentage - a.percentage);
-    summaries.forEach((summary, index) => {
-        summary.rank = index + 1;
+    const summariesByClass: { [className: string]: StudentResultSummary[] } = {};
+    summaries.forEach(s => {
+      const className = s.student.className;
+      if (!summariesByClass[className]) {
+        summariesByClass[className] = [];
+      }
+      summariesByClass[className].push(s);
     });
 
-    return summaries;
-  }, [students, searchTerm, selectedClass, selectedSection, userRole]);
+    for (const classSummaries of Object.values(summariesByClass)) {
+      classSummaries.sort((a, b) => b.grandTotalPercentage - a.grandTotalPercentage);
+      let rank = 1;
+      for (let i = 0; i < classSummaries.length; i++) {
+        if (i > 0 && classSummaries[i].grandTotalPercentage < classSummaries[i - 1].grandTotalPercentage) {
+          rank = i + 1;
+        }
+        classSummaries[i].rank = rank;
+      }
+    }
+
+    const finalSummaries = Object.values(summariesByClass).flat();
+    finalSummaries.sort((a,b) => {
+        if (a.student.className < b.student.className) return -1;
+        if (a.student.className > b.student.className) return 1;
+        return parseInt(a.student.rollNo) - parseInt(b.student.rollNo);
+    });
+
+    return finalSummaries;
+  }, [students, searchTerm, selectedClass, selectedSection, userRole, selectedExam]);
 
 
   const viewingClassOptions = selectedStudent ? Object.keys(selectedStudent.results || {}).sort().reverse() : [];
@@ -220,21 +246,21 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {studentSummaries.map(({ student, percentage, grade, rank }) => (
-                    <TableRow key={student.admissionNumber}>
-                        <TableCell>{student.rollNo}</TableCell>
-                        <TableCell>{student.firstName} {student.lastName}</TableCell>
-                        <TableCell>{student.className}-{student.sectionName}</TableCell>
-                        <TableCell>{percentage.toFixed(2)}%</TableCell>
-                        <TableCell>{grade}</TableCell>
-                        <TableCell>{rank}</TableCell>
+                    {studentSummaries.map((summary) => (
+                    <TableRow key={summary.student.admissionNumber}>
+                        <TableCell>{summary.student.rollNo}</TableCell>
+                        <TableCell>{`${summary.student.firstName} ${summary.student.lastName}`}</TableCell>
+                        <TableCell>{`${summary.student.className}-${summary.student.sectionName}`}</TableCell>
+                        <TableCell>{summary.percentage.toFixed(2)}%</TableCell>
+                        <TableCell>{summary.grade}</TableCell>
+                        <TableCell>{summary.rank}</TableCell>
                         <TableCell>
                             <div className="flex gap-1">
-                                <Button variant="ghost" size="icon" onClick={() => handleView(student)}><Eye className="h-4 w-4"/></Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleView(summary)}><Eye className="h-4 w-4"/></Button>
                                 {canEditResults && (
                                     <>
-                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(student)}><Edit className="h-4 w-4"/></Button>
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(student)} disabled={isDeleting}>
+                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(summary.student)}><Edit className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(summary.student)} disabled={isDeleting}>
                                         <Trash className="h-4 w-4"/>
                                         </Button>
                                     </>
@@ -268,8 +294,7 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                                     <SelectValue placeholder="Select Class" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {viewingClassOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}
-                                </SelectContent>
+                                    {viewingClassOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}</SelectContent>
                             </Select>
                         </DialogDescription>
                     </DialogHeader>
@@ -280,6 +305,8 @@ export default function StudentResultsList({ initialStudents, userRole, teacherC
                             annualResult={annualResultForViewing} 
                             forClass={viewingClass}
                             onDownload={handlePrint}
+                            examType={selectedExam}
+                            rank={selectedStudentSummary?.rank}
                         />
                     </ScrollArea>
                 </DialogContent>

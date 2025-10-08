@@ -1,7 +1,7 @@
 
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { AnnualResult } from "./types";
+import type { AnnualResult, ExamType } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -17,25 +17,66 @@ export const getGrade = (percentage: number): string => {
   return 'F';
 };
 
-export const calculateOverallResult = (annualResult?: AnnualResult): { percentage: number; grade: string } => {
-    if (!annualResult) return { percentage: 0, grade: 'N/A' };
-    
-    let totalObtained = 0;
-    let totalMax = 0;
-    
-    const examResults = Object.values(annualResult.examResults || {});
-    
-    // Use the last available exam for calculation if multiple are present
-    const lastExam = examResults[examResults.length - 1];
-
-    if(lastExam && lastExam.subjects) {
-        lastExam.subjects.forEach(sub => {
-            totalObtained += sub.obtainedMarks;
-            totalMax += sub.maxMarks;
-        });
+export const calculateOverallResult = (annualResult?: AnnualResult, examType?: ExamType): { percentage: number; grade: string } => {
+    if (!annualResult || !annualResult.examResults) {
+        return { percentage: 0, grade: 'N/A' };
     }
 
-    const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+    let examToCalculate;
+
+    if (examType) {
+        examToCalculate = annualResult.examResults[examType];
+    } else {
+        const examResults = Object.values(annualResult.examResults);
+        examToCalculate = examResults[examResults.length - 1];
+    }
+    
+    if (!examToCalculate || !examToCalculate.subjects || examToCalculate.subjects.length === 0) {
+        return { percentage: 0, grade: 'N/A' };
+    }
+
+    let totalObtained = 0;
+    let totalMax = 0;
+
+    examToCalculate.subjects.forEach(sub => {
+        totalObtained += sub.obtainedMarks;
+        totalMax += sub.maxMarks;
+    });
+
+    if (totalMax === 0) {
+        return { percentage: 0, grade: 'N/A' };
+    }
+
+    const percentage = (totalObtained / totalMax) * 100;
+    const grade = getGrade(percentage);
+
+    return { percentage, grade };
+};
+
+
+export const calculateGrandTotalResult = (annualResult?: AnnualResult): { percentage: number; grade: string } => {
+    if (!annualResult || !annualResult.examResults) {
+        return { percentage: 0, grade: 'N/A' };
+    }
+
+    let grandTotalObtained = 0;
+    let grandTotalMax = 0;
+
+    for (const examKey in annualResult.examResults) {
+        const exam = annualResult.examResults[examKey as ExamType];
+        if (exam && exam.subjects) {
+            exam.subjects.forEach(sub => {
+                grandTotalObtained += sub.obtainedMarks;
+                grandTotalMax += sub.maxMarks;
+            });
+        }
+    }
+
+    if (grandTotalMax === 0) {
+        return { percentage: 0, grade: 'N/A' };
+    }
+
+    const percentage = (grandTotalObtained / grandTotalMax) * 100;
     const grade = getGrade(percentage);
 
     return { percentage, grade };

@@ -2,24 +2,25 @@
 'use client';
 
 import * as React from 'react';
-import type { Student, AnnualResult, ExamResult, SubjectResult } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import type { Student, AnnualResult, ExamResult, SubjectResult, ExamType } from '@/lib/types';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, BookOpen, BarChart, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { subjectsByClass } from './subjects-schema';
-import { cn } from '@/lib/utils';
+import { cn, calculateGrandTotalResult, getGrade as getGradeUtil } from '@/lib/utils';
 import Image from 'next/image';
 
-const getGrade = (percentage: number): { grade: string; remarks: string; passed: boolean } => {
+const getGradeWithRemarks = (percentage: number): { grade: string; remarks: string; passed: boolean } => {
+  const grade = getGradeUtil(percentage);
+  if (grade === 'F') return { grade, remarks: 'Fail', passed: false };
   if (percentage >= 90) return { grade: 'A+', remarks: 'Outstanding', passed: true };
   if (percentage >= 80) return { grade: 'A', remarks: 'Excellent', passed: true };
   if (percentage >= 70) return { grade: 'B', remarks: 'Very Good', passed: true };
   if (percentage >= 60) return { grade: 'C', remarks: 'Good', passed: true };
   if (percentage >= 50) return { grade: 'D', remarks: 'Satisfactory', passed: true };
-  if (percentage >= 33) return { grade: 'E', remarks: 'Needs Improvement', passed: true };
-  return { grade: 'F', remarks: 'Fail', passed: false };
+  return { grade: 'E', remarks: 'Needs Improvement', passed: true };
 };
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -34,10 +35,12 @@ type ResultCardProps = {
   annualResult?: AnnualResult;
   forClass: string;
   onDownload: () => void;
+  examType?: ExamType;
+  rank?: number;
 };
 
 const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
-  ({ student, annualResult, forClass, onDownload }, ref) => {
+  ({ student, annualResult, forClass, onDownload, examType, rank }, ref) => {
     
     if (!annualResult) {
       return (
@@ -74,8 +77,8 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
         max: qTotal.max + hyTotal.max + anTotal.max,
     };
     
-    const overallPercentage = grandTotal.max > 0 ? (grandTotal.obtained / grandTotal.max) * 100 : 0;
-    const { grade: overallGrade, passed: resultStatus } = getGrade(overallPercentage);
+    const { percentage: overallPercentage, grade: overallGrade } = calculateGrandTotalResult(annualResult);
+    const { passed: resultStatus } = getGradeWithRemarks(overallPercentage);
 
     const getSubjectMarks = (subjectName: string, examResult: ExamResult | undefined): SubjectResult | undefined => {
       return examResult?.subjects.find(s => s.subjectName === subjectName);
@@ -191,11 +194,11 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
 
           {/* Summary */}
           <div>
-              <h2 className="flex items-center gap-2 text-lg font-semibold mb-2"><BarChart className="w-5 h-5 text-primary"/>Summary</h2>
+              <h2 className="flex items-center gap-2 text-lg font-semibold mb-2"><BarChart className="w-5 h-5 text-primary"/>Overall Summary</h2>
               <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                  <DetailItem label="Percentage:" value={`${overallPercentage.toFixed(2)}%`} />
+                  <DetailItem label="Overall Percentage:" value={`${overallPercentage.toFixed(2)}%`} />
                   <DetailItem label="Overall Grade:" value={overallGrade} />
-                  <DetailItem label="Class Rank:" value={annualResult.rank ? `${annualResult.rank}` : 'N/A'} />
+                   <DetailItem label="Class Rank:" value={rank ? `${rank}` : 'N/A'} />
                   <DetailItem label="Result Status:" value={<Badge variant={resultStatus ? 'default' : 'destructive'}>{resultStatus ? 'Pass' : 'Fail'}</Badge>} />
               </div>
           </div>
