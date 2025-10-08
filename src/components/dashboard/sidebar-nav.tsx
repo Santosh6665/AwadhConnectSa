@@ -1,5 +1,4 @@
 
-
 import {
   SidebarContent,
   SidebarHeader,
@@ -24,6 +23,7 @@ import {
   HeartHandshake,
   History,
   DollarSign,
+  Mail,
 } from 'lucide-react';
 import Link from 'next/link';
 import { UserRole } from '@/lib/types';
@@ -39,6 +39,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   // Admin Links
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin'] },
+  { href: '/dashboard/inquiries', label: 'Inquiries', icon: Mail, roles: ['admin'] },
   { href: '/dashboard/students', label: 'Manage Students', icon: Users, roles: ['admin'] },
   { href: '/dashboard/teachers', label: 'Manage Teachers', icon: BookUser, roles: ['admin'] },
   { href: '/dashboard/attendance', label: 'Student Attendance', icon: UserCheck, roles: ['admin'] },
