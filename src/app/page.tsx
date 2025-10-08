@@ -17,8 +17,8 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <HeroSlider />
+        <AdmissionsCallout />
         <div className="space-y-16 md:space-y-28 my-16 md:my-28">
-          <AdmissionsCallout />
           <WhyChooseUs />
           <Academics />
           <AboutSchool />

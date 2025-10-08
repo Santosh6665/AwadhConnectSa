@@ -103,6 +103,16 @@
 }
 
 @layer utilities {
+  .hover-gradient-underline {
+    @apply relative;
+  }
+  .hover-gradient-underline::after {
+    @apply content-[''] absolute bottom-[-2px] left-0 w-full h-[2px] bg-gradient-to-r from-primary to-accent scale-x-0 origin-left transition-transform duration-300 ease-out;
+  }
+  .hover-gradient-underline:hover::after {
+    @apply scale-x-100;
+  }
+  
   @media print {
     body {
       background: white !important;

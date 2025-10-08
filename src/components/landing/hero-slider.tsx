@@ -53,7 +53,7 @@ export default function HeroSlider() {
                       Learning with Excellence, Living with Purpose.
                     </p>
                     <Button asChild size="lg" className="mt-8">
-                      <Link href="#admissions">Apply for Admission</Link>
+                      <Link href="/admission">Apply for Admission</Link>
                     </Button>
                   </div>
                 </div>
