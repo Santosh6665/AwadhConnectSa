@@ -179,7 +179,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                      <h3 className="font-semibold text-muted-foreground mb-2">Summary</h3>
                      <div className="border rounded-lg p-4 space-y-3">
                         <DetailItem label={`Annual Fee (Class ${classForSummary}):`} value={`Rs ${annualFee.toLocaleString()}`} />
-                        <DetailItem label="Total Paid (All Time):" value={`Rs ${totalPaidAllTime.toLocaleString()}`} />
+                        <DetailItem label={`Total Paid (Class ${classForSummary}):`} value={`Rs ${currentClassPaid.toLocaleString()}`} />
                         <DetailItem label="Previous Dues:" value={classForSummary === student.className ? `Rs ${previousDue.toLocaleString()}` : 'N/A'} />
                         <Separator/>
                         <div className="flex justify-between items-center py-2">

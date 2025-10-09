@@ -71,7 +71,7 @@ export default function SingleReceiptDialog({ isOpen, onOpenChange, student, rec
                     {receipt.remarks && <DetailItem label="Remarks:" value={receipt.remarks} />}
                     <Separator/>
                     <div className="flex justify-between items-center py-2">
-                        <span className="text-base font-bold">Remaining Balance after this transaction:</span>
+                        <span className="text-base font-bold">Current due Balance:</span>
                         <span className="text-xl font-bold text-destructive">Rs {balanceDue.toLocaleString()}</span>
                     </div>
                  </div>
