@@ -48,7 +48,6 @@ const navItems: NavItem[] = [
   { href: '/dashboard/fees', label: 'Fee Management', icon: Banknote, roles: ['admin'] },
   { href: '/dashboard/salary', label: 'Manage Salary', icon: DollarSign, roles: ['admin'] },
   { href: '/dashboard/events', label: 'Events & Notices', icon: CalendarDays, roles: ['admin'] },
-  { href: '/dashboard/materials', label: 'Study Materials', icon: BookCopy, roles: ['admin'] },
   { href: '/dashboard/reports', label: 'Reports', icon: Presentation, roles: ['admin'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, roles: ['admin'] },
   
@@ -59,7 +58,6 @@ const navItems: NavItem[] = [
   { href: '/teacher/dashboard/my-attendance', label: 'My Attendance', icon: History, roles: ['teacher'] },
   { href: '/teacher/dashboard/results', label: 'Enter Results', icon: PenSquare, roles: ['teacher'] },
   { href: '/teacher/dashboard/salary', label: 'My Salary', icon: DollarSign, roles: ['teacher'] },
-  { href: '/teacher/dashboard/materials', label: 'Study Materials', icon: BookCopy, roles: ['teacher'] },
   { href: '/teacher/dashboard/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['teacher'] },
   
   // Student Links
@@ -67,7 +65,6 @@ const navItems: NavItem[] = [
   { href: '/student/dashboard/results', label: 'My Results', icon: Presentation, roles: ['student'] },
   { href: '/student/dashboard/attendance', label: 'My Attendance', icon: UserCheck, roles: ['student'] },
   { href: '/student/dashboard/fees', label: 'Fee Payment', icon: Banknote, roles: ['student'] },
-  { href: '/student/dashboard/materials', label: 'Study Materials', icon: BookCopy, roles: ['student'] },
   { href: '/student/dashboard/notices', label: 'Notices & Events', icon: CalendarDays, roles: ['student'] },
 
   // Parent Links

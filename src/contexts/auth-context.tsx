@@ -47,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: teacherData.name,
             canMarkAttendance: teacherData.canMarkAttendance,
             canEditResults: teacherData.canEditResults,
+            classes: teacherData.classes,
           };
 
           // Check if user data has actually changed to avoid unnecessary updates
@@ -86,7 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: teacher.name, 
           role: 'teacher', 
           canMarkAttendance: teacher.canMarkAttendance, 
-          canEditResults: teacher.canEditResults 
+          canEditResults: teacher.canEditResults,
+          classes: teacher.classes
         };
         router.push('/teacher/dashboard');
       } else if (role === 'student') {
