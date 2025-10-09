@@ -594,8 +594,7 @@ export async function addFeePayment(admissionNumber: string, className: string, 
                     session.dueFee -= amountToPay;
                     remainingAmount -= amountToPay;
 
-                    const receipt: FeeReceipt = {
-                        id: `TXN-${Date.now()}`,
+                    const receipt: Omit<FeeReceipt, 'id'> = {
                         amount: amountToPay,
                         date: new Date().toLocaleDateString('en-GB'),
                         mode,
@@ -614,8 +613,7 @@ export async function addFeePayment(admissionNumber: string, className: string, 
 
         // Apply remaining amount to the current class fees
         if (remainingAmount > 0) {
-            const receipt: FeeReceipt = {
-                id: `TXN-${Date.now()}`,
+            const receipt: Omit<FeeReceipt, 'id'> = {
                 amount: remainingAmount, // The rest of the amount
                 date: new Date().toLocaleDateString('en-GB'),
                 mode,

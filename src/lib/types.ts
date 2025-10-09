@@ -125,7 +125,6 @@ export interface Fee {
 }
 
 export interface FeeReceipt {
-  id: string;
   amount: number;
   date: string; // dd/MM/yyyy
   remarks?: string;

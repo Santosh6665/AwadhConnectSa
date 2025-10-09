@@ -60,7 +60,6 @@ export default function SingleReceiptDialog({ isOpen, onOpenChange, student, rec
                 </div>
                  <div className="text-right">
                     <h3 className="font-semibold text-muted-foreground mb-2">Receipt Details</h3>
-                    <DetailItem label="Transaction ID:" value={receipt.id} />
                     <DetailItem label="Payment Date:" value={receipt.date} />
                     <DetailItem label="Payment Mode:" value={receipt.mode} />
                 </div>
