@@ -125,7 +125,7 @@ export default function AddEditStudentDialog({ isOpen, onOpenChange, student, on
 
     if (!student) {
         // For new students, create a password
-        const birthYear = data.dob.getFullYear();
+        const birthYear = format(data.dob, 'yyyy');
         finalData.password = `${data.firstName.charAt(0).toUpperCase() + data.firstName.slice(1)}@${birthYear}`;
         finalData.fees = { [data.className]: [] };
         finalData.results = { [data.className]: [] };

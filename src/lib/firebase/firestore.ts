@@ -190,7 +190,7 @@ export async function addStudent(studentData: Student): Promise<void> {
                 name: studentData.parentName,
                 phone: studentData.parentMobile,
                 children: [admissionNumber],
-                password: `${studentData.parentName.split(' ')[0]}@${new Date().getFullYear()}`,
+                password: `${studentData.parentName.split(' ')[0]}@${birthYear}`,
             };
             batch.set(parentDocRef, newParent);
         }
