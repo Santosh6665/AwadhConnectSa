@@ -1,7 +1,7 @@
 
 'use client';
 import * as React from 'react';
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Download, Mail, Phone } from 'lucide-react';
@@ -44,7 +44,7 @@ export default function SingleReceiptDialog({ isOpen, onOpenChange, student, rec
                   </div>
               </div>
               <div className="text-right">
-                <h2 className="text-xl font-semibold font-headline">Fee Receipt</h2>
+                <DialogTitle className="text-xl font-semibold font-headline">Fee Receipt</DialogTitle>
                 <p className="text-sm text-muted-foreground">Session: {student.session}</p>
               </div>
             </div>

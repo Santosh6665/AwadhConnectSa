@@ -143,8 +143,8 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
                     <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Remarks</TableHead><TableHead className="no-print">Actions</TableHead></TableRow></TableHeader>
                     <TableBody>
                         {filteredTransactions.length > 0 ? (
-                            filteredTransactions.map(tx => (
-                                <TableRow key={tx.id}>
+                            filteredTransactions.map((tx, index) => (
+                                <TableRow key={`${tx.id || index}-${tx.date}-${tx.amount}`}>
                                     <TableCell>{tx.date}</TableCell>
                                     <TableCell>Rs {tx.amount.toLocaleString()}</TableCell>
                                     <TableCell><Badge variant="secondary">{tx.mode}</Badge></TableCell>
