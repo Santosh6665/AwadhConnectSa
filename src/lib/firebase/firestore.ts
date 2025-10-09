@@ -578,41 +578,62 @@ export async function addFeePayment(admissionNumber: string, className: string, 
         }
 
         const studentData = studentDoc.data() as Student;
-        let currentPreviousDue = studentData.previousDue || 0;
+        const updates: any = {};
         let remainingAmount = amount;
-        
-        let newPreviousDue = currentPreviousDue;
-        let amountForCurrentClass = 0;
 
-        if (currentPreviousDue > 0) {
-            const amountToClearPrevious = Math.min(remainingAmount, currentPreviousDue);
-            newPreviousDue -= amountToClearPrevious;
-            remainingAmount -= amountToClearPrevious;
+        // Distribute payment to previous sessions first
+        if (studentData.previousSessions && studentData.previousSessions.length > 0) {
+            // Sort sessions by session string (e.g., "2022-23") to pay oldest first
+            const sortedSessions = [...studentData.previousSessions].sort((a, b) => a.session.localeCompare(b.session));
+
+            for (const session of sortedSessions) {
+                if (remainingAmount <= 0) break;
+                if (session.dueFee && session.dueFee > 0) {
+                    const amountToPay = Math.min(remainingAmount, session.dueFee);
+                    
+                    session.dueFee -= amountToPay;
+                    remainingAmount -= amountToPay;
+
+                    const receipt: FeeReceipt = {
+                        id: `TXN-${Date.now()}`,
+                        amount: amountToPay,
+                        date: new Date().toLocaleDateString('en-GB'),
+                        mode,
+                        remarks: `Previous Due Cleared for ${session.className} (${session.session}). ${remarks || ''}`.trim(),
+                    };
+                    
+                    const previousSessionClassName = session.className;
+                    const path = `fees.${previousSessionClassName}.transactions`;
+                    updates[path] = arrayUnion(receipt);
+                }
+            }
+            // Update the array in the document
+            updates.previousSessions = sortedSessions;
         }
 
+
+        // Apply remaining amount to the current class fees
         if (remainingAmount > 0) {
-            amountForCurrentClass = remainingAmount;
-        }
-        
-        const updates: any = {
-            previousDue: newPreviousDue
-        };
-
-        if (amountForCurrentClass > 0) {
             const receipt: FeeReceipt = {
                 id: `TXN-${Date.now()}`,
-                amount: amountForCurrentClass,
-                date: new Date().toLocaleDateString('en-GB'), // dd/MM/yyyy
+                amount: remainingAmount, // The rest of the amount
+                date: new Date().toLocaleDateString('en-GB'),
                 mode,
-                remarks: `Paid ₹${amount}. Applied ₹${amountForCurrentClass} to current fees. ${remarks || ''}`.trim(),
+                remarks: `Current Fee Payment. ${remarks || ''}`.trim(),
             };
             const path = `fees.${className}.transactions`;
             updates[path] = arrayUnion(receipt);
         }
-        
+
+        // Recalculate the total previousDue from the updated sessions array
+        const totalPreviousDue = studentData.previousSessions?.reduce((sum, session) => sum + (session.dueFee || 0), 0) || 0;
+        updates.previousDue = totalPreviousDue;
+
+        // Commit all updates
         transaction.update(studentRef, updates);
     });
 }
+
 
 
 export async function updateStudentFeeStructure(admissionNumber: string, className: string, structure: FeeStructure, concession: number): Promise<void> {
