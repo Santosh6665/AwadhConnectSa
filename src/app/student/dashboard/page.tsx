@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import PreviousSessionCard from '@/components/student/previous-session-card';
 import { Button } from '@/components/ui/button';
-import { calculateGrandTotalResult } from '@/lib/utils';
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className="grid grid-cols-2 gap-4 items-start py-2">
@@ -41,26 +40,12 @@ export default function StudentDashboardPage() {
 
   const processedPreviousSessions = useMemo(() => {
     if (!student?.previousSessions) return [];
-
-    return student.previousSessions.map(session => {
-      const annualResult = student.results?.[session.className];
-      const { percentage } = calculateGrandTotalResult(annualResult);
-
-      const totalClasses = annualResult?.attendance?.totalClasses || 0;
-      const attendedClasses = annualResult?.attendance?.attendedClasses || 0;
-      const attendancePercentage = totalClasses > 0 ? (attendedClasses / totalClasses) * 100 : 0;
-
-      const feeDetails = student.fees?.[session.session];
-      const dueFee = feeDetails ? feeDetails.totalFees - feeDetails.paidAmount : 0;
-
-      return {
-        ...session,
-        overallPercentage: percentage,
-        attendancePercentage: attendancePercentage,
-        finalStatus: percentage >= 33 ? 'Promoted' : 'Not Promoted', 
-        dueFee: dueFee,
-      };
-    });
+    // The previous session data is already calculated and stored in the student record.
+    // We just need to ensure the fee status is correctly reflected.
+    return student.previousSessions.map(session => ({
+      ...session,
+      dueFee: session.dueFee || 0,
+    }));
   }, [student]);
 
   if (authLoading || loading || !student) {

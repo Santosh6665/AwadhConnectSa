@@ -91,7 +91,7 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
              </React.Fragment>
           ))}
         </BreadcrumbList>
-      </Breadcrumb>
+      </Breadcrumb> 
 
       <div className="relative ml-auto hidden flex-1 grow-0 sm:flex">
          {/* Optional Search bar can go here */}
