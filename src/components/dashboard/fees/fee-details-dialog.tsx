@@ -94,7 +94,7 @@ export default function FeeDetailsDialog({ isOpen, onOpenChange, student, defaul
          <DialogHeader className="p-8 pb-0">
           <DialogTitle className="sr-only">Fee Receipt for {student.firstName}</DialogTitle>
         </DialogHeader>
-        <div ref={summaryReceiptRef} className="p-8 pt-0 max-h-[90vh] print:max-h-none overflow-y-scroll no-scrollbar">
+        <div ref={summaryReceiptRef} className="p-8 pt-0 max-h-[80vh] print:max-h-none overflow-y-scroll no-scrollbar">
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-4">
                   <Image src="/logo.png" alt="School Logo" width={48} height={48} className="h-12 w-12" />
