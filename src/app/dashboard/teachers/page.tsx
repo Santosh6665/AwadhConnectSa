@@ -1,6 +1,8 @@
 import { getTeachers } from '@/lib/firebase/firestore';
 import TeacherList from '@/components/dashboard/admin/teachers/teacher-list';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TeacherManagementPage() {
   const teachers = await getTeachers();
 

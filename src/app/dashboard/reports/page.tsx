@@ -8,6 +8,8 @@ import TeacherRosterReport from '@/components/dashboard/reports/teacher-roster-r
 import AttendanceSummaryReport from '@/components/dashboard/reports/attendance-summary-report';
 import { getFeeStructure } from '@/lib/firebase/firestore';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ReportsPage() {
   const [students, teachers, allAttendance, feeStructure] = await Promise.all([
     getStudents({ status: 'Active' }),

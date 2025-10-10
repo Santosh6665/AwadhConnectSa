@@ -4,6 +4,8 @@ import InquiryList from '@/components/dashboard/inquiries/inquiry-list';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
+export const dynamic = 'force-dynamic';
+
 async function getInquiries() {
   const inquiriesCollection = collection(db, 'admissions');
   const inquirySnapshot = await getDocs(inquiriesCollection);
