@@ -106,7 +106,7 @@ export default function SalarySlip({ teacher, month, salaryDetails, payment }: S
                         <Separator />
                         <div className="flex justify-between items-center py-2 font-bold">
                             <span>Total Deductions</span>
-                            <span>- Rs ${deduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span>- Rs {deduction.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </div>
                 </div>
