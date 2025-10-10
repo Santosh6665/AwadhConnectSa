@@ -34,7 +34,6 @@ export default function PreviousSessionCard({ session }: { session: PreviousSess
         <div>
             <h4 className="font-semibold mb-2 text-primary">Academic Summary</h4>
             <DetailItem label="Final Status" value={<Badge variant={session.finalStatus === 'Promoted' ? 'default' : 'destructive'}>{session.finalStatus}</Badge>} />
-            <DetailItem label="Attendance" value={`${(session.attendancePercentage || 0).toFixed(2)}%`} />
             <DetailItem label="Percentage" value={`${(session.overallPercentage || 0).toFixed(2)}%`} />
         </div>
         <div>
