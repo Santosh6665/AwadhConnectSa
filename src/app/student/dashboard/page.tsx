@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
-import type { Student, PreviousSession } from '@/lib/types';
+import type { Student } from '@/lib/types';
 import { Loader2, ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,8 +40,6 @@ export default function StudentDashboardPage() {
 
   const processedPreviousSessions = useMemo(() => {
     if (!student?.previousSessions) return [];
-    // The previous session data is already calculated and stored in the student record.
-    // We just need to ensure the fee status is correctly reflected.
     return student.previousSessions.map(session => ({
       ...session,
       dueFee: session.dueFee || 0,
@@ -124,7 +122,7 @@ export default function StudentDashboardPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <PreviousSessionCard session={processedPreviousSessions[previousSessionIndex]} />
+                    <PreviousSessionCard student={student} session={processedPreviousSessions[previousSessionIndex]} />
                 </CardContent>
             </Card>
           )}

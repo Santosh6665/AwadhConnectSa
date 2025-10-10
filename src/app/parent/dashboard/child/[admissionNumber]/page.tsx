@@ -122,7 +122,7 @@ export default function ChildDetailPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {previousSessions.map(session => (
-                             <PreviousSessionCard key={session.sessionId} session={session} />
+                             <PreviousSessionCard key={session.sessionId} student={student} session={session} />
                         ))}
                     </CardContent>
                 </Card>

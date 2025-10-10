@@ -1,10 +1,10 @@
 
-
-import type { PreviousSession } from '@/lib/types';
+import type { PreviousSession, Student } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '../ui/button';
 import { Download } from 'lucide-react';
+import { generatePreviousSessionReport, downloadReport } from '@/lib/report-utils';
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className="grid grid-cols-2 gap-4 py-2 border-b last:border-b-0">
@@ -13,8 +13,13 @@ const DetailItem = ({ label, value }: { label: string; value: React.ReactNode })
   </div>
 );
 
-export default function PreviousSessionCard({ session }: { session: PreviousSession }) {
+export default function PreviousSessionCard({ student, session }: { student: Student, session: PreviousSession }) {
   const feeStatus = session.dueFee > 0 ? 'Due' : 'Paid';
+
+  const handleDownload = () => {
+    const doc = generatePreviousSessionReport(student, session);
+    downloadReport(doc, `report-card-${student.admissionNumber}-${session.session}.pdf`);
+  };
 
   return (
     <Card className="bg-muted/50">
@@ -24,7 +29,7 @@ export default function PreviousSessionCard({ session }: { session: PreviousSess
                 <CardTitle className="text-xl">Session: {session.session}</CardTitle>
                 <CardDescription>Class: {session.className}-{session.sectionName} | Roll No: {session.rollNo}</CardDescription>
             </div>
-             <Button variant="outline" size="sm">
+             <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="mr-2 h-4 w-4" />
                 Download Report
             </Button>

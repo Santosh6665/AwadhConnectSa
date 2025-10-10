@@ -39,7 +39,7 @@ export default function ViewPreviousRecordsDialog({ isOpen, onOpenChange, studen
             <div className="space-y-4 pr-6">
                 {hasPreviousSessions ? (
                     student.previousSessions!.map(session => (
-                        <PreviousSessionCard key={session.sessionId} session={session} />
+                        <PreviousSessionCard key={session.sessionId} student={student} session={session} />
                     ))
                 ) : (
                     <div className="text-center text-muted-foreground p-8">
