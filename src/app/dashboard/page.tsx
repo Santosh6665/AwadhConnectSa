@@ -8,6 +8,7 @@ import Link from "next/link";
 import EventSuggestionGenerator from "@/components/dashboard/admin/event-suggestion-generator";
 import RecentTeachers from "@/components/dashboard/recent-teachers";
 import { getFeeStructure } from "@/lib/firebase/firestore";
+export const dynamic = 'force-dynamic';
 
 const quickActions = [
     { label: "Manage Students", href: "/dashboard/students", icon: Users },
