@@ -96,46 +96,48 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
       <div className="relative ml-auto hidden flex-1 grow-0 sm:flex">
          {/* Optional Search bar can go here */}
       </div>
-      <DropdownMenu onOpenChange={(open) => { if (open) markAllAsRead(); }}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="relative hidden sm:inline-flex">
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{unreadCount}</Badge>
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup className="max-h-96 overflow-y-auto">
-                {notifications.length > 0 ? (
-                    notifications.map(item => {
-                        const isEvent = 'startDate' in item;
-                        return (
-                            <DropdownMenuItem key={item.id} asChild>
-                                <Link href={noticePath} className="flex items-start gap-3">
-                                    <div className="bg-primary/10 p-2 rounded-full mt-1">
-                                        {isEvent ? <Calendar className="w-4 h-4 text-primary" /> : <Bell className="w-4 h-4 text-primary" />}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm whitespace-normal">{item.title}</p>
-                                        <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}</p>
-                                    </div>
-                                </Link>
-                            </DropdownMenuItem>
-                        )
-                    })
-                ) : (
-                    <div className="p-4 text-center text-sm text-muted-foreground">No new notifications</div>
-                )}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link href={noticePath} className="justify-center">View All Notifications</Link>
-            </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {role !== 'admin' && (
+        <DropdownMenu onOpenChange={(open) => { if (open) markAllAsRead(); }}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="relative hidden sm:inline-flex">
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{unreadCount}</Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup className="max-h-96 overflow-y-auto">
+                  {notifications.length > 0 ? (
+                      notifications.map(item => {
+                          const isEvent = 'startDate' in item;
+                          return (
+                              <DropdownMenuItem key={item.id} asChild>
+                                  <Link href={noticePath} className="flex items-start gap-3">
+                                      <div className="bg-primary/10 p-2 rounded-full mt-1">
+                                          {isEvent ? <Calendar className="w-4 h-4 text-primary" /> : <Bell className="w-4 h-4 text-primary" />}
+                                      </div>
+                                      <div className="flex-1">
+                                          <p className="font-medium text-sm whitespace-normal">{item.title}</p>
+                                          <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}</p>
+                                      </div>
+                                  </Link>
+                              </DropdownMenuItem>
+                          )
+                      })
+                  ) : (
+                      <div className="p-4 text-center text-sm text-muted-foreground">No new notifications</div>
+                  )}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                  <Link href={noticePath} className="justify-center">View All Notifications</Link>
+              </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
