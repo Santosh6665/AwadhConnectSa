@@ -64,56 +64,68 @@ interface DateDropdownsProps {
 }
 
 function DateDropdowns({ value, onChange, fromYear, toYear }: DateDropdownsProps) {
-  const day = value ? value.getDate() : '';
-  const month = value ? value.getMonth() : '';
-  const year = value ? value.getFullYear() : '';
+  const [day, setDay] = React.useState(value ? value.getDate().toString() : '');
+  const [month, setMonth] = React.useState(value ? value.getMonth().toString() : '');
+  const [year, setYear] = React.useState(value ? value.getFullYear().toString() : '');
 
+  React.useEffect(() => {
+    if (value) {
+      setDay(value.getDate().toString());
+      setMonth(value.getMonth().toString());
+      setYear(value.getFullYear().toString());
+    } else {
+      setDay('');
+      setMonth('');
+      setYear('');
+    }
+  }, [value]);
+
+  const handleDateChange = (newDay: string, newMonth: string, newYear: string) => {
+    const dayNum = parseInt(newDay, 10);
+    const monthNum = parseInt(newMonth, 10);
+    const yearNum = parseInt(newYear, 10);
+
+    if (!isNaN(dayNum) && !isNaN(monthNum) && !isNaN(yearNum)) {
+      const daysInMonth = new Date(yearNum, monthNum + 1, 0).getDate();
+      const currentDay = dayNum > daysInMonth ? daysInMonth : dayNum;
+      onChange(new Date(yearNum, monthNum, currentDay));
+    }
+  };
+  
   const handleDayChange = (val: string) => {
-    const newDay = parseInt(val, 10);
-    const newDate = value ? new Date(value) : new Date();
-    newDate.setDate(newDay);
-    onChange(newDate);
+    setDay(val);
+    handleDateChange(val, month, year);
   };
 
   const handleMonthChange = (val: string) => {
-    const newMonth = parseInt(val, 10);
-    const newDate = value ? new Date(value) : new Date();
-    const currentDay = newDate.getDate();
-    const daysInNewMonth = new Date(newDate.getFullYear(), newMonth + 1, 0).getDate();
-    if (currentDay > daysInNewMonth) {
-        newDate.setDate(daysInNewMonth);
-    }
-    newDate.setMonth(newMonth);
-    onChange(newDate);
+    setMonth(val);
+    handleDateChange(day, val, year);
   };
 
   const handleYearChange = (val: string) => {
-    const newYear = parseInt(val, 10);
-    const newDate = value ? new Date(value) : new Date();
-    newDate.setFullYear(newYear);
-    onChange(newDate);
+    setYear(val);
+    handleDateChange(day, month, val);
   };
-
-
+  
   const years = Array.from({ length: toYear - fromYear + 1 }, (_, i) => toYear - i);
-  const daysInMonth = (year !== '' && month !== '') ? new Date(Number(year), Number(month) + 1, 0).getDate() : 31;
+  const daysInMonth = (year && month) ? new Date(parseInt(year, 10), parseInt(month, 10) + 1, 0).getDate() : 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
     <div className="flex gap-2">
-      <Select value={day ? day.toString() : ''} onValueChange={handleDayChange}>
+      <Select value={day} onValueChange={handleDayChange}>
         <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
         <SelectContent>
           {days.map(d => <SelectItem key={d} value={d.toString()}>{d}</SelectItem>)}
         </SelectContent>
       </Select>
-      <Select value={month !== '' ? month.toString() : ''} onValueChange={handleMonthChange}>
+      <Select value={month} onValueChange={handleMonthChange}>
         <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
         <SelectContent>
           {months.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>)}
         </SelectContent>
       </Select>
-      <Select value={year ? year.toString() : ''} onValueChange={handleYearChange}>
+      <Select value={year} onValueChange={handleYearChange}>
         <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
         <SelectContent>
           {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
