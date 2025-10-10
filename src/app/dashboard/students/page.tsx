@@ -2,6 +2,8 @@
 import { getStudents, getClasses, getSections } from '@/lib/firebase/firestore';
 import StudentList from '@/components/dashboard/admin/students/student-list';
 
+export const dynamic = 'force-dynamic';
+
 export default async function StudentManagementPage() {
   const [students, classes, sections] = await Promise.all([
     getStudents(),
