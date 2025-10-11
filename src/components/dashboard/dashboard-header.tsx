@@ -53,6 +53,8 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
   const userDisplayName = user?.name || user?.email;
   const avatarSeed = user?.id || user?.email || 'default';
   const noticePath = `/${role}/dashboard/notices`;
+  const dashboardPath = role === 'admin' ? '/dashboard' : `/${role}/dashboard`;
+
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -151,15 +153,12 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>{userDisplayName}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4"/>
-            Profile
+          <DropdownMenuItem asChild>
+            <Link href={dashboardPath}>
+                <User className="mr-2 h-4 w-4"/>
+                Profile
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4"/>
-            Settings
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
            <DropdownMenuItem onClick={logout}>
             <LogOut className="mr-2 h-4 w-4"/>
             Logout
