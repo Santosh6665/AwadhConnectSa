@@ -127,7 +127,7 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
               <SelectContent>
                 <SelectItem value="All">All</SelectItem>
                 <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Archive">Archive</SelectItem>
+                <SelectItem value="Archived">Archive</SelectItem>
               </SelectContent>
             </Select>
         </div>
