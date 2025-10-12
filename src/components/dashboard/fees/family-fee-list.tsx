@@ -7,6 +7,8 @@ import { Accordion } from '@/components/ui/accordion';
 import FamilyFeeCard from './family-fee-card';
 import { useToast } from '@/hooks/use-toast';
 import { addFeePayment, getStudentByAdmissionNumber, updateStudentFeeStructure } from '@/lib/firebase/firestore';
+import { Button } from '@/components/ui/button';
+import { Upload } from 'lucide-react';
 
 export default function FamilyFeeList({
   initialFamilies,
@@ -47,7 +49,6 @@ export default function FamilyFeeList({
         try {
             await addFeePayment(student.admissionNumber, student.className, amount, mode, remarks);
             
-            // Re-fetch student data to get the updated dues and transactions
             const updatedStudent = await getStudentByAdmissionNumber(student.admissionNumber);
 
             if (updatedStudent) {
@@ -55,7 +56,7 @@ export default function FamilyFeeList({
             }
 
             toast({ title: 'Success', description: 'Payment recorded successfully.' });
-            onPaymentSaved(); // Callback to close dialog
+            onPaymentSaved();
 
         } catch (error) {
             console.error("Error saving payment", error);
@@ -90,14 +91,83 @@ export default function FamilyFeeList({
     });
   }
 
+  const handleExportCSV = () => {
+    const headers = [
+        'Admission Number',
+        'Student Name',
+        'Class',
+        'Roll No',
+        'Parent Name',
+        'Parent Phone',
+        'Annual Fee',
+        'Concession',
+        'Total Payable',
+        'Paid Amount',
+        'Current Year Due',
+        'Previous Due',
+        'Net Due'
+    ];
+
+    const rows = families.flatMap(family => {
+        return family.students.map(student => {
+            const studentFeeDetails = student.fees?.[student.className];
+            const structureToUse = studentFeeDetails?.structure || defaultFeeStructure?.[student.className];
+
+            let annualFee = 0;
+            if (structureToUse) {
+                annualFee = Object.values(structureToUse).reduce((sum, head) => sum + (head.amount * head.months), 0);
+            }
+
+            const concession = studentFeeDetails?.concession || 0;
+            const totalPayable = annualFee - concession;
+            const paidAmount = (studentFeeDetails?.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+            const currentYearDue = totalPayable - paidAmount;
+            const previousDue = student.previousDue || 0;
+            const netDue = currentYearDue + previousDue;
+
+            return [
+                student.admissionNumber,
+                `"${student.firstName} ${student.lastName}"`,
+                `"${student.className}-${student.sectionName}"`,
+                student.rollNo,
+                `"${family.name}"`,
+                family.phone,
+                annualFee,
+                concession,
+                totalPayable,
+                paidAmount,
+                currentYearDue,
+                previousDue,
+                netDue
+            ].join(',');
+        });
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'fee-summary.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-4">
-      <Input
-        placeholder="Search by parent name, phone, or student name..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="max-w-lg"
-      />
+      <div className="flex justify-between items-center">
+        <Input
+            placeholder="Search by parent name, phone, or student name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-lg"
+        />
+        <Button onClick={handleExportCSV} variant="outline">
+            <Upload className="mr-2 h-4 w-4" />
+            Export to CSV
+        </Button>
+      </div>
       <Accordion type="multiple" className="w-full space-y-4">
         {filteredFamilies.map((family) => (
           <FamilyFeeCard
