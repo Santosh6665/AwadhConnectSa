@@ -13,7 +13,7 @@ export default function LoginPage() {
             <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
               <Image src="/logo.png" alt="School Logo" width={40} height={40} className="h-10 w-10" />
             </div>
-            <CardTitle className="font-headline text-3xl">AwadhConnect Admin</CardTitle>
+            <CardTitle className="font-headline text-3xl">Awadh Inter College Admin</CardTitle>
             <CardDescription>Please sign in to continue</CardDescription>
           </CardHeader>
           <CardContent>

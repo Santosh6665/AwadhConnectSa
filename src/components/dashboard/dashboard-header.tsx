@@ -153,6 +153,12 @@ export default function DashboardHeader({ role }: { role: UserRole }) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>{userDisplayName}</DropdownMenuLabel>
           <DropdownMenuSeparator />
+           <DropdownMenuItem asChild>
+            <Link href="/">
+                <Home className="mr-2 h-4 w-4"/>
+                Home
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href={dashboardPath}>
                 <User className="mr-2 h-4 w-4"/>

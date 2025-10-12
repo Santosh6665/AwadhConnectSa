@@ -1,4 +1,4 @@
-# **App Name**: AwadhConnect
+# **App Name**: Awadh Inter College
 
 ## Core Features:
 

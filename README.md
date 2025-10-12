@@ -1,6 +1,6 @@
-# AwadhConnect
+# Awadh Inter College
 
-AwadhConnect is a modern, comprehensive school management platform built with Next.js, Firebase, and Genkit AI. It provides a centralized hub for communication and management for administrators, teachers, students, and parents.
+Awadh Inter College is a modern, comprehensive school management platform built with Next.js, Firebase, and Genkit AI. It provides a centralized hub for communication and management for administrators, teachers, students, and parents.
 
 ## Key Features
 

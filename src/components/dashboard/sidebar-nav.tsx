@@ -86,7 +86,7 @@ export default function SidebarNav({ role }: { role: UserRole }) {
         <div className="flex items-center gap-2">
             <Image src="/logo.png" alt="School Logo" width={32} height={32} className="size-8" />
             <div className="flex flex-col">
-                <h3 className="text-lg font-headline font-semibold text-sidebar-primary">AwadhConnect</h3>
+                <h3 className="text-lg font-headline font-semibold text-sidebar-primary">Awadh Inter College</h3>
                 <p className="text-xs text-sidebar-foreground/70">{portalName}</p>
             </div>
         </div>

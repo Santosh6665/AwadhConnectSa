@@ -87,6 +87,7 @@ export default function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild><Link href="/">Home</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/login">Admin Portal</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/teacher/login">Teacher Portal</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/student/login">Student Portal</Link></DropdownMenuItem>
@@ -125,6 +126,7 @@ export default function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild><Link href="/">Home</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link href="/login">Admin Portal</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link href="/teacher/login">Teacher Portal</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link href="/student/login">Student Portal</Link></DropdownMenuItem>
