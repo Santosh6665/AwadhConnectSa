@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { saveResultVisibilitySettings } from '@/lib/firebase/firestore';
+export const dynamic = 'force-dynamic';
 
 type VisibilityFormData = ResultVisibilitySettings;
 
