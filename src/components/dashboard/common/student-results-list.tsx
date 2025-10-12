@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MoreHorizontal, Loader2, Edit, Trash, Eye } from 'lucide-react';
+import { MoreHorizontal, Loader2, Edit, Trash, Eye, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { calculateOverallResult, calculateGrandTotalResult } from '@/lib/utils';
@@ -216,6 +216,28 @@ export default function StudentResultsList({
     return finalSummaries;
   }, [students, allStudentsForRank, searchTerm, selectedClass, selectedSection, userRole, selectedExam]);
 
+  const handleExportCSV = () => {
+    const headers = ['Roll No', 'Name', 'Class', 'Percentage', 'Grade', 'Rank'];
+    const rows = studentSummaries.map(s => [
+      s.student.rollNo,
+      `${s.student.firstName} ${s.student.lastName}`,
+      `${s.student.className}-${s.student.sectionName}`,
+      `${s.percentage.toFixed(2)}%`,
+      s.grade,
+      s.rank
+    ].join(','));
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `student-results-${selectedClass}-${selectedSection}-${selectedExam}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const viewingClassOptions = selectedStudent ? Object.keys(selectedStudent.results || {}).sort().reverse() : [];
   const annualResultForViewing = selectedStudent?.results?.[viewingClass];
@@ -224,9 +246,15 @@ export default function StudentResultsList({
   return (
     <>
       <Card>
-        <CardHeader>
-            <CardTitle>Filter & View Results</CardTitle>
-            <CardDescription>Select filters to narrow down the student list and manage results.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle>Filter & View Results</CardTitle>
+                <CardDescription>Select filters to narrow down the student list and manage results.</CardDescription>
+            </div>
+            <Button onClick={handleExportCSV} variant="outline">
+                <Upload className="mr-2 h-4 w-4"/>
+                Export to CSV
+            </Button>
         </CardHeader>
         <CardContent>
             <div className="flex flex-wrap items-center gap-2 mb-4">
