@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MoreHorizontal, PlusCircle, Filter, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import AddEditTeacherDialog from './add-edit-teacher-dialog';
@@ -21,7 +22,7 @@ import { Label } from '@/components/ui/label';
 export default function TeacherList({ teachers: initialTeachers }: { teachers: Teacher[] }) {
   const [teachers, setTeachers] = useState<Teacher[]>(initialTeachers);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'Active' | 'Archived'>('all');
+  const [statusFilter, setStatusFilter] = useState('Active');
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -39,7 +40,7 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
       email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       id.toLowerCase().includes(searchTerm.toLowerCase());
       
-    const matchesStatus = statusFilter === 'all' || teacher.status === statusFilter;
+    const matchesStatus = statusFilter === 'All' || teacher.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -119,19 +120,16 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
             />
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-10">
-                        <Filter className="mr-2 h-4 w-4" />
-                        {statusFilter === 'all' ? 'Status' : statusFilter}
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem onSelect={() => setStatusFilter('all')}>All</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setStatusFilter('Active')}>Active</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => setStatusFilter('Archived')}>Archived</DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Archive">Archive</SelectItem>
+              </SelectContent>
+            </Select>
         </div>
         <Button onClick={handleAddTeacher} disabled={isSaving}>
           {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}

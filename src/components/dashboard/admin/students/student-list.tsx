@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, ArrowUpCircle, History, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -40,6 +41,7 @@ export default function StudentList({
 }) {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('Active');
   const [isSaving, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -54,7 +56,8 @@ export default function StudentList({
   const filteredStudents = useMemo(() => {
     let filtered = students.filter(student => {
       const searchLower = searchTerm.toLowerCase();
-      return (
+      const statusMatch = statusFilter === 'All' || student.status === statusFilter;
+      const searchMatch = (
         student.firstName.toLowerCase().includes(searchLower) ||
         student.lastName.toLowerCase().includes(searchLower) ||
         `${student.firstName.toLowerCase()} ${student.lastName.toLowerCase()}`.includes(searchLower) ||
@@ -65,6 +68,7 @@ export default function StudentList({
         student.session?.toLowerCase().includes(searchLower) ||
         student.parentName?.toLowerCase().includes(searchLower)
       );
+      return statusMatch && searchMatch;
     });
 
     if (sortConfig !== null) {
@@ -82,7 +86,7 @@ export default function StudentList({
       });
     }
     return filtered;
-  }, [students, searchTerm, sortConfig]);
+  }, [students, searchTerm, sortConfig, statusFilter]);
 
   const requestSort = (key: keyof Student) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -175,6 +179,15 @@ export default function StudentList({
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
             />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Archive">Archive</SelectItem>
+              </SelectContent>
+            </Select>
         </div>
         <Button onClick={handleAddNew} disabled={isSaving}>
           <PlusCircle className="mr-2 h-4 w-4" />
