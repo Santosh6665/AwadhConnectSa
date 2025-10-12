@@ -88,10 +88,7 @@ export default function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild><Link href="/">Home</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/login">Admin Portal</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/teacher/login">Teacher Portal</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/student/login">Student Portal</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/parent/login">Parent Portal</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/unified-login">Login</Link></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -118,21 +115,12 @@ export default function Header() {
             </nav>
             
             <div className="flex-1 flex items-center justify-end space-x-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <User className="mr-2 h-4 w-4" />
-                    Login
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild><Link href="/">Home</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link href="/login">Admin Portal</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link href="/teacher/login">Teacher Portal</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link href="/student/login">Student Portal</Link></DropdownMenuItem>
-                   <DropdownMenuItem asChild><Link href="/parent/login">Parent Portal</Link></DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button asChild variant="outline">
+                <Link href="/unified-login">
+                  <User className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
+              </Button>
             </div>
         </div>
       </div>

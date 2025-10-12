@@ -14,7 +14,7 @@ function StudentDashboardContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'student')) {
-      router.push('/student/login');
+      router.push('/unified-login');
     }
   }, [user, loading, router]);
 

@@ -14,6 +14,7 @@ interface AuthContextType {
   loading: boolean;
   login: (credential: string, pass: string, role: 'admin' | 'teacher' | 'student' | 'parent') => Promise<void>;
   logout: () => void;
+  loginWithRoleDetection: (credential: string, pass: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -116,15 +117,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithRoleDetection = async (credential: string, pass: string) => {
+    setLoading(true);
+    try {
+      // Try admin login
+      try {
+        const admin = await getAdminByEmail(credential);
+        if (admin && admin.password === sha256(pass)) {
+          await login(credential, pass, 'admin');
+          return;
+        }
+      } catch (error) {}
+
+      // Try teacher login
+      try {
+        const teacher = await getTeacherById(credential);
+        if (teacher && teacher.password === pass) {
+          await login(credential, pass, 'teacher');
+          return;
+        }
+      } catch (error) {}
+
+      // Try student login
+      try {
+        const student = await getStudentByAdmissionNumber(credential);
+        if (student && student.password === pass) {
+          await login(credential, pass, 'student');
+          return;
+        }
+      } catch (error) {}
+
+      // Try parent login
+      try {
+        const parent = await getParentByMobile(credential);
+        if (parent && parent.password === pass) {
+          await login(credential, pass, 'parent');
+          return;
+        }
+      } catch (error) {}
+
+      throw new Error('Invalid credentials');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
-    const role = user?.role;
     setUser(null);
     sessionStorage.removeItem('app-user');
-    if (role === 'admin') router.push('/login');
-    else if (role === 'teacher') router.push('/teacher/login');
-    else if (role === 'student') router.push('/student/login');
-    else if (role === 'parent') router.push('/parent/login');
-    else router.push('/');
+    router.push('/unified-login');
   };
 
   const value = {
@@ -132,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     login,
     logout,
+    loginWithRoleDetection,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

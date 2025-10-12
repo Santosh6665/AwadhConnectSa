@@ -14,7 +14,7 @@ function TeacherDashboardContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'teacher')) {
-      router.push('/teacher/login');
+      router.push('/unified-login');
     }
   }, [user, loading, router]);
 

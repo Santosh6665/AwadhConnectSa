@@ -14,7 +14,7 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'parent')) {
-      router.push('/parent/login');
+      router.push('/unified-login');
     }
   }, [user, loading, router]);
 
@@ -44,7 +44,7 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
 export default function ParentDashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.Node;
 }) {
   return (
     <AuthProvider>
