@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MoreHorizontal, PlusCircle, Filter, Loader2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Filter, Loader2, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import AddEditTeacherDialog from './add-edit-teacher-dialog';
 import TeacherDetailDialog from './teacher-detail-dialog';
@@ -109,6 +109,53 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
     });
   }
 
+  const handleExportCSV = () => {
+    const csvHeaders = [
+      'Teacher ID',
+      'Name',
+      'Email',
+      'Phone',
+      'Date of Birth',
+      'Gender',
+      'Hire Date',
+      'Designation',
+      'Subjects',
+      'Classes',
+      'Status',
+      'Salary',
+    ];
+
+    const csvRows = filteredTeachers.map(teacher => {
+      const subjects = teacher.subjects ? teacher.subjects.join(', ') : 'N/A';
+      const classes = teacher.classes ? teacher.classes.join(', ') : 'N/A';
+      return [
+        teacher.id,
+        teacher.name,
+        teacher.email,
+        teacher.phone,
+        teacher.dob,
+        teacher.gender,
+        teacher.hireDate,
+        teacher.designation,
+        subjects,
+        classes,
+        teacher.status,
+        teacher.salary || 'N/A',
+      ].join(',');
+    });
+
+    const csvContent = [csvHeaders.join(','), ...csvRows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'teachers.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   return (
     <>
@@ -130,6 +177,10 @@ export default function TeacherList({ teachers: initialTeachers }: { teachers: T
                 <SelectItem value="Archived">Archive</SelectItem>
               </SelectContent>
             </Select>
+             <Button onClick={handleExportCSV} variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Export to CSV
+            </Button>
         </div>
         <Button onClick={handleAddTeacher} disabled={isSaving}>
           {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}

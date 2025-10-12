@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, ArrowUpCircle, History, User } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Filter, Loader2, ArrowUpDown, ArrowUpCircle, History, User, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -166,7 +166,52 @@ export default function StudentList({
         toast({ title: "Error", description: "Failed to promote student.", variant: "destructive" });
       }
     });
-  };  
+  };
+
+  const handleExportCSV = () => {
+    const csvHeaders = [
+      'Admission Number',
+      'Roll No',
+      'First Name',
+      'Last Name',
+      'Date of Birth',
+      'Gender',
+      'Class',
+      'Section',
+      'Parent Name',
+      'Parent Mobile',
+      'Status',
+      'Session',
+    ];
+
+    const csvRows = filteredStudents.map(student => {
+      return [
+        student.admissionNumber,
+        student.rollNo,
+        student.firstName,
+        student.lastName,
+        student.dob,
+        student.gender,
+        student.className,
+        student.sectionName,
+        student.parentName,
+        student.parentMobile || 'N/A',
+        student.status,
+        student.session,
+      ].join(',');
+    });
+
+    const csvContent = [csvHeaders.join(','), ...csvRows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'students.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   
 
   return (
@@ -189,6 +234,10 @@ export default function StudentList({
                 <SelectItem value="Archived">Archive</SelectItem>
               </SelectContent>
             </Select>
+            <Button onClick={handleExportCSV} variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Export to CSV
+            </Button>
         </div>
         <Button onClick={handleAddNew} disabled={isSaving}>
           <PlusCircle className="mr-2 h-4 w-4" />
