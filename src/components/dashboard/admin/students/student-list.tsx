@@ -184,6 +184,7 @@ export default function StudentList({
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="All">All</SelectItem>
                 <SelectItem value="Active">Active</SelectItem>
                 <SelectItem value="Archived">Archive</SelectItem>
               </SelectContent>
