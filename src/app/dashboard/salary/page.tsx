@@ -7,7 +7,7 @@ import { getTeachers, getTeacherAttendanceForMonth, getSalaryPaymentsForMonth } 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, ChevronLeft, ChevronRight, Download, Edit } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Download, Edit, Upload } from 'lucide-react';
 import { format, getDaysInMonth, addMonths, subMonths, isSunday } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import SalarySlip from '@/components/dashboard/common/salary-slip';
@@ -113,6 +113,47 @@ export default function AdminSalaryPage() {
     setIsManageOpen(false);
   }
 
+  const handleExportCSV = () => {
+    const csvHeaders = [
+      'Teacher ID',
+      'Name',
+      'Base Salary',
+      'Present Days',
+      'Absent Days',
+      'Payable Days',
+      'Per Day Salary',
+      'Deduction',
+      'Payable Salary',
+      'Payment Status',
+    ];
+
+    const csvRows = salaryData.map(({ teacher, salaryDetails, payment }) => {
+      return [
+        teacher.id,
+        teacher.name,
+        teacher.salary || 'N/A',
+        salaryDetails.presentDays,
+        salaryDetails.absentDays,
+        salaryDetails.payableDays,
+        salaryDetails.perDaySalary.toFixed(2),
+        salaryDetails.deduction.toFixed(2),
+        salaryDetails.payableSalary.toFixed(2),
+        payment?.status || 'Pending',
+      ].join(',');
+    });
+
+    const csvContent = [csvHeaders.join(','), ...csvRows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `salary-report-${format(currentMonth, 'MMMM-yyyy')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -138,9 +179,15 @@ export default function AdminSalaryPage() {
         <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <Card>
-          <CardHeader>
-            <CardTitle>Salary Overview</CardTitle>
-            <CardDescription>Monthly salary summary for all active teachers.</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Salary Overview</CardTitle>
+              <CardDescription>Monthly salary summary for all active teachers.</CardDescription>
+            </div>
+            <Button onClick={handleExportCSV} variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Export to CSV
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="border rounded-lg">
@@ -217,5 +264,3 @@ export default function AdminSalaryPage() {
     </div>
   );
 }
-
-    
