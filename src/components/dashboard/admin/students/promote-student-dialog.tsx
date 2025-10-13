@@ -14,13 +14,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { Student, FeeStructure } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { getFeeStructure } from '@/lib/firebase/firestore';
+import { getFeeStructure, updateStudentFeeStructure } from '@/lib/firebase/firestore';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import CustomizeStructureDialog from '@/components/dashboard/fees/customize-structure-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const promotionSchema = z.object({
   newSession: z.string().min(1, 'New session is required'),
@@ -69,11 +71,21 @@ const calculateCurrentDues = (student: Student, defaultFeeStructure: { [key: str
 
 export default function PromoteStudentDialog({ isOpen, onOpenChange, student, onSave, isSaving }: PromoteStudentDialogProps) {
   const [defaultFeeStructure, setDefaultFeeStructure] = React.useState<{[key: string]: FeeStructure} | null>(null);
+  const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = React.useState(false);
+  const { toast } = useToast();
+  const [isSavingStructure, setIsSavingStructure] = React.useState(false);
+
   const form = useForm<PromotionFormData>({
     resolver: zodResolver(promotionSchema),
     defaultValues: {
       carryForwardDues: true,
     },
+  });
+
+  const newClassName = useWatch({
+    control: form.control,
+    name: 'newClassName',
+    defaultValue: student?.className,
   });
 
   React.useEffect(() => {
@@ -112,72 +124,111 @@ export default function PromoteStudentDialog({ isOpen, onOpenChange, student, on
     onSave(student.admissionNumber, data.newSession, data.newClassName, data.newSectionName, data.carryForwardDues);
   };
 
+  const handleSaveCustomStructure = async (newStructure: FeeStructure, newConcession: number, onStructureSaved: () => void) => {
+    if (!student || !newClassName) {
+        toast({ title: 'Error', description: 'Please select a new class first.', variant: 'destructive' });
+        return;
+    };
+    setIsSavingStructure(true);
+    try {
+        await updateStudentFeeStructure(student.admissionNumber, newClassName, newStructure, newConcession);
+        toast({ title: 'Success', description: `Custom fee structure for ${newClassName} saved successfully.` });
+        onStructureSaved();
+    } catch (error) {
+        console.error('Error saving custom fee structure:', error);
+        toast({
+            title: 'Error',
+            description: 'Failed to save custom fee structure. Please try again.',
+            variant: 'destructive',
+        });
+    } finally {
+        setIsSavingStructure(false);
+    }
+  };
+
   if (!student) return null;
 
   const totalDuesToCarry = currentDues + (student.previousDue || 0);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Promote Student: {student.firstName}</DialogTitle>
-          <DialogDescription>
-            Move the student to the next academic session.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-                <p className="text-sm font-medium">Current Details</p>
-                <div className="p-3 bg-muted rounded-md text-sm text-muted-foreground">
-                    Session: {student.session} | Class: {student.className}-{student.sectionName}
-                </div>
-            </div>
-            
-            <Alert variant="destructive">
-                <AlertDescription className="grid grid-cols-2 gap-x-4">
-                    <div className="font-semibold">Current Class Dues:</div>
-                    <div className="font-mono text-right">Rs {currentDues.toLocaleString()}</div>
-                    <div className="font-semibold">Previous Dues:</div>
-                    <div className="font-mono text-right">Rs {(student.previousDue || 0).toLocaleString()}</div>
-                </AlertDescription>
-            </Alert>
+    <>
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Promote Student: {student.firstName}</DialogTitle>
+            <DialogDescription>
+              Move the student to the next academic session.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                  <p className="text-sm font-medium">Current Details</p>
+                  <div className="p-3 bg-muted rounded-md text-sm text-muted-foreground">
+                      Session: {student.session} | Class: {student.className}-{student.sectionName}
+                  </div>
+              </div>
+              
+              <Alert variant="destructive">
+                  <AlertDescription className="grid grid-cols-2 gap-x-4">
+                      <div className="font-semibold">Current Class Dues:</div>
+                      <div className="font-mono text-right">Rs {currentDues.toLocaleString()}</div>
+                      <div className="font-semibold">Previous Dues:</div>
+                      <div className="font-mono text-right">Rs {(student.previousDue || 0).toLocaleString()}</div>
+                  </AlertDescription>
+              </Alert>
 
-            <FormField name="newSession" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>New Session</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Session" /></SelectTrigger></FormControl><SelectContent>{sessionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-            )}/>
+              <FormField name="newSession" control={form.control} render={({ field }) => (
+                  <FormItem><FormLabel>New Session</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Session" /></SelectTrigger></FormControl><SelectContent>{sessionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+              )}/>
 
-            <div className="grid grid-cols-2 gap-4">
-                <FormField name="newClassName" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>New Class</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger></FormControl><SelectContent>{classOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                )}/>
-                <FormField name="newSectionName" control={form.control} render={({ field }) => (
-                    <FormItem><FormLabel>New Section</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Section" /></SelectTrigger></FormControl><SelectContent>{sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                )}/>
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                  <FormField name="newClassName" control={form.control} render={({ field }) => (
+                      <FormItem><FormLabel>New Class</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger></FormControl><SelectContent>{classOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                  )}/>
+                  <FormField name="newSectionName" control={form.control} render={({ field }) => (
+                      <FormItem><FormLabel>New Section</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select Section" /></SelectTrigger></FormControl><SelectContent>{sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                  )}/>
+              </div>
 
-            <FormField name="carryForwardDues" control={form.control} render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
-                    <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                        <FormLabel>Carry forward total dues of Rs {totalDuesToCarry.toLocaleString()} to the new session</FormLabel>
-                        <FormMessage />
-                    </div>
-                </FormItem>
-            )}/>
-            
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>Cancel</Button>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Confirm Promotion
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+              <div className="flex justify-end">
+                <Button type="button" variant="link" size="sm" onClick={() => setIsCustomizeDialogOpen(true)} disabled={!newClassName}>
+                    Edit Fee Structure for New Class
+                </Button>
+              </div>
+
+              <FormField name="carryForwardDues" control={form.control} render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+                      <FormControl>
+                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                          <FormLabel>Carry forward total dues of Rs {totalDuesToCarry.toLocaleString()} to the new session</FormLabel>
+                          <FormMessage />
+                      </div>
+                  </FormItem>
+              )}/>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>Cancel</Button>
+                <Button type="submit" disabled={isSaving || !newClassName}>
+                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Confirm Promotion
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      <CustomizeStructureDialog
+        isOpen={isCustomizeDialogOpen}
+        onOpenChange={setIsCustomizeDialogOpen}
+        student={student}
+        defaultFeeStructure={defaultFeeStructure?.[newClassName] || null}
+        onSave={handleSaveCustomStructure}
+        isSaving={isSavingStructure}
+        className={newClassName}
+      />
+    </>
   );
 }

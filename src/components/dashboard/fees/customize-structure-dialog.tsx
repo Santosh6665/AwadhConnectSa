@@ -19,21 +19,39 @@ const feeHeads: (keyof FeeStructure)[] = [
   'Miscellaneous/Enrolment',
 ];
 
-export default function CustomizeStructureDialog({ isOpen, onOpenChange, student, defaultFeeStructure, onSave, isSaving }: { isOpen: boolean; onOpenChange: (isOpen: boolean) => void; student: Student | null; defaultFeeStructure: FeeStructure | null; onSave: (newStructure: FeeStructure, newConcession: number, onStructureSaved: () => void) => void; isSaving: boolean; }) {
+export default function CustomizeStructureDialog({
+    isOpen,
+    onOpenChange,
+    student,
+    defaultFeeStructure,
+    onSave,
+    isSaving,
+    className
+}: {
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
+    student: Student | null;
+    defaultFeeStructure: FeeStructure | null;
+    onSave: (newStructure: FeeStructure, newConcession: number, onStructureSaved: () => void) => void;
+    isSaving: boolean;
+    className?: string;
+}) {
   
   const [customStructure, setCustomStructure] = React.useState<FeeStructure | null>(null);
   const [concession, setConcession] = React.useState(0);
 
+  const classToUse = className || student?.className;
+
   React.useEffect(() => {
-    if (student && isOpen) {
-        const studentFeeData = student.fees?.[student.className];
+    if (student && isOpen && classToUse) {
+        const studentFeeData = student.fees?.[classToUse];
         const studentStructure = studentFeeData?.structure || defaultFeeStructure;
         const studentConcession = studentFeeData?.concession || 0;
         
         setCustomStructure(studentStructure || {});
         setConcession(studentConcession);
     }
-  }, [student, defaultFeeStructure, isOpen]);
+  }, [student, defaultFeeStructure, isOpen, classToUse]);
   
   const handleAmountChange = (head: keyof FeeStructure, value: string) => {
     const amount = Number(value);
@@ -59,13 +77,13 @@ export default function CustomizeStructureDialog({ isOpen, onOpenChange, student
         <DialogHeader>
           <DialogTitle>Customize Fee Structure</DialogTitle>
           <DialogDescription>
-            Set a custom fee structure or concession for {student.firstName} for Class {student.className}.
+            Set a custom fee structure or concession for {student.firstName} for Class {classToUse}.
           </DialogDescription>
         </DialogHeader>
 
         <Alert variant="default">
             <AlertDescription>
-                These changes will only apply to this student for the current class. The base structure is taken from the global fee settings for Class {student.className}.
+                These changes will only apply to this student for this class. The base structure is taken from the global fee settings for Class {classToUse}.
             </AlertDescription>
         </Alert>
 
