@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, LogIn, Info, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -12,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 export default function UnifiedLoginForm() {
   const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { loginWithRoleDetection } = useAuth();
@@ -22,7 +24,7 @@ export default function UnifiedLoginForm() {
     setLoading(true);
 
     try {
-      await loginWithRoleDetection(credential, password);
+      await loginWithRoleDetection(credential, password, rememberMe);
     } catch (error: any) {
       toast({
         title: 'Login Failed',
@@ -78,6 +80,10 @@ export default function UnifiedLoginForm() {
               </span>
             </Button>
           </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox id="remember-me" checked={rememberMe} onCheckedChange={() => setRememberMe(!rememberMe)} />
+          <Label htmlFor="remember-me">Remember me</Label>
         </div>
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (

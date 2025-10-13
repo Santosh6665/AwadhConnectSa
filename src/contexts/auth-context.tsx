@@ -12,9 +12,9 @@ import { db } from '@/lib/firebase/config';
 interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
-  login: (credential: string, pass: string, role: 'admin' | 'teacher' | 'student' | 'parent') => Promise<void>;
+  login: (credential: string, pass: string, role: 'admin' | 'teacher' | 'student' | 'parent', rememberMe?: boolean) => Promise<void>;
   logout: () => void;
-  loginWithRoleDetection: (credential: string, pass: string) => Promise<void>;
+  loginWithRoleDetection: (credential: string, pass: string, rememberMe?: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,12 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const storedUser = sessionStorage.getItem('app-user');
+      const storedUser = localStorage.getItem('app-user') || sessionStorage.getItem('app-user');
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
     } catch (error) {
-      console.error("Failed to parse user from sessionStorage", error);
+      console.error("Failed to parse user from storage", error);
+      localStorage.removeItem('app-user');
       sessionStorage.removeItem('app-user');
     } finally {
         setLoading(false);
@@ -51,24 +52,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             classes: teacherData.classes,
           };
 
-          // Check if user data has actually changed to avoid unnecessary updates
           if (JSON.stringify(user) !== JSON.stringify(updatedUser)) {
             setUser(updatedUser);
-            sessionStorage.setItem('app-user', JSON.stringify(updatedUser));
+            const storage = localStorage.getItem('app-user') ? localStorage : sessionStorage;
+            storage.setItem('app-user', JSON.stringify(updatedUser));
           }
         }
       });
 
-      // Cleanup listener on unmount
       return () => unsub();
     }
   }, [user]);
 
 
-  const login = async (credential: string, pass: string, role: 'admin' | 'teacher' | 'student' | 'parent') => {
+  const login = async (credential: string, pass: string, role: 'admin' | 'teacher' | 'student' | 'parent', rememberMe = false) => {
     setLoading(true);
     try {
       let appUser: AppUser | null = null;
+      let dashboardUrl = '/';
+
       if (role === 'admin') {
         const admin = await getAdminByEmail(credential);
         if (!admin) throw new Error('Admin not found');
@@ -76,8 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const passwordHash = sha256(pass);
         if (admin.password !== passwordHash) throw new Error('Invalid password');
 
-        appUser = { email: credential, role: 'admin' };
-        router.push('/dashboard');
+        appUser = { email: credential, role: 'admin', name: 'Admin' };
+        dashboardUrl = '/dashboard';
       } else if (role === 'teacher') {
         const teacher = await getTeacherById(credential);
         if (!teacher) throw new Error('Teacher not found');
@@ -91,40 +93,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           canEditResults: teacher.canEditResults,
           classes: teacher.classes
         };
-        router.push('/teacher/dashboard');
+        dashboardUrl = '/teacher/dashboard';
       } else if (role === 'student') {
         const student = await getStudentByAdmissionNumber(credential);
         if (!student) throw new Error('Student not found');
         if (student.password !== pass) throw new Error('Invalid password');
         
         appUser = { id: credential, name: `${student.firstName} ${student.lastName}`, role: 'student' };
-        router.push('/student/dashboard');
+        dashboardUrl = '/student/dashboard';
       } else if (role === 'parent') {
         const parent = await getParentByMobile(credential);
         if (!parent) throw new Error('Parent not found');
         if (parent.password !== pass) throw new Error('Invalid password');
         
         appUser = { id: credential, name: parent.name, role: 'parent' };
-        router.push('/parent/dashboard');
+        dashboardUrl = '/parent/dashboard';
       }
 
       if (appUser) {
-        sessionStorage.setItem('app-user', JSON.stringify(appUser));
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem('app-user', JSON.stringify(appUser));
         setUser(appUser);
+        window.location.href = dashboardUrl;
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const loginWithRoleDetection = async (credential: string, pass: string) => {
+  const loginWithRoleDetection = async (credential: string, pass: string, rememberMe = false) => {
     setLoading(true);
     try {
       // Try admin login
       try {
         const admin = await getAdminByEmail(credential);
         if (admin && admin.password === sha256(pass)) {
-          await login(credential, pass, 'admin');
+          await login(credential, pass, 'admin', rememberMe);
           return;
         }
       } catch (error) {}
@@ -133,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const teacher = await getTeacherById(credential);
         if (teacher && teacher.password === pass) {
-          await login(credential, pass, 'teacher');
+          await login(credential, pass, 'teacher', rememberMe);
           return;
         }
       } catch (error) {}
@@ -142,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const student = await getStudentByAdmissionNumber(credential);
         if (student && student.password === pass) {
-          await login(credential, pass, 'student');
+          await login(credential, pass, 'student', rememberMe);
           return;
         }
       } catch (error) {}
@@ -151,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const parent = await getParentByMobile(credential);
         if (parent && parent.password === pass) {
-          await login(credential, pass, 'parent');
+          await login(credential, pass, 'parent', rememberMe);
           return;
         }
       } catch (error) {}
@@ -164,8 +168,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('app-user');
     sessionStorage.removeItem('app-user');
-    router.push('/unified-login');
+    window.location.href = '/';
   };
 
   const value = {

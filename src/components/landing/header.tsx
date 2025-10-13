@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, User } from 'lucide-react';
+import { Menu, User, LogOut, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -12,14 +12,18 @@ import {
   SheetDescription,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Image from 'next/image';
+import { useAuth } from '@/contexts/auth-context';
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -33,6 +37,35 @@ const navItems = [
 
 export default function Header() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    if (user && user.name) {
+      setUserName(user.name);
+    }
+  }, [user]);
+
+  const getDashboardLink = () => {
+    if (!user) return '/';
+    switch (user.role) {
+      case 'admin':
+        return '/dashboard';
+      case 'teacher':
+        return '/teacher/dashboard';
+      case 'student':
+        return '/student/dashboard';
+      case 'parent':
+        return '/parent/dashboard';
+      default:
+        return '/';
+    }
+  };
+
+  const getUserInitial = () => {
+    if (!userName) return '';
+    return userName.charAt(0).toUpperCase();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -79,18 +112,42 @@ export default function Header() {
             <span className="font-bold font-headline text-lg">Awadh Inter College</span>
           </Link>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Login</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild><Link href="/">Home</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/unified-login">Login</Link></DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="cursor-pointer h-9 w-9">
+                  <AvatarFallback>{getUserInitial()}</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{userName || 'My Account'}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href={getDashboardLink()} className="flex items-center">
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <User className="h-5 w-5" />
+                  <span className="sr-only">Login</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild><Link href="/unified-login">Login</Link></DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Desktop Header */}
@@ -115,12 +172,37 @@ export default function Header() {
             </nav>
             
             <div className="flex-1 flex items-center justify-end space-x-4">
-              <Button asChild variant="outline">
-                <Link href="/unified-login">
-                  <User className="mr-2 h-4 w-4" />
-                  Login
-                </Link>
-              </Button>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="cursor-pointer">
+                      <AvatarFallback>{getUserInitial()}</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{userName || 'My Account'}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href={getDashboardLink()} className="flex items-center">
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button asChild variant="outline">
+                  <Link href="/unified-login">
+                    <User className="mr-2 h-4 w-4" />
+                    Login
+                  </Link>
+                </Button>
+              )}
             </div>
         </div>
       </div>
