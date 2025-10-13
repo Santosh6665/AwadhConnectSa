@@ -1,14 +1,15 @@
 
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { getParentByMobile, getStudentByAdmissionNumber } from '@/lib/firebase/firestore';
-import type { Student, AnnualResult } from '@/lib/types';
+import { getParentByMobile, getStudentByAdmissionNumber, getStudents } from '@/lib/firebase/firestore';
+import type { Student } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import ResultCard from '@/components/dashboard/common/result-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { calculateGrandTotalResult } from '@/lib/utils';
 
 export default function ParentResultsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -16,6 +17,8 @@ export default function ParentResultsPage() {
   const [selectedChild, setSelectedChild] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<string>('');
+  const [classmates, setClassmates] = useState<Student[]>([]);
+  const [classmatesLoading, setClassmatesLoading] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -30,8 +33,9 @@ export default function ParentResultsPage() {
           if (validStudents.length > 0) {
             const firstChild = validStudents[0];
             setSelectedChild(firstChild);
-            if (firstChild.className) {
-              setSelectedClass(firstChild.className);
+            if (firstChild.results) {
+              const latestClass = Object.keys(firstChild.results).sort().reverse()[0];
+              setSelectedClass(latestClass || firstChild.className);
             }
           }
         }
@@ -40,16 +44,55 @@ export default function ParentResultsPage() {
       fetchParentData();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (selectedClass) {
+      const fetchClassmates = async () => {
+        setClassmatesLoading(true);
+        const classmatesData = await getStudents({ className: selectedClass });
+        setClassmates(classmatesData);
+        setClassmatesLoading(false);
+      };
+      fetchClassmates();
+    }
+  }, [selectedClass]);
+
+  const childRank = useMemo(() => {
+    if (!selectedChild || classmates.length === 0 || !selectedClass) return 0;
+
+    const rankedStudents = classmates.map(s => {
+      const annualResult = s.results?.[selectedClass];
+      const { percentage } = calculateGrandTotalResult(annualResult);
+      return { studentId: s.admissionNumber, percentage };
+    });
+
+    rankedStudents.sort((a, b) => b.percentage - a.percentage);
+    
+    let rank = 0;
+    for(let i = 0; i < rankedStudents.length; i++){
+        if(i > 0 && rankedStudents[i].percentage < rankedStudents[i-1].percentage){
+            rank = i + 1;
+        } else if (i === 0) {
+            rank = 1;
+        }
+        if(rankedStudents[i].studentId === selectedChild.admissionNumber){
+            return rank;
+        }
+    }
+    
+    return 0; // Should not be reached
+  }, [selectedChild, classmates, selectedClass]);
   
   const handleChildChange = (admissionNumber: string) => {
     const child = children.find(c => c.admissionNumber === admissionNumber);
     if(child) {
         setSelectedChild(child);
-        setSelectedClass(child.className);
+        const latestClass = Object.keys(child.results || {}).sort().reverse()[0];
+        setSelectedClass(latestClass || child.className);
     }
   }
 
-  if (authLoading || loading) {
+  if (authLoading || loading || classmatesLoading) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -97,7 +140,7 @@ export default function ParentResultsPage() {
       
       <div className="print-container">
         {annualResult && selectedChild ? (
-          <ResultCard student={selectedChild} annualResult={annualResult} forClass={selectedClass} onDownload={() => window.print()}/>
+          <ResultCard student={selectedChild} annualResult={annualResult} forClass={selectedClass} onDownload={() => window.print()} rank={childRank} />
         ) : (
           <Card className="no-print">
             <CardContent className="p-8 text-center text-muted-foreground">
