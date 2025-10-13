@@ -1,7 +1,7 @@
 
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { AnnualResult, ExamType } from "./types";
+import type { AnnualResult, ExamType, Student, FeeStructure } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -80,4 +80,35 @@ export const calculateGrandTotalResult = (annualResult?: AnnualResult): { percen
     const grade = getGrade(percentage);
 
     return { percentage, grade };
+};
+
+export const calculateDuesForStudent = (student: Student, defaultStructure: { [key: string]: FeeStructure } | null) => {
+    const previousDue = student.previousDue || 0;
+    let currentSessionDue = 0;
+
+    if (defaultStructure && student.className && student.fees?.[student.className]) {
+        const studentFeeData = student.fees[student.className];
+        const structure = studentFeeData.structure || defaultStructure[student.className];
+        
+        if (structure) {
+            const annualFee = Object.values(structure).reduce((sum, head) => sum + (head.amount * head.months), 0);
+            const concession = studentFeeData.concession || 0;
+            const totalExpected = annualFee - concession;
+            const totalPaid = (studentFeeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+            currentSessionDue = Math.max(0, totalExpected - totalPaid);
+        }
+    }
+    
+    const totalDue = currentSessionDue + previousDue;
+    
+    return { currentSessionDue, previousDue, totalDue };
+};
+
+export const calculateTotalDueForFamily = (students: Student[], defaultStructure: { [key: string]: FeeStructure }) => {
+    let totalFamilyDue = 0;
+    students.forEach(student => {
+        const { totalDue } = calculateDuesForStudent(student, defaultStructure);
+        totalFamilyDue += totalDue;
+    });
+    return totalFamilyDue;
 };

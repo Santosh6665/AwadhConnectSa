@@ -3,13 +3,14 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { getParentByMobile, getStudentByAdmissionNumber, getAttendanceForMonth } from '@/lib/firebase/firestore';
-import type { Parent, Student, ExamType } from '@/lib/types';
+import { getParentByMobile, getStudentByAdmissionNumber, getAttendanceForMonth, getFeeStructure } from '@/lib/firebase/firestore';
+import type { Parent, Student, ExamType, FeeStructure } from '@/lib/types';
 import { Loader2, Users } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ChildProfileCard from '@/components/parent/child-profile-card';
-import { calculateOverallResult } from '@/lib/utils';
+import { calculateOverallResult, calculateTotalDueForFamily } from '@/lib/utils';
 import { format, getDaysInMonth, isSunday } from 'date-fns';
+import FamilyDueCard from '@/components/parent/family-due-card';
 
 export type ProcessedChild = Student & {
   feeStatus: 'Paid' | 'Due' | 'Partial';
@@ -22,6 +23,8 @@ export default function ParentDashboardPage() {
   const [parent, setParent] = useState<Parent | null>(null);
   const [processedChildren, setProcessedChildren] = useState<ProcessedChild[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalDue, setTotalDue] = useState(0);
+  const [feeStructure, setFeeStructure] = useState<{[key: string]: FeeStructure} | null>(null);
 
   useEffect(() => {
     if (user && user.id) {
@@ -30,6 +33,9 @@ export default function ParentDashboardPage() {
         try {
             const parentData = await getParentByMobile(user.id!);
             setParent(parentData);
+
+            const feeStructureData = await getFeeStructure();
+            setFeeStructure(feeStructureData);
 
             if (!parentData?.children || parentData.children.length === 0) {
                 setProcessedChildren([]);
@@ -40,6 +46,11 @@ export default function ParentDashboardPage() {
             const studentPromises = parentData.children.map(getStudentByAdmissionNumber);
             const studentResults = await Promise.all(studentPromises);
             const validStudents = studentResults.filter((s): s is Student => s !== null);
+
+            if (feeStructureData) {
+                const due = calculateTotalDueForFamily(validStudents, feeStructureData);
+                setTotalDue(due);
+            }
 
             const today = new Date();
             const year = today.getFullYear();
@@ -156,6 +167,8 @@ export default function ParentDashboardPage() {
         <h1 className="text-3xl font-headline font-bold">Parent Dashboard</h1>
         <p className="text-muted-foreground">Welcome back, {parent.name}!</p>
       </div>
+      
+      <FamilyDueCard totalDue={totalDue} />
 
       <Card>
         <CardHeader>
