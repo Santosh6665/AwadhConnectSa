@@ -9,31 +9,36 @@ import { Button } from '@/components/ui/button';
 import { Loader2, FileText, Banknote, Landmark, Percent } from 'lucide-react';
 import FeeDetailsDialog from '@/components/dashboard/fees/fee-details-dialog';
 import StatCard from '@/components/dashboard/stat-card';
+import { calculateDuesForStudent } from '@/lib/utils';
 
 const calculateDues = (student: Student | null, defaultStructure: { [key: string]: FeeStructure } | null) => {
-    if (!student || !defaultStructure) return { totalPaid: 0, totalDue: 0, collectionPercentage: 0 };
+    if (!student || !defaultStructure) {
+        return { totalPaid: 0, totalDue: 0, collectionPercentage: 0 };
+    }
 
-    let totalExpected = 0;
+    const { totalDue } = calculateDuesForStudent(student, defaultStructure);
+
     let totalPaid = 0;
+    let totalExpected = 0;
 
-    Object.keys(student.fees || {}).forEach(className => {
-        const studentFeeData = student.fees[className];
-        const structure = studentFeeData.structure || defaultStructure[className];
-        
-        if(structure){
-            const annualFee = Object.values(structure).reduce((sum, head) => sum + (head.amount * head.months), 0);
-            const concession = studentFeeData.concession || 0;
-            totalExpected += (annualFee - concession);
-        }
-        
-        totalPaid += (studentFeeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
-    });
+    if (student.fees) {
+        Object.keys(student.fees).forEach(className => {
+            const feeData = student.fees[className];
+            totalPaid += (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
+
+            const structure = feeData.structure || defaultStructure[className];
+            if (structure) {
+                const annualFee = Object.values(structure).reduce((sum, head) => sum + (head.amount * head.months), 0);
+                const concession = feeData.concession || 0;
+                totalExpected += (annualFee - concession);
+            }
+        });
+    }
 
     totalExpected += (student.previousDue || 0);
 
-    const totalDue = Math.max(0, totalExpected - totalPaid);
     const collectionPercentage = totalExpected > 0 ? (totalPaid / totalExpected) * 100 : 100;
-    
+
     return { totalPaid, totalDue, collectionPercentage };
 };
 
