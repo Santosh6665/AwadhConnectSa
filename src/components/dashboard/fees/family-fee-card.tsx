@@ -56,14 +56,12 @@ export default function FamilyFeeCard({
             <div className="bg-card rounded-lg shadow-sm">
             <AccordionTrigger className="p-4 hover:no-underline rounded-t-lg data-[state=open]:bg-muted/50">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
-                    <div className="flex items-center gap-4 text-left">
-                        <div>
-                            <p className="font-bold text-lg">{family.name}</p>
-                            <p className="text-sm text-muted-foreground">{family.phone}</p>
-                        </div>
-                        <div className="hidden lg:block text-sm text-muted-foreground self-end">
+                    <div className="text-left">
+                        <p className="font-bold text-lg">{family.name}</p>
+                        <p className="text-sm text-muted-foreground">{family.phone}</p>
+                        <p className="text-sm text-muted-foreground">
                             ({childCount} {childLabel}: {studentNames})
-                        </div>
+                        </p>
                     </div>
                      <div className="text-left md:text-right shrink-0">
                          <p className="text-sm text-muted-foreground">Total Family Due</p>
