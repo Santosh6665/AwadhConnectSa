@@ -51,7 +51,6 @@ export default function FeeCollectionReport({ students, feeStructure }: { studen
         });
         
         totalPreviousDues += student.previousDue || 0;
-        studentTotalExpected += student.previousDue || 0;
         
         allTimeFeesCollected += studentTotalPaid;
         totalExpected += studentTotalExpected;
