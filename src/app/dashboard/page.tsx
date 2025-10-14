@@ -47,8 +47,6 @@ export default async function AdminDashboardPage() {
             studentTotalPaid += (feeData.transactions || []).reduce((sum, tx) => sum + tx.amount, 0);
         });
         
-        studentTotalExpected += student.previousDue || 0;
-        
         totalFeesCollected += studentTotalPaid;
         totalDues += Math.max(0, studentTotalExpected - studentTotalPaid);
     });
