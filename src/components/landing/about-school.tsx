@@ -1,27 +1,21 @@
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 
 export default function AboutSchool() {
-  const aboutImage = PlaceHolderImages.find(img => img.id === 'about-school');
-
   return (
     <section id="about" className="container mx-auto px-4">
       <Card className="overflow-hidden">
         <div className="grid md:grid-cols-2 items-center">
-          {aboutImage && (
             <div className="relative w-full h-64 md:h-full min-h-[300px]">
               <Image
-                src={aboutImage.imageUrl}
-                alt={aboutImage.description}
+                src="/about-school.jpg"
+                alt="About the school"
                 fill
                 className="object-cover"
-                data-ai-hint={aboutImage.imageHint}
               />
             </div>
-          )}
           <div className="p-8">
             <CardHeader className="p-0">
               <p className="text-primary font-semibold font-body">About Our School</p>
