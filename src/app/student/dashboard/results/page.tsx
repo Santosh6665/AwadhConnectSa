@@ -25,7 +25,7 @@ function useClassData(userId: string | null, selectedClass: string) {
         const studentData = await getStudentByAdmissionNumber(userId);
         setStudent(studentData);
 
-        const classmatesData = await getStudents({ className: selectedClass });
+        const classmatesData = await getStudents({ resultForClass: selectedClass });
         setClassmates(classmatesData);
         setLoading(false);
       };

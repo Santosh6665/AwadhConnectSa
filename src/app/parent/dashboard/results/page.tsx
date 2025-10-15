@@ -49,7 +49,7 @@ export default function ParentResultsPage() {
     if (selectedClass) {
       const fetchClassmates = async () => {
         setClassmatesLoading(true);
-        const classmatesData = await getStudents({ className: selectedClass });
+        const classmatesData = await getStudents({ resultForClass: selectedClass });
         setClassmates(classmatesData);
         setClassmatesLoading(false);
       };
