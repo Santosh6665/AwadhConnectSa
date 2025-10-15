@@ -11,10 +11,10 @@ export default function ParentAttendancePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-3xl font-headline font-bold">Children's Attendance</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-headline font-bold">Children's Attendance</h1>
+        <p className="text-muted-foreground text-sm">
           View monthly attendance records for your children.
         </p>
       </div>

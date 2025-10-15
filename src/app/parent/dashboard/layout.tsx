@@ -28,12 +28,12 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar className="no-print">
         <SidebarNav role="parent" />
       </Sidebar>
       <SidebarInset>
-        <DashboardHeader role="parent" />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <DashboardHeader role="parent" className="no-print" />
+        <main className="flex-1 p-2 md:p-4 lg:p-6">
             {children}
         </main>
       </SidebarInset>

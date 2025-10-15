@@ -65,10 +65,10 @@ export default function ParentFeePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-3xl font-headline font-bold">Fee Management</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-headline font-bold">Fee Management</h1>
+        <p className="text-muted-foreground text-sm">
           Review fee payments, and outstanding dues for your children.
         </p>
       </div>
@@ -76,51 +76,51 @@ export default function ParentFeePage() {
       <FamilyDueCard totalDue={totalFamilyDue} />
 
       <Card>
-        <CardHeader>
-            <CardTitle>Individual Fee Details</CardTitle>
-            <CardDescription>An overview of fee payments and outstanding dues for each of your children.</CardDescription>
+        <CardHeader className="p-4">
+            <CardTitle className="text-lg">Individual Fee Details</CardTitle>
+            <CardDescription className="text-sm">An overview of fee payments and outstanding dues for each of your children.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0">
             {children.length > 0 ? (
                 <div className="space-y-4">
                 {children.map(child => {
                     const { currentSessionDue, previousDue, totalDue } = calculateDuesForStudent(child, feeStructure);
                     return (
                     <Card key={child.admissionNumber} className='overflow-hidden'>
-                        <CardContent className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <Avatar className="h-12 w-12">
+                        <CardContent className="p-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
                                 <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${child.firstName} ${child.lastName}`} alt={child.firstName} />
                                 <AvatarFallback>{child.firstName[0]}{child.lastName[0]}</AvatarFallback>
                             </Avatar>
                             <div>
-                            <p className="font-semibold">{child.firstName} {child.lastName}</p>
-                            <p className="text-sm text-muted-foreground">Class: {child.className}-{child.sectionName}</p>
+                            <p className="font-semibold text-base">{child.firstName} {child.lastName}</p>
+                            <p className="text-xs text-muted-foreground">Class: {child.className}-{child.sectionName}</p>
                             </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full sm:w-auto">
-                            <div className="grid grid-cols-3 gap-x-4 text-right flex-grow">
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto">
+                            <div className="grid grid-cols-3 gap-x-3 text-right flex-grow">
                               <div>
-                                  <p className="text-sm text-muted-foreground">Current Due</p>
-                                  <p className='font-mono text-lg font-bold text-destructive'>
-                                    &#8377; {currentSessionDue.toLocaleString('en-IN')}
+                                  <p className="text-xs text-muted-foreground">Current Due</p>
+                                  <p className='font-mono text-base font-bold text-destructive'>
+                                    ₹ {currentSessionDue.toLocaleString('en-IN')}
                                   </p>
                               </div>
                               <div>
-                                  <p className="text-sm text-muted-foreground">Previous Due</p>
-                                  <p className='font-mono text-lg font-bold text-destructive'>
-                                    &#8377; {previousDue.toLocaleString('en-IN')}
+                                  <p className="text-xs text-muted-foreground">Previous Due</p>
+                                  <p className='font-mono text-base font-bold text-destructive'>
+                                    ₹ {previousDue.toLocaleString('en-IN')}
                                   </p>
                               </div>
                               <div>
-                                <p className="text-sm text-muted-foreground">Total Due</p>
-                                  <p className={`font-mono text-lg font-bold ${totalDue > 0 ? 'text-destructive' : 'text-green-600'}`}>
-                                      &#8377; {totalDue.toLocaleString('en-IN')}
+                                <p className="text-xs text-muted-foreground">Total Due</p>
+                                  <p className={`font-mono text-base font-bold ${totalDue > 0 ? 'text-destructive' : 'text-green-600'}`}>
+                                      ₹ {totalDue.toLocaleString('en-IN')}
                                   </p>
                               </div>
                             </div>
-                            <Button onClick={() => handleViewDetails(child)} variant="outline" className="w-full sm:w-auto">
-                            <FileText className="mr-2 h-4 w-4" />
+                            <Button onClick={() => handleViewDetails(child)} variant="outline" size="sm" className="w-full sm:w-auto text-xs">
+                            <FileText className="mr-1.5 h-3.5 w-3.5" />
                             View Receipt
                             </Button>
                         </div>
@@ -130,7 +130,7 @@ export default function ParentFeePage() {
                 })}
                 </div>
             ) : (
-                <p className="text-muted-foreground text-center py-8">No children found linked to your account.</p>
+                <p className="text-muted-foreground text-center py-6">No children found linked to your account.</p>
             )}
         </CardContent>
       </Card>

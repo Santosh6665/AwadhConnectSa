@@ -105,7 +105,7 @@ export default function ParentResultsPage() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="no-print">
         <CardHeader>
           <CardTitle>View Child's Results</CardTitle>
           <CardDescription>Select a child and a class to view their report card.</CardDescription>

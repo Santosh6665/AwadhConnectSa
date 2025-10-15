@@ -11,10 +11,10 @@ export default function ParentNoticesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-3xl font-headline font-bold">Notices & Events</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-headline font-bold">Notices & Events</h1>
+        <p className="text-muted-foreground text-sm">
           Stay informed about school-wide announcements and events relevant to you and your child.
         </p>
       </div>

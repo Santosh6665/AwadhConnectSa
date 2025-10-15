@@ -162,7 +162,7 @@ export default function ParentDashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-0">
       <div>
         <h1 className="text-3xl font-headline font-bold">Parent Dashboard</h1>
         <p className="text-muted-foreground">Welcome back, {parent.name}!</p>
@@ -170,7 +170,7 @@ export default function ParentDashboardPage() {
       
       <FamilyDueCard totalDue={totalDue} />
 
-      <Card>
+      <Card className='m-0 p-0'>
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="bg-primary/10 p-3 rounded-lg"><Users className="w-6 h-6 text-primary" /></div>
@@ -180,8 +180,8 @@ export default function ParentDashboardPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
+        <CardContent className='p-0 m-0'>
+          <div className="space-y-0">
             {processedChildren.length > 0 ? (
               processedChildren.map(child => <ChildProfileCard key={child.admissionNumber} student={child} />)
             ) : (
