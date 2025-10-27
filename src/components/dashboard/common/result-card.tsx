@@ -125,7 +125,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
                   <DetailItem label="Class/Section:" value={`${forClass}-${sectionForClass}`} />
                   <DetailItem label="Session:" value={sessionForClass} />
                   <DetailItem label="Father's Name:" value={student.parentName} />
-                  <DetailItem label="Parent's Phone:" value={student.parentMobile} />
+                  <DetailItem label="Student ID:" value={student.admissionNumber} />
               </div>
           </div>
 
