@@ -46,7 +46,7 @@ export default function SalarySlip({ teacher, month, salaryDetails, payment }: S
     const { totalDays, presentDays, absentDays, payableDays, deduction, payableSalary } = salaryDetails;
 
     return (
-        <Card ref={slipRef} className="result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none print:min-h-screen">
+        <Card ref={slipRef} className="admin-print-container result-card p-4 sm:p-8 space-y-6 print:shadow-none print:border-none print:min-h-screen">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div className="flex items-center gap-4">

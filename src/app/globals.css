@@ -103,6 +103,13 @@
 }
 
 @layer utilities {
+  .font-headline {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .font-body {
+      font-family: 'PT Sans', sans-serif;
+  }
   .hover-gradient-underline {
     @apply relative;
   }
@@ -139,12 +146,12 @@
     top: 0;
     right: 0;
     width: 100%;
-    padding: 0rem; 
+    padding: 1rem; 
     margin: 0 !important;
   }
 
   .admin-print-container{
-    padding: 0 !important;
+    padding: 2rem !important;
   }
 
   * {
