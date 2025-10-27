@@ -80,7 +80,7 @@ export default function SingleReceiptDialog({ isOpen, onOpenChange, student, rec
              <div className="mt-12 text-center text-xs text-muted-foreground print:block">
               <p>This is a computer-generated receipt and does not require a signature.</p>
               <div className="flex justify-center items-center gap-4 mt-2">
-                <span className="flex items-center gap-1"><Mail className="w-3 h-3"/> info@awadhcollege.edu</span>
+                <span className="flex items-center gap-1"><Mail className="w-3 h-3"/> awadhintercollege@gmail.com</span>
                 <span className="flex items-center gap-1"><Phone className="w-3 h-3"/> +91 6393071946</span>
               </div>
             </div>

@@ -37,10 +37,10 @@ export default function Footer() {
             <div>
               <h4 className="font-headline font-semibold mb-4">Portals</h4>
               <ul className="space-y-2">
-                <li><Link href="/student/login" className="text-sm text-muted-foreground hover:text-primary">Student Portal</Link></li>
-                <li><Link href="/teacher/login" className="text-sm text-muted-foreground hover:text-primary">Teacher Portal</Link></li>
-                <li><Link href="/parent/login" className="text-sm text-muted-foreground hover:text-primary">Parent Portal</Link></li>
-                <li><Link href="/login" className="text-sm text-muted-foreground hover:text-primary">Admin Portal</Link></li>
+                <li><Link href="/unified-login" className="text-sm text-muted-foreground hover:text-primary">Student Portal</Link></li>
+                <li><Link href="/unified-login" className="text-sm text-muted-foreground hover:text-primary">Teacher Portal</Link></li>
+                <li><Link href="/unified-login" className="text-sm text-muted-foreground hover:text-primary">Parent Portal</Link></li>
+                <li><Link href="/unified-login" className="text-sm text-muted-foreground hover:text-primary">Admin Portal</Link></li>
               </ul>
             </div>
           </div>
@@ -59,7 +59,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center">
                  <span className="mr-2 h-4 w-4 text-primary">✉️</span>
-                <a href="mailto:info@awadhcollege.edu" className="hover:text-primary">info@awadhcollege.edu</a>
+                <a href="mailto:awadhintercollege@gmail.com" className="hover:text-primary">awadhintercollege@gmail.com</a>
               </li>
             </ul>
           </div>

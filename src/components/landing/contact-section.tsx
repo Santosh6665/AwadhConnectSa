@@ -17,8 +17,8 @@ const contactDetails = [
     {
         icon: Mail,
         title: "Email",
-        value: "info@awadhcollege.edu",
-        href: "mailto:info@awadhcollege.edu",
+        value: "awadhintercollege@gmail.com",
+        href: "mailto:awadhintercollege@gmail.com",
     }
 ]
 
