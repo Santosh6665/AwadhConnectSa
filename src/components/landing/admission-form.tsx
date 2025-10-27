@@ -11,16 +11,19 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Check, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Check, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+
+const months = [
+    'January', 'February', 'March', 'April', 'May', 'June', 
+    'July', 'August', 'September', 'October', 'November', 'December'
+];
 
 const admissionFormSchema = z.object({
   studentFullName: z.string().min(1, 'Full name is required'),
-  dob: z.date({ required_error: 'Date of birth is required' }),
+  dobDay: z.string().min(1, 'Day is required'),
+  dobMonth: z.string().min(1, 'Month is required'),
+  dobYear: z.string().min(1, 'Year is required'),
   gender: z.enum(['Male', 'Female', 'Other'], { required_error: 'Gender is required' }),
   classForAdmission: z.string().min(1, 'Class for admission is required'),
   previousSchoolName: z.string().optional(),
@@ -33,11 +36,32 @@ const admissionFormSchema = z.object({
   city: z.string().min(1, 'City is required'),
   state: z.string().min(1, 'State is required'),
   pinCode: z.string().min(6, 'Must be a valid 6-digit PIN code').max(6, 'Must be a valid 6-digit PIN code'),
-});
+}).refine(
+    (data) => {
+      const { dobDay, dobMonth, dobYear } = data;
+      if (!dobDay || !dobMonth || !dobYear) return true;
+      const monthIndex = months.indexOf(dobMonth);
+      const date = new Date(parseInt(dobYear), monthIndex, parseInt(dobDay));
+      return (
+        !isNaN(date.getTime()) &&
+        date.getFullYear() === parseInt(dobYear) &&
+        date.getMonth() === monthIndex &&
+        date.getDate() === parseInt(dobDay) &&
+        date <= new Date()
+      );
+    },
+    {
+      message: 'Please select a valid date of birth.',
+      path: ['dobDay'],
+    }
+);
 
 type AdmissionFormValues = z.infer<typeof admissionFormSchema>;
 
 const classes = ['Nursery', 'LKG', 'UKG', 'Class I', 'Class II', 'Class III', 'Class IV', 'Class V', 'Class VI', 'Class VII', 'Class VIII', 'Class IX', 'Class X', 'Class XI', 'Class XII'];
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 30 }, (_, i) => currentYear - 1 - i);
+const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
 export default function AdmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,6 +71,9 @@ export default function AdmissionForm() {
     resolver: zodResolver(admissionFormSchema),
     defaultValues: {
         studentFullName: '',
+        dobDay: '',
+        dobMonth: '',
+        dobYear: '',
         gender: undefined,
         classForAdmission: undefined,
         previousSchoolName: '',
@@ -66,9 +93,13 @@ export default function AdmissionForm() {
     setIsSubmitting(true);
     setSubmissionStatus(null);
     try {
+        const { dobDay, dobMonth, dobYear, ...restOfData } = data;
+        const monthIndex = months.indexOf(dobMonth);
+        const dob = new Date(parseInt(dobYear), monthIndex, parseInt(dobDay));
+        
         const applicationData = {
-            ...data,
-            dob: data.dob.toISOString(),
+            ...restOfData,
+            dob: dob.toISOString(),
         };
       await addAdmissionApplication(applicationData);
       setSubmissionStatus('success');
@@ -104,15 +135,38 @@ export default function AdmissionForm() {
                         <FormField name="studentFullName" control={form.control} render={({ field }) => (
                             <FormItem><FormLabel>Full Name <span className="text-red-500">*</span></FormLabel><FormControl><Input placeholder="Enter student's full name" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
-                        <FormField name="dob" control={form.control} render={({ field }) => (
-                            <FormItem className="flex flex-col"><FormLabel>Date of Birth <span className="text-red-500">*</span></FormLabel>
-                            <Popover><PopoverTrigger asChild>
-                            <FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button></FormControl></PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover>
-                            <FormMessage /></FormItem>
-                        )} />
+                        
+                        <div className="md:col-span-1">
+                            <FormLabel>Date of Birth <span className="text-red-500">*</span></FormLabel>
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                                <FormField name="dobDay" control={form.control} render={({ field }) => (
+                                    <FormItem>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger></FormControl>
+                                            <SelectContent><div className="max-h-60 overflow-y-auto">{days.map(d => <SelectItem key={d} value={String(d)}>{d}</SelectItem>)}</div></SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )} />
+                                <FormField name="dobMonth" control={form.control} render={({ field }) => (
+                                    <FormItem>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
+                                            <SelectContent><div className="max-h-60 overflow-y-auto">{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</div></SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )} />
+                                <FormField name="dobYear" control={form.control} render={({ field }) => (
+                                    <FormItem>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger></FormControl>
+                                            <SelectContent><div className="max-h-60 overflow-y-auto">{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</div></SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )} />
+                            </div>
+                            <FormMessage className="mt-2">{form.formState.errors.dobDay?.message}</FormMessage>
+                        </div>
+
                          <FormField name="gender" control={form.control} render={({ field }) => (
                             <FormItem><FormLabel>Gender <span className="text-red-500">*</span></FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl>
