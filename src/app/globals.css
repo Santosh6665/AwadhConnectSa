@@ -113,32 +113,45 @@
     @apply scale-x-100;
   }
   
-  @media print {
-    @page {
-      size: auto;
-      margin: 0;
-    }
-    body {
-      background: white !important;
-      --background: 99, 100%, 64%;
-      min-height: auto;
-    }
-    .no-print {
-      display: none !important;
-    }
-    body * {
-      visibility: hidden;
-    }
-    .print-container, .print-container * {
-      visibility: visible;
-    }
-    .print-container {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-    }
+ @media print {
+  @page {
+    size: auto;
+    margin: 0 !important;
   }
+  body {
+    background: rgb(225, 239, 254) !important;
+    min-height: auto;
+    margin: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-container, .print-container *,
+  .admin-print-container, .admin-print-container * {
+    visibility: visible;
+  }
+  .print-container, .admin-print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    width: 100%;
+    padding: 0rem; 
+    margin: 0 !important;
+  }
+
+  .admin-print-container{
+    padding: 0 !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
 }
     
 .no-scrollbar::-webkit-scrollbar {
