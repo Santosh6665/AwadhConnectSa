@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
+import { useState, useMemo, useTransition, useEffect } from 'react';
 import type { Student, ExamType, AnnualResult, UserRole } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { deleteStudentResults } from '@/lib/firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useReactToPrint } from 'react-to-print';
 
 type StudentResultSummary = {
   student: Student;
@@ -58,11 +57,6 @@ export default function StudentResultsList({
   const [selectedStudentSummary, setSelectedStudentSummary] = useState<StudentResultSummary | null>(null);
   
   const [viewingClass, setViewingClass] = useState<string>('');
-
-  const resultRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({
-    contentRef: resultRef
-  });
 
   const { toast } = useToast();
 
@@ -245,7 +239,7 @@ export default function StudentResultsList({
 
   return (
     <>
-      <Card>
+      <Card className="no-print">
         <CardHeader className="flex flex-row items-center justify-between">
             <div>
                 <CardTitle>Filter & View Results</CardTitle>
@@ -343,7 +337,7 @@ export default function StudentResultsList({
                 onSave={handleSaveMarks}
             />
             <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-                <DialogContent className="max-w-4xl p-0 border-0">
+                <DialogContent className="max-w-4xl p-0 border-0 no-print">
                     <DialogHeader className="p-4 pb-0">
                         <DialogTitle>Viewing Result for {selectedStudent.firstName}</DialogTitle>
                         <DialogDescription asChild>
@@ -358,17 +352,28 @@ export default function StudentResultsList({
                     </DialogHeader>
                     <ScrollArea className="max-h-[80vh]">
                        <ResultCard 
-                            ref={resultRef}
                             student={selectedStudent} 
                             annualResult={annualResultForViewing} 
                             forClass={viewingClass}
-                            onDownload={handlePrint}
+                            onDownload={() => window.print()}
                             examType={selectedExam}
                             rank={selectedStudentSummary?.rank}
                         />
                     </ScrollArea>
                 </DialogContent>
             </Dialog>
+            <div className="print-container">
+               {isViewDialogOpen && 
+                   <ResultCard 
+                        student={selectedStudent} 
+                        annualResult={annualResultForViewing} 
+                        forClass={viewingClass}
+                        onDownload={() => window.print()}
+                        examType={selectedExam}
+                        rank={selectedStudentSummary?.rank}
+                    />
+                }
+            </div>
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
               <AlertDialogContent>
                 <AlertDialogHeader>
