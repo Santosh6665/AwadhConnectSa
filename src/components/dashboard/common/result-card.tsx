@@ -95,11 +95,11 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
           
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-2 p-3 sm:p-4">
-              <div className="flex items-center gap-3">
-                  <Image src="/logo.png" alt="School Logo" width={40} height={40} className="h-10 w-10" />
+              <div className="flex items-center gap-4">
+                  <Image src="/logo.png" alt="School Logo" width={70} height={70} className="h-20 w-20" />
                   <div>
-                      <h1 className="text-lg font-bold font-headline">Awadh Inter College</h1>
-                      <p className="text-xs text-muted-foreground">Ghosiyari bazar, bansi, Siddharth Nagar, 272148</p>
+                      <h1 className="text-3xl font-bold font-headline">Awadh Inter College</h1>
+                      <p className="text-lg text-muted-foreground">Ghosiyari bazar, bansi, Siddharth Nagar, 272148</p>
                   </div>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -195,7 +195,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
           {/* Summary */}
           <div className="px-3 sm:px-4">
               <h2 className="flex items-center gap-2 text-base font-semibold mb-1"><BarChart className="w-4 h-4 text-primary"/>Overall Summary</h2>
-              <div className="grid md:grid-cols-2 gap-x-4 gap-y-1 text-xs">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                   <DetailItem label="Overall Percentage:" value={`${overallPercentage.toFixed(2)}%`} />
                   <DetailItem label="Overall Grade:" value={overallGrade} />
                    <DetailItem label="Class Rank:" value={rank ? `${rank}` : 'N/A'} />
@@ -204,9 +204,9 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
           </div>
 
           {/* Signatures */}
-          <div className="pt-6 px-3 sm:px-4 pb-3">
+          <div className="pt-20 px-3 sm:px-4 pb-3">
               <h2 className="sr-only">Signatures</h2>
-              <div className="flex justify-between items-center text-center">
+              <div className="flex justify-between items-end text-center">
                   <div className="w-48">
                       <Separator className="mb-2"/>
                       <p className="text-xs font-medium">Class Teacher</p>
