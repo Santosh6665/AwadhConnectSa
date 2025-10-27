@@ -137,10 +137,11 @@
     visibility: hidden;
   }
   .print-container, .print-container *,
-  .admin-print-container, .admin-print-container * {
+  .admin-print-container, .admin-print-container *,
+  .result-print-container, .result-print-container * {
     visibility: visible;
   }
-  .print-container, .admin-print-container {
+  .print-container, .admin-print-container, .result-print-container {
     position: absolute;
     left: 0;
     top: 0;
@@ -152,6 +153,10 @@
 
   .admin-print-container{
     padding: 2rem !important;
+  }
+
+  .result-print-container {
+    padding: 0 !important;
   }
 
   * {

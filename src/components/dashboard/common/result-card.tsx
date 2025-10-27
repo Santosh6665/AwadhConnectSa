@@ -91,7 +91,7 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
 
     return (
       <div ref={ref}>
-      <Card className="result-card space-y-2 print:shadow-none print:border-none print:min-h-screen">
+      <Card className="result-print-container result-card space-y-2 print:shadow-none print:border-none print:min-h-screen">
           
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-2 p-3 sm:p-4">
