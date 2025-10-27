@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -14,7 +15,7 @@ const links = [
   {
     title: 'Gallery',
     description: 'Explore moments and events from our campus life.',
-    href: '#',
+    href: '/gallery',
     icon: ImageIcon,
     cta: 'View Gallery',
   },

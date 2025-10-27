@@ -15,7 +15,7 @@ import Link from 'next/link';
 
 // Define an array with your local image paths
 const heroImages = [
-  { id: 'hero-1', imageUrl: '/hero-1.jpg', description: 'Students in a classroom' },
+  { id: 'hero-1', imageUrl: '/WhatsApp Image 2025-10-13 at 17.57.52_076082f6.jpg', description: 'Students in a classroom' },
   { id: 'hero-2', imageUrl: '/hero-2.jpg', description: 'School building' },
   { id: 'hero-3', imageUrl: '/hero-3.jpg', description: 'Students playing sports' },
   { id: 'hero-4', imageUrl: '/hero-4.jpg', description: 'Library' },
