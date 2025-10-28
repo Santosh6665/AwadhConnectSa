@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Bell } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+export const dynamic = 'force-dynamic';
 
 export default async function NoticesPreview() {
   const notices = await getNotices(4);
