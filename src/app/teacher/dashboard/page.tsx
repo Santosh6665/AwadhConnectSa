@@ -12,7 +12,6 @@ const quickActions = [
     { label: "My Students", href: "/teacher/dashboard/students", icon: Users },
     { label: "Mark Attendance", href: "/teacher/dashboard/attendance", icon: CalendarCheck },
     { label: "Enter Results", href: "/teacher/dashboard/results", icon: PenSquare },
-    { label: "Study Materials", href: "/teacher/dashboard/materials", icon: BookUser },
 ];
 
 
