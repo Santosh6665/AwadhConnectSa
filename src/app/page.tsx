@@ -1,6 +1,5 @@
 import Header from '@/components/landing/header';
 import HeroSlider from '@/components/landing/hero-slider';
-import NoticesPreview from '@/components/landing/notices-preview';
 import ContactSection from '@/components/landing/contact-section';
 import Footer from '@/components/landing/footer';
 import AdmissionsCallout from '@/components/landing/admissions-callout';
@@ -25,7 +24,6 @@ export default function Home() {
           <QuickLinks />
           <VisionMission />
           <LeadershipSection />
-          <NoticesPreview />
           <ContactSection />
         </div>
       </main>
